@@ -60,6 +60,8 @@ def test_studio_normalizer_builds_runs_and_action_detail(tmp_path: Path):
     assert detail.policy_predicates
     assert detail.policy_lattice_path
     assert detail.policy_causal_graph["edges"]
+    assert detail.action_graph["nodes"]
+    assert "secret_taint" in detail.session_state
     graph = graph_for_run(events, "run_test_attack")
     phases = {n["phase"] for n in graph["nodes"]}
     assert {"action", "policy"} <= phases

@@ -133,6 +133,12 @@ def build_action_detail(events: list[StudioEvent], action_id: str) -> ActionDeta
         if event.type == "action_parsed":
             detail.action = dict(event.payload)
             source_ids.update(str(s) for s in event.payload.get("source_ids", []) or [])
+            if isinstance(event.payload.get("action_graph"), dict):
+                detail.action_graph = dict(event.payload["action_graph"])
+        elif event.type == "action_graph":
+            detail.action_graph = dict(event.payload)
+        elif event.type == "session_state_update":
+            detail.session_state = dict(event.payload)
         elif event.type == "policy_decision":
             detail.decision = dict(event.payload)
         elif event.type == "policy_runtime":

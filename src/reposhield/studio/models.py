@@ -58,6 +58,8 @@ class ActionDetail:
     instruction: dict[str, Any] = field(default_factory=dict)
     sources: list[dict[str, Any]] = field(default_factory=list)
     evidence_events: list[dict[str, Any]] = field(default_factory=list)
+    action_graph: dict[str, Any] = field(default_factory=dict)
+    session_state: dict[str, Any] = field(default_factory=dict)
     policy_fact_set: dict[str, Any] = field(default_factory=dict)
     policy_eval_trace: dict[str, Any] = field(default_factory=dict)
     policy_predicates: list[dict[str, Any]] = field(default_factory=list)

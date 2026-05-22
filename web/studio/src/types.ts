@@ -43,6 +43,8 @@ export interface ActionDetail {
   instruction: Record<string, unknown>;
   sources: Array<Record<string, unknown>>;
   evidence_events: StudioEvent[];
+  action_graph?: Record<string, unknown>;
+  session_state?: Record<string, unknown>;
   policy_fact_set?: Record<string, unknown>;
   policy_eval_trace?: PolicyEvalTrace;
   policy_predicates?: PolicyPredicateRow[];
