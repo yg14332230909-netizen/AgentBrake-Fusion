@@ -16,6 +16,7 @@ from ..models import (
     PolicyDecision,
     RepoAssetGraph,
     SecretTaintEvent,
+    SessionState,
     TaskContract,
     new_id,
 )
@@ -105,6 +106,8 @@ class PolicyGraphEngine:
             "source_trust_floor": source_floor,
             "touched_asset_types": touched_asset_types,
             "preflight_plan": preflight,
+            "invariant_version": getattr(self.invariants, "version", "legacy"),
+            "constraints": _last_constraints(lattice_path),
         }
         return replace(
             decision,
@@ -235,8 +238,9 @@ class PolicyEngine:
         package_event: PackageEvent | None = None,
         secret_event: SecretTaintEvent | None = None,
         exec_trace: ExecTrace | None = None,
+        session_state: SessionState | None = None,
     ) -> PolicyDecision:
-        ctx = PolicyEvalContext(contract, action, asset_graph, context_graph, package_event, secret_event, exec_trace, "post_decide" if exec_trace else "pre_decide")
+        ctx = PolicyEvalContext(contract, action, asset_graph, context_graph, package_event, secret_event, exec_trace, "post_decide" if exec_trace else "pre_decide", session_state)
         graph_decision, trace = self.policygraph.decide(ctx, mode=self.mode)
         event = trace.to_dict()
         self._eval_events.append(event)
@@ -281,7 +285,7 @@ def _fact_namespace_counts(nodes: list[dict[str, Any]]) -> dict[str, int]:
 
 
 def _fact_summary(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    important = {"action", "source", "asset", "contract", "package", "secret", "mcp", "memory", "sandbox"}
+    important = {"action", "source", "asset", "contract", "package", "secret", "mcp", "memory", "sandbox", "graph", "flow", "history", "constraint", "exec"}
     out = []
     for node in nodes:
         if node.get("namespace") in important:
@@ -289,3 +293,11 @@ def _fact_summary(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if len(out) >= 40:
             break
     return out
+
+
+def _last_constraints(lattice_path: list[dict[str, Any]]) -> dict[str, Any]:
+    for step in reversed(lattice_path):
+        constraints = step.get("constraints")
+        if isinstance(constraints, dict):
+            return constraints
+    return {}

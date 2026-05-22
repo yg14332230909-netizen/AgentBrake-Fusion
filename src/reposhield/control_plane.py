@@ -5,11 +5,13 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
+from .action_graph import ensure_action_graph
 from .action_parser import ActionParser
 from .asset import AssetScanner
 from .audit import AuditLog
 from .context import ContextProvenance
 from .contract import TaskContractBuilder
+from .feature_flags import feature_enabled
 from .mcp_proxy import MCPProxy
 from .memory import MemoryStore
 from .models import ActionIR, PolicyDecision, RepoAssetGraph, SourceRecord, TaskContract
@@ -18,6 +20,7 @@ from .policy import PolicyEngine
 from .policy_config import ConfigurablePolicyOverrides
 from .sandbox import SandboxRunner
 from .sentry import SecretSentry
+from .session_state import SessionStateStore, session_state_payload
 
 
 class RepoShieldControlPlane:
@@ -44,6 +47,7 @@ class RepoShieldControlPlane:
         self.sentry = SecretSentry(self.asset_graph)
         self.mcp_proxy = MCPProxy(self.provenance)
         self.memory = MemoryStore(self.repo_root / ".reposhield" / "memory.json")
+        self.session_states = SessionStateStore()
         self.contract_builder = TaskContractBuilder()
         self.contract: TaskContract | None = None
         self.audit.append("asset_scan", asdict(self.asset_graph), actor="asset_scanner")
@@ -93,6 +97,11 @@ class RepoShieldControlPlane:
         assert self.contract is not None
         for sid in action.source_ids:
             self.provenance.influence(sid, action.action_id)
+        if feature_enabled("REPOSHIELD_ENABLE_ACTION_GRAPH", default=True):
+            graph = ensure_action_graph(action, run_id=self.audit.session_id)
+            self.audit.append("action_graph", asdict(graph), task_id=self.contract.task_id, actor="action_graph", source_ids=action.source_ids, action_id=action.action_id)
+        state = self.session_states.load(self.audit.session_id, self.contract.task_id) if feature_enabled("REPOSHIELD_ENABLE_SESSION_STATE", default=True) else None
+        action.metadata["source_has_untrusted"] = self.provenance.graph.has_untrusted(action.source_ids)
         self.audit.append("action_parsed", asdict(action), task_id=self.contract.task_id, actor="action_parser", source_ids=action.source_ids, action_id=action.action_id)
 
         secret_event = self.sentry.observe_action(action)
@@ -123,12 +132,17 @@ class RepoShieldControlPlane:
         self._apply_memory_authorization_gate(action)
 
         # First decision: may already hard-block before sandbox. Preflight can enrich evidence for high-risk actions.
-        decision = self.policy.decide(self.contract, action, self.asset_graph, self.provenance.graph, package_event=package_event, secret_event=secret_event)
+        trace = None
+        decision = self.policy.decide(self.contract, action, self.asset_graph, self.provenance.graph, package_event=package_event, secret_event=secret_event, session_state=state)
         preflight_plan = self.policy.plan_preflight(decision) if hasattr(self.policy, "plan_preflight") else None
         if run_preflight and preflight_plan and preflight_plan.required:
             trace = self.sandbox.preflight(action, decision=decision, package_event=package_event, profile=preflight_plan.profile, evidence_mode=preflight_plan.evidence_mode)
             self.audit.append("exec_trace", asdict(trace), task_id=self.contract.task_id, actor="sandbox", action_id=action.action_id)
-            decision = self.policy.decide(self.contract, action, self.asset_graph, self.provenance.graph, package_event=package_event, secret_event=secret_event, exec_trace=trace)
+            decision = self.policy.decide(self.contract, action, self.asset_graph, self.provenance.graph, package_event=package_event, secret_event=secret_event, exec_trace=trace, session_state=state)
+
+        if state is not None:
+            updated = self.session_states.update(action, decision, trace, secret_event, run_id=self.audit.session_id, task_id=self.contract.task_id)
+            self.audit.append("session_state_update", session_state_payload(updated), task_id=self.contract.task_id, actor="session_state", source_ids=action.source_ids, action_id=action.action_id, decision_id=decision.decision_id)
 
         policy_fact_events = self.policy.consume_fact_events() if hasattr(self.policy, "consume_fact_events") else []
         policy_eval_events = self.policy.consume_eval_events() if hasattr(self.policy, "consume_eval_events") else []
@@ -140,6 +154,9 @@ class RepoShieldControlPlane:
             self.audit.append("policy_fact_set", event, task_id=self.contract.task_id, actor="policy_engine", source_ids=action.source_ids, action_id=action.action_id, decision_id=decision.decision_id)
         for event in policy_eval_events:
             self.audit.append("policy_eval_trace", event, task_id=self.contract.task_id, actor="policy_engine", source_ids=action.source_ids, action_id=action.action_id, decision_id=decision.decision_id)
+        constraint_trace = _constraint_lattice_payload(decision)
+        if constraint_trace:
+            self.audit.append("constraint_lattice_trace", constraint_trace, task_id=self.contract.task_id, actor="policy_engine", source_ids=action.source_ids, action_id=action.action_id, decision_id=decision.decision_id)
         self.audit.append("policy_decision", asdict(decision), task_id=self.contract.task_id, actor="policy_engine", source_ids=action.source_ids, action_id=action.action_id, decision_id=decision.decision_id)
         return action, decision
 
@@ -179,3 +196,16 @@ class RepoShieldControlPlane:
 
     def incident_graph(self) -> dict[str, Any]:
         return self.audit.incident_graph()
+
+
+def _constraint_lattice_payload(decision: PolicyDecision) -> dict[str, Any]:
+    for step in reversed(decision.rule_trace):
+        if isinstance(step, dict) and step.get("engine") == "constraint_lattice":
+            return {
+                "schema_version": "constraint-lattice-trace-v1",
+                "decision_id": decision.decision_id,
+                "action_id": decision.action_id,
+                "mapped_decision": step.get("mapped_decision", decision.decision),
+                "constraints": step.get("constraints") or {},
+            }
+    return {}

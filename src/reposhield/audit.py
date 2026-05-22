@@ -30,6 +30,9 @@ class AuditEventType(StrEnum):
     HOST_EXEC_STARTED = "host_exec_started"
     HOST_EXEC_COMPLETED = "host_exec_completed"
     GATEWAY_RESPONSE = "gateway_response"
+    ACTION_GRAPH = "action_graph"
+    SESSION_STATE_UPDATE = "session_state_update"
+    CONSTRAINT_LATTICE_TRACE = "constraint_lattice_trace"
 
 
 class AuditLog:
@@ -58,7 +61,7 @@ class AuditLog:
             redacted_payload = self._redact_payload(payload)
             event_without_hash = {
                 "event_id": new_id("evt"),
-                "schema_version": "audit-event-v1",
+                "schema_version": "audit-event-v2",
                 "prev_hash": self._head,
                 "timestamp": utc_now(),
                 "session_id": self.session_id,

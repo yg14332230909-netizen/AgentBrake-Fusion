@@ -146,6 +146,9 @@ class RuleIndex:
             ("asset.touched_type=ci_workflow", "source.has_untrusted=true"),
             ("sandbox.risk_observed=package_lifecycle", "package.source=registry"),
             ("mcp.capability=auth", "source.has_untrusted=true"),
+            ("flow.secret_to_external=true", "action.network_capability=true"),
+            ("history.secret_taint=true", "action.network_capability=true"),
+            ("graph.has_dataflow_edge=true", "asset.touched_type=secret_file"),
         }
         for rule_id, tokens in self.rule_tokens.items():
             for composite in valuable:

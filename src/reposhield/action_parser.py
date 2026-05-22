@@ -6,6 +6,7 @@ import re
 import shlex
 from pathlib import Path
 
+from .action_graph import ensure_action_graph
 from .models import ActionIR, Risk, new_id
 
 NETWORK_CMD_RE = re.compile(r"\b(curl|wget|httpie|nc|netcat|nslookup|dig|ssh|scp|ftp|Invoke-WebRequest|Invoke-RestMethod|iwr|irm|Start-BitsTransfer)\b", re.I)
@@ -221,7 +222,7 @@ class ActionParser:
         if dangerous:
             tags.append("compound_contains_dangerous_part")
             requires.append("sandbox_then_approval")
-        return ActionIR(
+        action = ActionIR(
             new_id("act"),
             raw,
             tool,
@@ -237,6 +238,8 @@ class ActionParser:
             command_parts,
             metadata={"compound_children": [c.semantic_action for c in children]},
         )
+        ensure_action_graph(action, run_id="parser")
+        return action
 
     def _parse_install(self, raw: str) -> tuple[str, list[str], list[str], Risk, list[str]]:
         targets = self._install_targets(raw)

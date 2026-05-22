@@ -3,7 +3,7 @@ import type { JudgmentTraceViewModel } from "../../types";
 import { displayLabel } from "../DecisionBadge";
 import { factName, valueText } from "./format";
 
-const columns = { fact: 0, retrieval: 1, predicate: 2, rule: 3, lattice: 4, final: 5 };
+const columns = { history: 0, graph: 1, fact: 2, retrieval: 3, predicate: 4, rule: 5, constraint: 6, lattice: 7, final: 8 };
 
 export function CausalEvidenceGraph({ judgment, activeFactId }: { judgment: JudgmentTraceViewModel; activeFactId: string }) {
   const nodes = toNodes(judgment, activeFactId);
@@ -31,9 +31,12 @@ function toNodes(judgment: JudgmentTraceViewModel, activeFactId: string): Node[]
   const graph = judgment.causal_graph || {};
   const all = [
     ...(graph.fact_nodes || []).map((node) => ({ ...node, kind: "fact" })),
+    ...(graph.action_graph_nodes || []).map((node) => ({ ...node, kind: "graph" })),
+    ...(graph.history_nodes || []).map((node) => ({ ...node, kind: "history" })),
     ...(graph.retrieval_nodes || []).map((node) => ({ ...node, kind: "retrieval" })),
     ...(graph.predicate_nodes || []).map((node) => ({ ...node, kind: "predicate" })),
     ...(graph.rule_nodes || []).map((node) => ({ ...node, kind: "rule" })),
+    ...(graph.constraint_nodes || []).map((node) => ({ ...node, kind: "constraint" })),
     ...(graph.lattice_nodes || []).map((node) => ({ ...node, kind: "lattice" })),
     { id: "final_decision", kind: "final", label: judgment.final_decision },
   ];
@@ -74,6 +77,9 @@ function toEdges(judgment: JudgmentTraceViewModel, activeFactId: string): Edge[]
 function nodeLabel(node: Record<string, unknown>): string {
   if (node.kind === "fact") return `${factName(node.namespace, node.key)}=${valueText(node.value)}`;
   if (node.kind === "retrieval") return `召回：${String(node.key || node.id)}`;
+  if (node.kind === "graph") return `动作图：${String(node.key || node.id)}=${valueText(node.value)}`;
+  if (node.kind === "history") return `历史：${String(node.key || node.id)}=${valueText(node.value)}`;
+  if (node.kind === "constraint") return `约束：${String(node.via || node.id)}`;
   if (node.kind === "predicate") return String(node.path || node.key || node.id);
   if (node.kind === "rule") return String(node.rule_id || node.id);
   if (node.kind === "lattice") return `${displayLabel(String(node.from || "start"))} -> ${displayLabel(String(node.to || ""))}`;

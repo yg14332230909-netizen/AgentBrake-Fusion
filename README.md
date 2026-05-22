@@ -74,6 +74,32 @@ and the retrieval / predicate / lattice trace consumed by Studio.
 - **Decision monotonicity**: DecisionLattice only moves toward an equally strict
   or stricter decision when stronger evidence or higher-risk rule hits appear.
 
+### Compatibility Upgrade: action graph, history, and constraint lattice
+
+The current implementation keeps the public API stable while adding the next
+generation internal model:
+
+- **ActionGraph**: every `ActionIR` can be associated with an `ActionGraph`.
+  Single-step actions become a one-node graph; compound commands preserve
+  sequence, pipe, redirect, dataflow, and controlflow edges.
+- **SessionState / HistorySummary**: `ExecTrace` remains the current-action
+  preflight observation, while `SessionState` stores redacted cross-action
+  history such as `secret_taint`, prior external sinks, package taint, CI taint,
+  and recent decisions.
+- **SemanticInvariantRegistry**: non-downgradable invariants are versioned
+  semantic predicates over typed facts, while legacy invariant IDs such as
+  `INV-SECRET-001` and `INV-EGRESS-001` stay stable.
+- **ConstraintLattice**: internal decisions are joined as a product lattice over
+  execution environment, network scope, data scope, human gate, persistence, and
+  audit scope, then mapped back to the existing five public decisions.
+- **Compatibility guards**: approval grants keep `action_hash_v1` stable while
+  `action_hash_v2` can bind optional action graph metadata; audit events use
+  `audit-event-v2` and include `action_graph`, `session_state_update`, and
+  `constraint_lattice_trace` event types.
+- **Feature flags**: `REPOSHIELD_ENABLE_ACTION_GRAPH`,
+  `REPOSHIELD_ENABLE_SESSION_STATE`, and
+  `REPOSHIELD_ENABLE_CONSTRAINT_LATTICE` provide rollback-friendly switches.
+
 ## Current Status
 
 RepoShield is currently a **strengthened research prototype / early engineering MVP**.
@@ -92,7 +118,7 @@ Approximate maturity:
 Latest local verification:
 
 ```text
-pytest -q --basetemp=.pytest_tmp_run         -> 124 passed
+pytest -q --basetemp=.pytest_tmp_run         -> 136 passed
 python -m compileall -q src tests            -> passed
 ruff check src tests                         -> passed
 cd web/studio && npm run build               -> passed

@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 
+from reposhield.action_graph import ensure_action_graph
 from reposhield.action_parser import ActionParser
 from reposhield.approvals import ApprovalCenter, ApprovalStore
 from reposhield.audit import AuditLog
@@ -33,11 +34,33 @@ def test_approval_action_hash_is_stable_across_parse_ids(tmp_path):
     prov = ContextProvenance()
     fake_decision = type("D", (), {"decision": "sandbox_then_approval"})()
     first = ActionParser().parse("npm install eslint")
+    ensure_action_graph(first, run_id="approval_test")
     second = ActionParser().parse("npm install eslint")
+    ensure_action_graph(second, run_id="approval_test")
     req = center.create_request(contract, first, fake_decision, prov.graph, plan={"task_id": contract.task_id, "goal": contract.goal})
     grant = center.grant(req)
     ok, reason = center.validate(grant, second, plan={"task_id": contract.task_id, "goal": contract.goal}, contract=contract)
     assert ok, reason
+
+
+def test_approval_hash_v1_remains_valid_when_action_graph_changes(tmp_path):
+    contract = TaskContractBuilder().build("install eslint and run lint")
+    center = ApprovalCenter()
+    prov = ContextProvenance()
+    fake_decision = type("D", (), {"decision": "sandbox_then_approval"})()
+    first = ActionParser().parse("npm install eslint")
+    ensure_action_graph(first, run_id="approval_test")
+    req = center.create_request(contract, first, fake_decision, prov.graph)
+    grant = center.grant(req)
+
+    second = ActionParser().parse("npm install eslint")
+    ensure_action_graph(second, run_id="approval_test")
+    second.metadata["action_graph"]["edges"].append({"edge_id": "edge_extra", "src_node_id": "a", "dst_node_id": "b", "relation": "sequence", "evidence_refs": []})
+
+    ok, reason = center.validate(grant, second, contract=contract)
+    assert ok, reason
+    assert grant.approved_action_hash_v1 == req.action_hash_v1
+    assert grant.approved_action_hash_v2 == req.action_hash_v2
 
 
 def test_approval_store_persists_and_finds_valid_grant(tmp_path):

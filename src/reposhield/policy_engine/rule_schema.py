@@ -31,6 +31,7 @@ class RuleHit:
     evidence_refs: list[str] = field(default_factory=list)
     invariant: bool = False
     predicates: list[dict[str, Any] | PredicateTrace] = field(default_factory=list)
+    constraints: dict[str, Any] = field(default_factory=dict)
     hit_id: str = field(default_factory=lambda: new_id("rulehit"))
 
     def to_matched_rule(self) -> dict[str, Any]:
@@ -43,6 +44,7 @@ class RuleHit:
             "reason_codes": ",".join(self.reason_codes),
             "invariant": self.invariant,
             "hit_id": self.hit_id,
+            "constraints": self.constraints,
         }
 
 

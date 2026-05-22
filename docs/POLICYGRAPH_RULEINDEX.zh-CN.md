@@ -102,13 +102,34 @@ RepoShield 的判断链路是：
 
 | 模块 | 作用 |
 | --- | --- |
+| `ActionGraph` | 将单步、复合命令和多步 tool call 表示为动作节点与数据流 / 控制流边 |
+| `SessionState` | 以脱敏摘要保存跨动作历史风险，例如 secret_taint、prior_external_sink、package_taint |
 | `FactKeyRegistry` | 声明可以进入索引和 UI 的事实键，包括值类型、索引策略、安全角色和中文说明 |
 | `FactNormalizer` | 将布尔、枚举、列表、数值区间统一成稳定 token |
 | `RuleCompiler V2` | 编译 DSL 规则，生成 `IndexHint` 和 `RuleSignature` |
 | `EvidenceIndex` | 维护 exact、presence、range、list、composite、residual 等索引结构 |
 | `RuleIndex` | 根据本次事实召回候选规则，并输出 `retrieval_trace` |
-| `PolicyGraph` | 执行谓词判断、不变量判断和决策格合并 |
+| `SemanticInvariantRegistry` | 以 typed facts 定义不可降级语义红线，保留旧 invariant id |
+| `ConstraintLattice` | 内部逐维合并执行、网络、数据、审批、持久化和审计约束 |
+| `PolicyGraph` | 执行谓词判断、不变量判断、约束格合并和公共决策映射 |
 | Studio Judgment View | 展示 facts、invariants、RuleIndex、predicates、lattice 和 why_text |
+
+## 兼容性保护
+
+- `ActionIR`、`PolicyDecision`、`ExecTrace`、`AuditEvent` 的旧字段保持可读；新增结构通过默认字段、`metadata` 或可选 view model 字段接入。
+- 审批链路保留 `action_hash_v1` 作为旧授权兼容校验，同时写入 `action_hash_v2` 表达可选 ActionGraph 绑定。
+- AuditLog 升级到 `audit-event-v2`，新增 `action_graph`、`session_state_update`、`constraint_lattice_trace`，旧事件仍由 Studio normalizer fallback 读取。
+- `REPOSHIELD_ENABLE_ACTION_GRAPH`、`REPOSHIELD_ENABLE_SESSION_STATE`、`REPOSHIELD_ENABLE_CONSTRAINT_LATTICE` 可用于回退到兼容行为。
+
+## 新增事实命名空间
+
+| 命名空间 | 示例 | 含义 |
+| --- | --- | --- |
+| `graph` | `graph.has_dataflow_edge`、`graph.node_count` | 动作图结构摘要 |
+| `flow` | `flow.secret_to_external`、`flow.secret_to_network_reachable` | 动作图和历史共同推导出的风险流 |
+| `history` | `history.secret_taint`、`history.prior_external_sink` | 跨动作脱敏历史摘要 |
+| `constraint` | `constraint.network_scope`、`constraint.data_scope` | 约束格内部维度 |
+| `exec` | `exec.network_attempts`、`exec.package_scripts` | 当前 ExecTrace 观察摘要 |
 
 ## RuleIndex 如何缩小候选规则
 

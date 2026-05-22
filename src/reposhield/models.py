@@ -195,6 +195,61 @@ class ActionIR:
     side_effect: bool = False
     command_parts: list[str] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
+    graph_id: str | None = None
+    sequence_no: int = 0
+    parent_action_id: str | None = None
+
+
+@dataclass(slots=True)
+class ActionNode:
+    node_id: str
+    action_id: str
+    semantic_action: str
+    tool: str
+    target: str | None
+    affected_assets: list[str]
+    source_ids: list[str]
+    side_effect: bool
+    confidence: float
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(slots=True)
+class ActionEdge:
+    edge_id: str
+    src_node_id: str
+    dst_node_id: str
+    relation: Literal["pipe", "sequence", "redirect", "dataflow", "controlflow", "memoryflow"]
+    evidence_refs: list[str] = field(default_factory=list)
+
+
+@dataclass(slots=True)
+class ActionGraph:
+    graph_id: str
+    run_id: str
+    root_action_id: str
+    raw_action_hash: str
+    nodes: list[ActionNode]
+    edges: list[ActionEdge]
+    parser_version: str
+    complete: bool = True
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(slots=True)
+class SessionState:
+    session_state_id: str
+    run_id: str
+    task_id: str | None
+    secret_taint: bool = False
+    touched_secret_assets: list[str] = field(default_factory=list)
+    untrusted_source_seen: bool = False
+    package_taint: bool = False
+    ci_taint: bool = False
+    prior_external_sinks: list[str] = field(default_factory=list)
+    approval_scope: dict[str, Any] = field(default_factory=dict)
+    last_decisions: list[str] = field(default_factory=list)
+    state_hash: str = ""
 
 
 @dataclass(slots=True)
@@ -275,6 +330,8 @@ class ApprovalRequest:
     observed_sandbox_risks: list[str]
     recommended_decision: Decision
     available_grants: list[str]
+    action_hash_v1: str = ""
+    action_hash_v2: str = ""
 
 
 @dataclass(slots=True)
@@ -287,6 +344,8 @@ class ApprovalGrant:
     constraints: list[str]
     expires_at: str
     granted_by: str = "local_user"
+    approved_action_hash_v1: str = ""
+    approved_action_hash_v2: str = ""
 
 
 @dataclass(slots=True)

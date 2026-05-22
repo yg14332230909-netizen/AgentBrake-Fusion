@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import asdict
 
 from ..contract import IntentMatcher
+from ..models import ActionGraph
 from .context import PolicyEvalContext
 from .facts import PolicyFact, PolicyFactSet
 from .indexes import AssetIndex, SourceIndex
@@ -51,6 +52,20 @@ class FactExtractor:
         )
         for tag in action.risk_tags:
             facts.append(PolicyFact.of("action", "risk_tag", tag, evidence_refs=[action.action_id]))
+
+        graph = _action_graph_from_metadata(action.metadata.get("action_graph"))
+        if graph:
+            graph_refs = [graph.graph_id, action.action_id]
+            has_dataflow = any(edge.relation in {"pipe", "redirect", "dataflow"} for edge in graph.edges)
+            has_sequence = len(graph.nodes) > 1 or any(edge.relation in {"sequence", "controlflow"} for edge in graph.edges)
+            facts.extend(
+                [
+                    PolicyFact.of("graph", "has_dataflow_edge", has_dataflow, evidence_refs=graph_refs, metadata={"edge_count": len(graph.edges)}),
+                    PolicyFact.of("graph", "has_sequence", has_sequence, evidence_refs=graph_refs, metadata={"node_count": len(graph.nodes)}),
+                    PolicyFact.of("graph", "node_count", len(graph.nodes), evidence_refs=graph_refs),
+                    PolicyFact.of("flow", "secret_to_external", _graph_secret_to_external(graph), evidence_refs=graph_refs),
+                ]
+            )
 
         touched = self._touched_paths(ctx)
         for path in touched:
@@ -104,6 +119,9 @@ class FactExtractor:
                     PolicyFact.of("sandbox", "network_attempts", bool(trace.network_attempts), evidence_refs=refs, metadata={"network_attempts": trace.network_attempts}),
                     PolicyFact.of("sandbox", "package_scripts", bool(trace.package_scripts), evidence_refs=refs, metadata={"package_scripts": trace.package_scripts}),
                     PolicyFact.of("sandbox", "risk_observed", trace.risk_observed, evidence_refs=refs),
+                    PolicyFact.of("exec", "network_attempts", bool(trace.network_attempts), evidence_refs=refs, metadata={"network_attempts": trace.network_attempts}),
+                    PolicyFact.of("exec", "package_scripts", bool(trace.package_scripts), evidence_refs=refs, metadata={"package_scripts": trace.package_scripts}),
+                    PolicyFact.of("exec", "trace_scope", trace.metadata.get("trace_scope", "current_action"), evidence_refs=refs),
                 ]
             )
             for item in trace.files_read:
@@ -126,6 +144,22 @@ class FactExtractor:
         if action.metadata.get("memory_authorization_denied"):
             facts.append(PolicyFact.of("memory", "authorization_denied", True, evidence_refs=[action.action_id], metadata={"denials": action.metadata["memory_authorization_denied"]}))
 
+        if ctx.session_state:
+            state = ctx.session_state
+            refs = [state.session_state_id, action.action_id]
+            facts.extend(
+                [
+                    PolicyFact.of("history", "secret_taint", state.secret_taint, evidence_refs=refs, metadata={"state_hash": state.state_hash}),
+                    PolicyFact.of("history", "untrusted_seen", state.untrusted_source_seen, evidence_refs=refs, metadata={"state_hash": state.state_hash}),
+                    PolicyFact.of("history", "package_taint", state.package_taint, evidence_refs=refs, metadata={"state_hash": state.state_hash}),
+                    PolicyFact.of("history", "ci_taint", state.ci_taint, evidence_refs=refs, metadata={"state_hash": state.state_hash}),
+                    PolicyFact.of("history", "approval_scope", bool(state.approval_scope), evidence_refs=refs, metadata={"approval_scope": state.approval_scope, "state_hash": state.state_hash}),
+                    PolicyFact.of("flow", "secret_to_network_reachable", state.secret_taint and action.semantic_action in NETWORK_ACTIONS, evidence_refs=refs),
+                ]
+            )
+            for sink in state.prior_external_sinks:
+                facts.append(PolicyFact.of("history", "prior_external_sink", sink, evidence_refs=refs, metadata={"state_hash": state.state_hash}))
+
         facts.append(PolicyFact.of("policy", "eval_context", asdict(ctx), evidence_refs=[action.action_id], metadata={"phase": ctx.phase}))
         return PolicyFactSet(facts)
 
@@ -139,3 +173,32 @@ class FactExtractor:
             paths.extend(ctx.exec_trace.files_written)
             paths.extend([f"env:{name}" if not str(name).startswith("env:") else str(name) for name in ctx.exec_trace.env_access])
         return list(dict.fromkeys([p for p in paths if p]))
+
+
+def _action_graph_from_metadata(value: object) -> ActionGraph | None:
+    if not isinstance(value, dict):
+        return None
+    try:
+        from ..models import ActionEdge, ActionNode
+
+        return ActionGraph(
+            graph_id=str(value["graph_id"]),
+            run_id=str(value.get("run_id") or "run_default"),
+            root_action_id=str(value.get("root_action_id") or ""),
+            raw_action_hash=str(value.get("raw_action_hash") or ""),
+            nodes=[ActionNode(**node) for node in value.get("nodes", [])],
+            edges=[ActionEdge(**edge) for edge in value.get("edges", [])],
+            parser_version=str(value.get("parser_version") or "action-graph-v1"),
+            complete=bool(value.get("complete", True)),
+            metadata=dict(value.get("metadata") or {}),
+        )
+    except Exception:
+        return None
+
+
+def _graph_secret_to_external(graph: ActionGraph) -> bool:
+    secret_nodes = {node.node_id for node in graph.nodes if node.semantic_action == "read_secret_file" or any("secret" in str(asset).lower() or ".env" in str(asset).lower() for asset in node.affected_assets)}
+    network_nodes = {node.node_id for node in graph.nodes if node.semantic_action == "send_network_request" or any(str(tag).startswith(("http", "attacker")) for tag in [node.target])}
+    if not secret_nodes or not network_nodes:
+        return False
+    return any(edge.src_node_id in secret_nodes and edge.dst_node_id in network_nodes for edge in graph.edges)

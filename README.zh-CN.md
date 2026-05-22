@@ -22,7 +22,7 @@ RepoShield 目前是 **强化后的研究原型 / 早期工程 MVP**。它适合
 最近本地验证：
 
 ```text
-pytest -q --basetemp=.pytest_tmp_run         -> 124 passed
+pytest -q --basetemp=.pytest_tmp_run         -> 136 passed
 python -m compileall -q src tests            -> passed
 ruff check src tests                         -> passed
 cd web/studio && npm run build               -> passed
@@ -66,6 +66,17 @@ R-MPF 全称为 **Repository-aware Multi-Evidence Policy Fusion**，即“仓库
 - **Invariant non-downgrade**：不可降级安全门命中后，普通策略不能把结果降级为直接放行。
 - **Indexed retrieval soundness**：RuleIndex 可以多召回，但不能漏召回；测试验证索引候选与全量扫描命中等价。
 - **Decision monotonicity**：更强证据或更高风险规则只会让决策格保持或升级到更严格决策。
+
+### 兼容性升级
+
+当前实现遵守“不推翻旧系统”的原则，在保留 `ActionIR`、`PolicyDecision`、`ExecTrace`、AuditLog 和五类外部决策的同时，新增了下一代内部模型：
+
+- **ActionGraph**：普通动作自动变成单节点图；复合命令保留 sequence、pipe、redirect、dataflow、controlflow 边。
+- **SessionState / HistorySummary**：`ExecTrace` 继续表示当前动作预检，`SessionState` 只保存脱敏历史摘要，例如 `secret_taint`、历史外部 sink、依赖风险和 CI 风险。
+- **SemanticInvariantRegistry**：不可降级红线迁移为版本化语义不变量，旧 ID 如 `INV-SECRET-001`、`INV-EGRESS-001` 保持稳定。
+- **ConstraintLattice**：内部用执行环境、网络范围、数据范围、人工门禁、持久化和审计范围做逐维 join，最后仍映射回五类公开决策。
+- **兼容保护**：审批同时保留稳定的 `action_hash_v1` 与可绑定动作图的 `action_hash_v2`；AuditLog 使用 `audit-event-v2`，并新增 `action_graph`、`session_state_update`、`constraint_lattice_trace` 事件。
+- **Feature flags**：`REPOSHIELD_ENABLE_ACTION_GRAPH`、`REPOSHIELD_ENABLE_SESSION_STATE`、`REPOSHIELD_ENABLE_CONSTRAINT_LATTICE` 可用于回退。
 
 ## 已完成能力
 

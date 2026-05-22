@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from ..action_graph import ensure_action_graph
 from ..action_parser import ActionParser
 from ..models import ActionIR
 from .schema import InstructionIR
@@ -33,4 +34,5 @@ class InstructionLowerer:
             action.risk = "high" if canonical_tool == "memory_write" else "medium"
             action.risk_tags = list(dict.fromkeys([*action.risk_tags, "memory", canonical_tool]))
             action.requires = list(dict.fromkeys([*action.requires, "memory_policy"]))
+        ensure_action_graph(action, run_id=instruction.trace_id)
         return action

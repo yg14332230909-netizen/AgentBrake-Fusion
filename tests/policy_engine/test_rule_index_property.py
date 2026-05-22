@@ -7,10 +7,14 @@ from reposhield.policy_engine.rule_index import RuleIndex
 
 FACT_DOMAINS = {
     "action.semantic_action": ["run_tests", "send_network_request", "edit_source_file", "install_git_dependency"],
+    "action.network_capability": [True, False],
     "source.has_untrusted": [True, False],
     "contract.match": ["match", "partial_match", "violation", "unknown"],
     "package.source": ["registry", "git_url", "tarball_url"],
     "asset.touched_type": ["source_file", "secret_file", "ci_workflow"],
+    "graph.has_dataflow_edge": [True, False],
+    "flow.secret_to_external": [True, False],
+    "history.secret_taint": [True, False],
 }
 
 
@@ -59,9 +63,13 @@ def _random_rule(rng: random.Random, case: int, idx: int) -> dict[str, object]:
 def _random_facts(rng: random.Random) -> PolicyFactSet:
     facts = [
         PolicyFact.of("action", "semantic_action", rng.choice(FACT_DOMAINS["action.semantic_action"])),
+        PolicyFact.of("action", "network_capability", rng.choice(FACT_DOMAINS["action.network_capability"])),
         PolicyFact.of("source", "has_untrusted", rng.choice(FACT_DOMAINS["source.has_untrusted"])),
         PolicyFact.of("contract", "match", rng.choice(FACT_DOMAINS["contract.match"])),
         PolicyFact.of("package", "source", rng.choice(FACT_DOMAINS["package.source"])),
+        PolicyFact.of("graph", "has_dataflow_edge", rng.choice(FACT_DOMAINS["graph.has_dataflow_edge"])),
+        PolicyFact.of("flow", "secret_to_external", rng.choice(FACT_DOMAINS["flow.secret_to_external"])),
+        PolicyFact.of("history", "secret_taint", rng.choice(FACT_DOMAINS["history.secret_taint"])),
     ]
     touched = rng.sample(FACT_DOMAINS["asset.touched_type"], k=rng.randint(1, 2))
     facts.append(PolicyFact.of("asset", "touched_type", touched))

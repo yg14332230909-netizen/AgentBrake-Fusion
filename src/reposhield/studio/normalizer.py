@@ -15,6 +15,9 @@ PHASES = {
     "gateway_post_call": "model",
     "instruction_ir": "instruction",
     "action_parsed": "action",
+    "action_graph": "action",
+    "session_state_update": "policy",
+    "constraint_lattice_trace": "policy",
     "secret_event": "evidence",
     "package_event": "evidence",
     "mcp_invocation": "evidence",
@@ -147,6 +150,11 @@ def build_action_detail(events: list[StudioEvent], action_id: str) -> ActionDeta
                 "predicate_nodes": list(event.payload.get("predicate_nodes") or []),
                 "rule_nodes": list(event.payload.get("rule_nodes") or []),
                 "lattice_nodes": list(event.payload.get("lattice_nodes") or []),
+                "retrieval_nodes": list(event.payload.get("retrieval_nodes") or []),
+                "action_graph_nodes": list(event.payload.get("action_graph_nodes") or []),
+                "history_nodes": list(event.payload.get("history_nodes") or []),
+                "constraint_nodes": list(event.payload.get("constraint_nodes") or []),
+                "invariant_nodes": list(event.payload.get("invariant_nodes") or []),
                 "edges": list(event.payload.get("edges") or []),
             }
         detail.evidence_events.append(event.to_dict())
@@ -195,6 +203,10 @@ def judgment_view_model(detail: ActionDetail) -> dict[str, Any]:
             "rule_nodes": rule_nodes,
             "lattice_nodes": list(trace.get("lattice_nodes") or []),
             "retrieval_nodes": list(trace.get("retrieval_nodes") or []),
+            "action_graph_nodes": list(trace.get("action_graph_nodes") or []),
+            "history_nodes": list(trace.get("history_nodes") or []),
+            "constraint_nodes": list(trace.get("constraint_nodes") or []),
+            "invariant_nodes": list(trace.get("invariant_nodes") or []),
             "edges": list(trace.get("edges") or []),
         },
         "final_decision": final_decision,
@@ -206,6 +218,7 @@ def judgment_view_model(detail: ActionDetail) -> dict[str, Any]:
         "retrieval_trace": trace.get("retrieval_trace") or (trace.get("skipped_rules_summary") or {}).get("retrieval_trace") or {},
         "policy_eval_trace_id": trace.get("policy_eval_trace_id"),
         "fact_hash": trace.get("fact_hash") or detail.policy_fact_set.get("fact_hash"),
+        "constraints": _constraints_from_decision(decision),
     }
 
 
@@ -238,6 +251,13 @@ def _predicate_matrix(trace: dict[str, Any]) -> list[dict[str, Any]]:
 def _candidate_rules(trace: dict[str, Any], rule_nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
     candidate_count = int((trace.get("skipped_rules_summary") or {}).get("candidate_rules") or len(rule_nodes))
     return [{"rule_id": rule.get("rule_id") or rule.get("id"), **rule} for rule in rule_nodes] or [{"rule_id": f"candidate_{idx + 1}"} for idx in range(candidate_count)]
+
+
+def _constraints_from_decision(decision: dict[str, Any]) -> dict[str, Any]:
+    for trace in reversed(decision.get("rule_trace", []) or []):
+        if isinstance(trace, dict) and isinstance(trace.get("constraints"), dict):
+            return dict(trace["constraints"])
+    return {}
 
 
 def _judgment_evidence_groups(detail: ActionDetail, fact_nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -397,6 +417,12 @@ def _span_id(event_type: str, payload: dict[str, Any], event: dict[str, Any], in
         return str(payload.get("secret_event_id") or event.get("event_id") or f"secret_{index}")
     if event_type == "gateway_approval_request":
         return str(payload.get("approval_request_id") or event.get("event_id") or f"approval_{index}")
+    if event_type == "action_graph":
+        return str(payload.get("graph_id") or event.get("event_id") or f"action_graph_{index}")
+    if event_type == "constraint_lattice_trace":
+        return str(event.get("event_id") or f"constraint_lattice_{index}")
+    if event_type == "session_state_update":
+        return str(payload.get("session_state_id") or event.get("event_id") or f"session_state_{index}")
     return str(event.get("action_id") or payload.get("action_id") or event.get("decision_id") or payload.get("decision_id") or event.get("event_id") or f"event_{index}")
 
 

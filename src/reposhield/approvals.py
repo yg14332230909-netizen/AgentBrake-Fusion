@@ -10,7 +10,7 @@ from typing import Any
 from .models import ActionIR, ApprovalGrant, ApprovalRequest, ContextGraph, ExecTrace, PolicyDecision, TaskContract, new_id, sha256_json
 
 
-def stable_action_hash(action: ActionIR, task_id: str | None = None) -> str:
+def stable_action_hash_v1(action: ActionIR, task_id: str | None = None) -> str:
     """Hash logical action identity without volatile parse ids."""
     return sha256_json(
         {
@@ -24,6 +24,25 @@ def stable_action_hash(action: ActionIR, task_id: str | None = None) -> str:
             "file_path": action.metadata.get("file_path") or (action.affected_assets[0] if action.affected_assets else None),
         }
     )
+
+
+def stable_action_hash_v2(action: ActionIR, task_id: str | None = None) -> str:
+    """Hash action identity plus optional graph binding while preserving v1 grants."""
+    graph = action.metadata.get("action_graph") if isinstance(action.metadata.get("action_graph"), dict) else {}
+    return sha256_json(
+        {
+            "v1": stable_action_hash_v1(action, task_id),
+            "graph_id": action.graph_id or action.metadata.get("action_graph_id"),
+            "graph_node_count": len(graph.get("nodes") or []),
+            "graph_edge_relations": sorted(edge.get("relation") for edge in (graph.get("edges") or []) if isinstance(edge, dict)),
+            "sequence_no": action.sequence_no,
+            "parent_action_id": action.parent_action_id,
+        }
+    )
+
+
+def stable_action_hash(action: ActionIR, task_id: str | None = None) -> str:
+    return stable_action_hash_v1(action, task_id)
 
 
 class ApprovalCenter:
@@ -43,7 +62,8 @@ class ApprovalCenter:
     ) -> ApprovalRequest:
         self.created_requests += 1
         plan_hash = sha256_json(plan or {"task_id": contract.task_id, "goal": contract.goal})
-        action_hash = stable_action_hash(action, contract.task_id)
+        action_hash_v1 = stable_action_hash_v1(action, contract.task_id)
+        action_hash_v2 = stable_action_hash_v2(action, contract.task_id)
         source_influence = []
         for sid in action.source_ids:
             src = context_graph.get(sid)
@@ -53,13 +73,15 @@ class ApprovalCenter:
             task_id=contract.task_id,
             action_id=action.action_id,
             plan_hash=plan_hash,
-            action_hash=action_hash,
+            action_hash=action_hash_v1,
             human_readable_summary=f"{action.semantic_action}: {action.raw_action}",
             source_influence=source_influence,
             affected_assets=action.affected_assets,
             observed_sandbox_risks=exec_trace.risk_observed if exec_trace else [],
             recommended_decision=decision.decision,
             available_grants=["deny", "allow_once_sandbox_only", "allow_once_no_network", "allow_once_no_lifecycle", "allow_temporarily_with_constraints"],
+            action_hash_v1=action_hash_v1,
+            action_hash_v2=action_hash_v2,
         )
 
     def grant(self, request: ApprovalRequest, constraints: list[str] | None = None, minutes: int = 30, granted_by: str = "local_user") -> ApprovalGrant:
@@ -74,6 +96,8 @@ class ApprovalCenter:
             constraints=constraints or ["sandbox_only", "no_network"],
             expires_at=expires.isoformat(timespec="seconds"),
             granted_by=granted_by,
+            approved_action_hash_v1=request.action_hash_v1 or request.action_hash,
+            approved_action_hash_v2=request.action_hash_v2,
         )
 
     def deny(self, request: ApprovalRequest) -> dict[str, str]:
@@ -85,8 +109,15 @@ class ApprovalCenter:
         expires = datetime.fromisoformat(grant.expires_at)
         if now > expires:
             return False, "approval_expired"
-        action_hash = stable_action_hash(action, contract.task_id if contract else grant.task_id)
-        if action_hash != grant.approved_action_hash:
+        task_id = contract.task_id if contract else grant.task_id
+        action_hash_v1 = stable_action_hash_v1(action, task_id)
+        action_hash_v2 = stable_action_hash_v2(action, task_id)
+        approved_hashes = {grant.approved_action_hash}
+        if grant.approved_action_hash_v1:
+            approved_hashes.add(grant.approved_action_hash_v1)
+        if grant.approved_action_hash_v2:
+            approved_hashes.add(grant.approved_action_hash_v2)
+        if action_hash_v1 not in approved_hashes and action_hash_v2 not in approved_hashes:
             return False, "action_hash_mismatch"
         if plan is not None:
             plan_hash = sha256_json(plan)
@@ -162,7 +193,13 @@ class ApprovalStore:
             if event.get("event_type") != "grant":
                 continue
             payload = event.get("payload", {})
-            if payload.get("approved_action_hash") == stable_action_hash(action, payload.get("task_id")):
+            action_hashes = {stable_action_hash_v1(action, payload.get("task_id")), stable_action_hash_v2(action, payload.get("task_id"))}
+            approved_hashes = {
+                payload.get("approved_action_hash"),
+                payload.get("approved_action_hash_v1"),
+                payload.get("approved_action_hash_v2"),
+            }
+            if action_hashes & {h for h in approved_hashes if h}:
                 grants.append(ApprovalGrant(**payload))
         return grants
 

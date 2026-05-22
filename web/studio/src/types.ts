@@ -70,6 +70,10 @@ export interface PolicyCausalGraph {
   rule_nodes?: Array<Record<string, unknown>>;
   lattice_nodes?: Array<Record<string, unknown>>;
   retrieval_nodes?: Array<Record<string, unknown>>;
+  action_graph_nodes?: Array<Record<string, unknown>>;
+  history_nodes?: Array<Record<string, unknown>>;
+  constraint_nodes?: Array<Record<string, unknown>>;
+  invariant_nodes?: Array<Record<string, unknown>>;
   edges?: Array<Record<string, unknown>>;
 }
 
@@ -83,6 +87,7 @@ export interface PolicyEvalTrace extends PolicyCausalGraph {
   invariant_hits?: string[];
   decision_lattice_path?: Array<Record<string, unknown>>;
   skipped_rules_summary?: Record<string, unknown>;
+  constraints?: Record<string, unknown>;
 }
 
 export type JudgmentSourceModule =
@@ -132,6 +137,7 @@ export interface JudgmentTraceViewModel {
   why_text: string;
   skipped_rules_summary?: Record<string, unknown>;
   retrieval_trace?: Record<string, unknown>;
+  constraints?: Record<string, unknown>;
   policy_eval_trace_id?: string;
   fact_hash?: string;
 }

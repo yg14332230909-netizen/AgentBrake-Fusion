@@ -10,6 +10,7 @@ from ..models import (
     PackageEvent,
     RepoAssetGraph,
     SecretTaintEvent,
+    SessionState,
     TaskContract,
 )
 
@@ -24,3 +25,4 @@ class PolicyEvalContext:
     secret_event: SecretTaintEvent | None = None
     exec_trace: ExecTrace | None = None
     phase: str = "pre_decide"
+    session_state: SessionState | None = None
