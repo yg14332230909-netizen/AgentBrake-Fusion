@@ -1210,9 +1210,32 @@ h3 {
   font-size: 13px;
 }
 
+.judgment-node small {
+  color: #667085;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 .judgment-node.fact {
   border-color: #b2ddff;
   background: var(--blue-bg);
+}
+
+.judgment-node.graph,
+.judgment-node.history {
+  border-color: #abefc6;
+  background: #f6fef9;
+}
+
+.judgment-node.retrieval,
+.judgment-node.predicate {
+  border-color: #d6bbfb;
+  background: #f9f5ff;
+}
+
+.judgment-node.constraint {
+  border-color: #a6f4c5;
+  background: #ecfdf3;
 }
 
 .judgment-node.rule,
@@ -1228,6 +1251,64 @@ h3 {
 
 .judgment-node.active {
   outline: 3px solid rgba(180, 35, 24, .28);
+}
+
+.causal-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.causal-legend span {
+  padding: 5px 8px;
+  border: 1px solid #d0d5dd;
+  border-radius: 999px;
+  background: #fff;
+  color: #475467;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.causal-inspector {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.2fr) minmax(180px, 1fr) minmax(180px, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.causal-inspector > div {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.causal-inspector h4 {
+  margin: 2px 0 6px;
+  overflow-wrap: anywhere;
+}
+
+.causal-inspector p {
+  margin: 0;
+  color: #475467;
+  line-height: 1.55;
+}
+
+.causal-edge-list {
+  display: grid;
+  gap: 7px;
+}
+
+.causal-edge-list b {
+  color: #344054;
+}
+
+.causal-edge-list span {
+  color: #475467;
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .judgment-empty {

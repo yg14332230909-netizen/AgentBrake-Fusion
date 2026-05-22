@@ -28,6 +28,19 @@ export const factLabels: Record<string, string> = {
   "sandbox.observation": "沙箱观察结果",
   "mcp.capability": "MCP 能力",
   "memory.authorization": "记忆授权状态",
+  "graph.has_dataflow_edge": "是否存在数据流关系",
+  "graph.has_sequence": "是否存在多步骤顺序",
+  "graph.node_count": "动作步骤数量",
+  "flow.secret_to_external": "是否存在密钥外传路径",
+  "flow.secret_to_network_reachable": "历史密钥风险是否连到网络动作",
+  "history.secret_taint": "历史是否触碰过密钥",
+  "history.untrusted_seen": "历史是否出现低可信来源",
+  "history.package_taint": "历史是否出现依赖风险",
+  "history.ci_taint": "历史是否出现 CI 风险",
+  "history.prior_external_sink": "历史外部目标",
+  "constraint.execution_env": "执行环境约束",
+  "constraint.network_scope": "网络访问约束",
+  "constraint.data_scope": "数据访问约束",
 };
 
 const valueLabels: Record<string, string> = {
