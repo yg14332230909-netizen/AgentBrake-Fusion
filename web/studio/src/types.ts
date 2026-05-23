@@ -179,3 +179,19 @@ export interface BenchReport {
   metrics: Record<string, unknown>;
   samples: Array<Record<string, unknown>>;
 }
+
+export interface CoverageRow {
+  capability: string;
+  declared: boolean;
+  verified: boolean;
+  status: "protected" | "partial" | "missing" | string;
+  evidence: string;
+}
+
+export interface CoverageReport {
+  ok: boolean;
+  mode: string;
+  missing: string[];
+  matrix: CoverageRow[];
+  config_path?: string;
+}

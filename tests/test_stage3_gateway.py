@@ -410,6 +410,36 @@ def test_serve_gateway_rejects_missing_authorization(tmp_path: Path):
     assert any(e["event_type"] == "rejected_gateway_request" for e in events)
 
 
+def test_serve_gateway_returns_run_id_header(tmp_path: Path):
+    repo = make_repo(tmp_path)
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        port = sock.getsockname()[1]
+    thread = threading.Thread(
+        target=serve_gateway,
+        kwargs={"repo_root": repo, "host": "127.0.0.1", "port": port, "audit_path": tmp_path / "audit.jsonl"},
+        daemon=True,
+    )
+    thread.start()
+    time.sleep(0.25)
+    req = Request(
+        f"http://127.0.0.1:{port}/v1/chat/completions",
+        data=json.dumps(
+            {
+                "messages": [{"role": "user", "content": "fix login"}],
+                "metadata": {"reposhield_run_id": "run_http_header_test", "conversation_id": "conv_http_header_test"},
+            }
+        ).encode("utf-8"),
+        headers={"Content-Type": "application/json", "Authorization": "Bearer reposhield-local"},
+        method="POST",
+    )
+    with urlopen(req, timeout=5) as resp:
+        body = json.loads(resp.read().decode("utf-8"))
+        assert resp.headers["X-RepoShield-Run-Id"] == "run_http_header_test"
+        assert resp.headers["X-RepoShield-Trace-Id"] == "run_http_header_test"
+    assert body["reposhield"]["trace_id"] == "run_http_header_test"
+
+
 def test_gateway_non_loopback_requires_explicit_token(tmp_path: Path, monkeypatch):
     repo = make_repo(tmp_path)
     monkeypatch.delenv("REPOSHIELD_GATEWAY_API_KEY", raising=False)
@@ -454,6 +484,7 @@ def test_serve_gateway_streaming_sends_prelude_before_slow_upstream(tmp_path: Pa
     )
     start = time.monotonic()
     with urlopen(req, timeout=5) as resp:
+        assert resp.headers["X-RepoShield-Run-Id"]
         first_line = resp.readline()
         elapsed = time.monotonic() - start
         rest = resp.read().decode("utf-8")

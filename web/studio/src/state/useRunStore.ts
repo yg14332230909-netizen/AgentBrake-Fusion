@@ -1,7 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { studioApi } from "../api/client";
 import { subscribeToAllEvents } from "../api/events";
-import type { ActionDetail, ApprovalEvent, BenchReport, GraphEdge, GraphNode, JudgmentTraceViewModel, RunSummary, ScenarioSpec, StudioEvent } from "../types";
+import type {
+  ActionDetail,
+  ApprovalEvent,
+  BenchReport,
+  CoverageReport,
+  GraphEdge,
+  GraphNode,
+  JudgmentTraceViewModel,
+  RunSummary,
+  ScenarioSpec,
+  StudioEvent,
+} from "../types";
 
 export function useRunStore() {
   const [runs, setRuns] = useState<RunSummary[]>([]);
@@ -14,6 +25,7 @@ export function useRunStore() {
   const [scenarios, setScenarios] = useState<ScenarioSpec[]>([]);
   const [approvals, setApprovals] = useState<ApprovalEvent[]>([]);
   const [bench, setBench] = useState<BenchReport>({ metrics: {}, samples: [] });
+  const [coverage, setCoverage] = useState<CoverageReport>({ ok: false, mode: "unknown", missing: [], matrix: [] });
   const [health, setHealth] = useState<{ version: string; demo_mode: boolean } | null>(null);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<number | null>(null);
   const [liveStatus, setLiveStatus] = useState<"syncing" | "live" | "error">("syncing");
@@ -46,16 +58,18 @@ export function useRunStore() {
   }, []);
 
   const refreshSecondary = useCallback(async () => {
-    const [healthResult, scenarioResult, approvalResult, benchResult] = await Promise.all([
+    const [healthResult, scenarioResult, approvalResult, benchResult, coverageResult] = await Promise.all([
       studioApi.health(),
       studioApi.scenarios(),
       studioApi.approvals(),
       studioApi.bench(),
+      studioApi.coverage(),
     ]);
     setHealth({ version: healthResult.version, demo_mode: healthResult.demo_mode });
     setScenarios(scenarioResult.scenarios);
     setApprovals(approvalResult.events);
     setBench(benchResult);
+    setCoverage(coverageResult);
     setLastUpdatedAt(Date.now());
   }, []);
 
@@ -192,6 +206,7 @@ export function useRunStore() {
     scenarios,
     approvals,
     bench,
+    coverage,
     health,
     lastUpdatedAt,
     liveStatus,

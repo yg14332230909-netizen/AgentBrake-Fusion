@@ -8,6 +8,24 @@ Short version:
 RepoShield = a pre-execution safety gate for coding agents
 ```
 
+## Formal Agent Integration
+
+RepoShield now provides a simplified real-agent onboarding path:
+
+```bash
+reposhield connect --repo . --agent codex --mode quick
+reposhield connect --repo . --agent codex --mode standard
+reposhield connect --repo . --agent openclaw --mode full
+reposhield doctor --repo .
+reposhield coverage --repo .
+```
+
+- **Quick**: Gateway + generated `.reposhield/config.yaml`, `agent.env`, and agent instructions.
+- **Standard**: Quick + guarded tool shims for shell, package-manager, Python, and Git commands.
+- **Full**: Standard + Studio, Approval API, and a generated demo request package.
+
+Multi-turn agents must pass a stable `metadata.reposhield_run_id` and `metadata.conversation_id` on every turn. RepoShield also returns `X-RepoShield-Run-Id` from the Gateway so clients can confirm which run was resolved.
+
 ## 核心算法：多源证据综合判断算法（R-MPF）
 
 RepoShield's core decision procedure is the **多源证据综合判断算法

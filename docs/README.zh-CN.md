@@ -12,21 +12,33 @@ RepoShield 是 coding agent 的执行前安全治理网关。它可以作为 Ope
    如何启动实时前端，以及如何在界面中解释证据图谱、策略判断、审批和沙箱证据。
 4. [真实 Agent 接入指南](REAL_AGENT_INTEGRATION.zh-CN.md)  
    Gateway、exec-guard、tool call 解析和 OpenClaw / OpenHands / Aider 接入方式。
-5. [Gateway 指南](GATEWAY_GUIDE.zh-CN.md)  
+5. [正式智能体接入简化指南](FORMAL_AGENT_INTEGRATION.zh-CN.md)  
+   `reposhield connect / start / doctor / coverage`、Quick / Standard / Full 模式和稳定 run_id / conversation_id 要求。
+6. [Gateway 指南](GATEWAY_GUIDE.zh-CN.md)  
    OpenAI-compatible Gateway、认证、上游转发、streaming 和 release mode。
-6. [Policy Pack / PolicyGraph 规则指南](POLICY_PACK_GUIDE.zh-CN.md)  
+7. [Policy Pack / PolicyGraph 规则指南](POLICY_PACK_GUIDE.zh-CN.md)  
    决策语义、runtime 模式、YAML 规则、`index_hints` 和验证方式。
-7. [项目状态与商用化评估](PROJECT_STATUS.zh-CN.md)  
+8. [项目状态与商用化评估](PROJECT_STATUS.zh-CN.md)  
    当前成熟度、已完成能力、剩余差距和路线图。
 
 ## 接入与扩展
 
+- [正式智能体接入简化指南](FORMAL_AGENT_INTEGRATION.zh-CN.md)  
+  `connect / start / doctor / coverage`、Quick / Standard / Full 和稳定会话身份。
 - [Adapter 指南](ADAPTER_GUIDE.zh-CN.md)  
   如何把外部 coding agent 的 plan、transcript、tool call 转换为 RepoShield 可治理的 action。
 - [Tool Parser Plugin 指南](TOOL_PARSER_PLUGIN_GUIDE.zh-CN.md)  
   如何为 OpenAI、Anthropic、Cline、OpenClaw、OpenHands、Aider 等 tool schema 增加 parser mapping。
 - [Agent exec-guard recipes](AGENT_EXEC_GUARD_RECIPES.zh-CN.md)  
   常见 agent 的 shell 工具接入方式。
+- Agent 专用模板：  
+  [custom-openai-compatible](integrations/custom-openai-compatible.md)、
+  [openclaw](integrations/openclaw.md)、
+  [cline](integrations/cline.md)、
+  [openhands](integrations/openhands.md)、
+  [aider](integrations/aider.md)、
+  [codex-cli](integrations/codex-cli.md)、
+  [claude-code](integrations/claude-code.md)。
 - [使用指南](USAGE.zh-CN.md)  
   常见 CLI 命令和本地运行方式。
 

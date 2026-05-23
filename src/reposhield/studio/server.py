@@ -15,6 +15,8 @@ from urllib.parse import parse_qs, unquote, urlparse
 
 from ..approval_api import approval_events_summary
 from ..approvals import ApprovalCenter, ApprovalStore
+from ..integration.coverage import build_coverage_report, filesystem_checks
+from ..integration.templates import load_config
 from ..models import ApprovalRequest
 from .event_stream import StudioEventIndex
 from .evidence_exporter import export_evidence
@@ -106,6 +108,9 @@ def serve_studio_pro(
                 return
             if path == "/api/bench/latest":
                 self._json(_load_bench(bench_path))
+                return
+            if path == "/api/coverage":
+                self._json(_coverage(repo))
                 return
             if path.startswith("/api/export/evidence/"):
                 run_id = unquote(path.split("/")[-1])
@@ -278,6 +283,16 @@ def _load_bench(path: Path | None) -> dict[str, Any]:
     if not path or not path.exists():
         return {"metrics": {}, "samples": []}
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _coverage(repo: Path) -> dict[str, Any]:
+    config_path = repo / ".reposhield" / "config.yaml"
+    if not config_path.exists():
+        return {"ok": False, "missing": ["config"], "matrix": [], "config_path": str(config_path)}
+    config = load_config(config_path)
+    report = build_coverage_report(config, filesystem_checks(config))
+    report["config_path"] = str(config_path)
+    return report
 
 
 def _static_root() -> Path:

@@ -53,7 +53,15 @@ def resolve_session_identity(
             _derive_run_id(repo_root, text, client_id), text, turn_id, client_id, task_id, "derived.request_conversation"
         )
     if client_id:
-        return SessionIdentity(_derive_run_id(repo_root, "", client_id), conversation_id, turn_id, client_id, task_id, "derived.client")
+        message_hash = _first_user_message_hash(request)
+        return SessionIdentity(
+            _derive_run_id(repo_root, message_hash, client_id),
+            conversation_id,
+            turn_id,
+            client_id,
+            task_id,
+            "derived.client_message" if message_hash else "derived.client",
+        )
     return SessionIdentity(
         str(request.get("trace_id") or request.get("request_id") or new_id("gw_trace")),
         conversation_id,
@@ -91,3 +99,13 @@ def _derive_run_id(repo_root: str | Path, conversation_id: str, client_id: str |
         "client_id": client_id or "",
     }
     return "run_" + sha256_json(seed).removeprefix("sha256:")[:16]
+
+
+def _first_user_message_hash(request: dict[str, Any]) -> str:
+    messages = request.get("messages")
+    if not isinstance(messages, list):
+        return ""
+    for message in messages:
+        if isinstance(message, dict) and message.get("role") == "user":
+            return sha256_json({"content": message.get("content")}).removeprefix("sha256:")[:16]
+    return ""

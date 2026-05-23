@@ -330,8 +330,14 @@ def serve_gateway(
             self.wfile.flush()
 
         def _serve_streaming_chat_completion(self, request: dict[str, Any]) -> None:
-            trace_id = str(request.get("trace_id") or new_id("gw_trace"))
+            identity = resolve_session_identity(
+                request=request,
+                repo_root=gateway.repo_root,
+                headers=request.get("_headers") if isinstance(request.get("_headers"), dict) else None,
+            )
+            trace_id = identity.run_id
             request["trace_id"] = trace_id
+            request.setdefault("metadata", {})["reposhield_run_id"] = trace_id
             stream_id = new_id("chatcmpl")
             created = int(time.time())
             self.send_response(200)
@@ -339,6 +345,7 @@ def serve_gateway(
             self.send_header("Cache-Control", "no-cache")
             self.send_header("Connection", "close")
             self.send_header("X-RepoShield-Trace-Id", trace_id)
+            self.send_header("X-RepoShield-Run-Id", trace_id)
             self.end_headers()
             self._write_sse_data(
                 {
@@ -447,6 +454,8 @@ def serve_gateway(
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json; charset=utf-8")
                 self.send_header("Content-Length", str(len(data)))
+                self.send_header("X-RepoShield-Trace-Id", str(result["trace_id"]))
+                self.send_header("X-RepoShield-Run-Id", str(result["trace_id"]))
                 self.end_headers()
                 self.wfile.write(data)
             except Exception as exc:  # pragma: no cover - demo server only

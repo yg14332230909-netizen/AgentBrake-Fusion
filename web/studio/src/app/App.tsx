@@ -6,6 +6,7 @@ import { TokenControl } from "../components/TokenControl";
 import { ApprovalCenter } from "../routes/ApprovalCenter";
 import { AttackLab } from "../routes/AttackLab";
 import { BenchReportView } from "../routes/BenchReport";
+import { CoverageMatrix } from "../routes/CoverageMatrix";
 import { RunCockpit } from "../routes/RunCockpit";
 import { SandboxEvidence } from "../routes/SandboxEvidence";
 import { TraceGraph } from "../routes/TraceGraph";
@@ -14,11 +15,12 @@ import { PolicyJudgment } from "../routes/PolicyJudgment";
 import { useRunStore } from "../state/useRunStore";
 import { runSubtitle, runTitle, shortId } from "../components/displayText";
 
-type Tab = "cockpit" | "attack" | "graph" | "judgment" | "policy" | "approvals" | "sandbox" | "bench";
+type Tab = "cockpit" | "attack" | "coverage" | "graph" | "judgment" | "policy" | "approvals" | "sandbox" | "bench";
 
 const tabs: Array<[Tab, string]> = [
   ["cockpit", "本次运行"],
   ["attack", "攻击演示"],
+  ["coverage", "保护矩阵"],
   ["graph", "安全决策追踪图"],
   ["judgment", "综合判断"],
   ["policy", "拦截原因"],
@@ -112,7 +114,7 @@ export function App() {
               </div>
               <button onClick={exportEvidence}>导出证据包</button>
             </div>
-            {!store.runs.length && tab !== "attack" ? (
+            {!store.runs.length && tab !== "attack" && tab !== "coverage" ? (
               <div className="empty-guide">
                 <h3>当前还没有代理请求</h3>
                 <p>这是一个干净的初始状态。你可以先进入“攻击演示”运行一个样本，或把真实网关审计日志接入当前服务。</p>
@@ -126,6 +128,7 @@ export function App() {
               </div>
             )}
             {tab === "attack" && <AttackLab scenarios={store.scenarios} runs={store.runs} onRunScenario={store.runScenario} onOpenRun={store.selectRun} />}
+            {tab === "coverage" && <CoverageMatrix coverage={store.coverage} />}
             {tab === "graph" && <TraceGraph nodes={store.graph.nodes} edges={store.graph.edges} activeActionId={store.selectedActionId} onInspectAction={store.inspectAction} />}
             {tab === "judgment" && <PolicyJudgment judgment={store.actionJudgment} events={store.events} onInspectAction={store.inspectAction} />}
             {tab === "policy" && <PolicyDebugger events={store.events} />}
