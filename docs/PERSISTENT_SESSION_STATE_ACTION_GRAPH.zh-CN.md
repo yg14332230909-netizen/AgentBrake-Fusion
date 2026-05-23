@@ -90,6 +90,8 @@ metadata: dict[str, Any] = field(default_factory=dict)
 - `flow.secret_to_network_reachable`
 - `history.loaded_from_persistent`
 - `history.state_hash`
+- `history.restore_source`
+- `history.state_age_seconds`
 - `trace.enriched_graph`
 
 Bench suite 同步新增聚合指标：

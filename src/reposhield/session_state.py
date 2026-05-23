@@ -111,6 +111,7 @@ class PersistentSessionStateStore(SessionStateStore):
                 if task_id:
                     state.task_id = task_id
                 state.approval_scope["restore_source"] = "file"
+                state.approval_scope["updated_at"] = record.get("timestamp")
                 latest = state
         return latest
 
@@ -129,6 +130,7 @@ class PersistentSessionStateStore(SessionStateStore):
                 if task_id:
                     state.task_id = task_id
                 state.approval_scope["restore_source"] = "audit"
+                state.approval_scope["updated_at"] = event.get("timestamp")
                 latest = state
         return latest
 
@@ -139,6 +141,8 @@ class PersistentSessionStateStore(SessionStateStore):
         action_id: str | None = None,
         decision_id: str | None = None,
     ) -> dict[str, Any]:
+        timestamp = str(state.approval_scope.get("updated_at") or utc_now())
+        state.approval_scope["updated_at"] = timestamp
         state = _finalise(_sanitize_state(state, self.max_history_items))
         key = (state.run_id, state.task_id, action_id, decision_id, state.state_hash)
         if key in self._written_keys:
@@ -149,7 +153,7 @@ class PersistentSessionStateStore(SessionStateStore):
         record_without_hash = {
             "schema_version": "session-state-v1",
             "record_id": new_id("srec"),
-            "timestamp": utc_now(),
+            "timestamp": timestamp,
             "run_id": state.run_id,
             "task_id": state.task_id,
             "action_id": action_id,

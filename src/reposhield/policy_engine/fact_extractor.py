@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+from datetime import datetime, timezone
 
 from ..contract import IntentMatcher
 from ..models import ActionGraph
@@ -168,6 +169,8 @@ class FactExtractor:
                     PolicyFact.of("history", "approval_scope", bool(state.approval_scope), evidence_refs=refs, metadata={"approval_scope": state.approval_scope, "state_hash": state.state_hash}),
                     PolicyFact.of("history", "loaded_from_persistent", state.approval_scope.get("restore_source") in {"file", "audit"}, evidence_refs=refs, metadata={"restore_source": state.approval_scope.get("restore_source", "memory"), "state_hash": state.state_hash}),
                     PolicyFact.of("history", "state_hash", state.state_hash, evidence_refs=refs, metadata={"restore_source": state.approval_scope.get("restore_source", "memory")}),
+                    PolicyFact.of("history", "restore_source", state.approval_scope.get("restore_source", "memory"), evidence_refs=refs, metadata={"state_hash": state.state_hash}),
+                    PolicyFact.of("history", "state_age_seconds", _state_age_seconds(state.approval_scope.get("updated_at")), evidence_refs=refs, metadata={"state_hash": state.state_hash, "updated_at": state.approval_scope.get("updated_at")}),
                     PolicyFact.of("flow", "secret_to_network_reachable", state.secret_taint and action.semantic_action in NETWORK_ACTIONS, evidence_refs=refs, metadata={"source": "session_state"}),
                 ]
             )
@@ -230,3 +233,18 @@ def _graph_secret_to_external(graph: ActionGraph) -> bool:
                 seen.add(nxt)
                 frontier.append(nxt)
     return False
+
+
+def _state_age_seconds(updated_at: object) -> int:
+    if not updated_at:
+        return 0
+    try:
+        text = str(updated_at)
+        if text.endswith("Z"):
+            text = text[:-1] + "+00:00"
+        updated = datetime.fromisoformat(text)
+        if updated.tzinfo is None:
+            updated = updated.replace(tzinfo=timezone.utc)
+        return max(0, int((datetime.now(timezone.utc) - updated.astimezone(timezone.utc)).total_seconds()))
+    except ValueError:
+        return 0

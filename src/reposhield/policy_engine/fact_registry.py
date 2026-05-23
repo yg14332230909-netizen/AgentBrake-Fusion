@@ -21,6 +21,8 @@ def _spec(path: str, value_type: str, cardinality: str, strategy: str, role: str
 
 
 FACT_KEY_REGISTRY: dict[str, FactKeySpec] = {
+    "history.restore_source": _spec("history.restore_source", "enum", "low", "exact", "history", True, "Session restore source", "SessionState restore source: memory, file, audit, or none."),
+    "history.state_age_seconds": _spec("history.state_age_seconds", "number", "medium", "range_bucket", "history", False, "Session state age", "Seconds since the SessionState summary was last updated."),
     "action.semantic_action": _spec("action.semantic_action", "enum", "medium", "exact", "action", True, "动作语义", "代理动作的标准化语义。"),
     "action.risk": _spec("action.risk", "enum", "low", "exact", "action", True, "动作风险", "动作解析阶段给出的风险等级。"),
     "action.high_risk": _spec("action.high_risk", "bool", "low", "boolean", "action", True, "高危动作", "动作是否属于高危能力。"),
