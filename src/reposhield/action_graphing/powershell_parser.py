@@ -21,6 +21,7 @@ class PowerShellParser:
         decoded = _decode_encoded_command(raw)
         text = decoded or raw
         reads = re.findall(r"Get-Content\s+([^\s|;]+)", text, re.I)
+        env_reads = re.findall(r"\$env:([A-Za-z_][A-Za-z0-9_]*)", text, re.I)
         writes = re.findall(r"(?:Out-File|Set-Content)\s+([^\s|;]+)", text, re.I)
         starts = re.findall(r"Start-Process\s+([^\s|;]+)", text, re.I)
         sinks = re.findall(r"https?://([^/\s'\")]+)", text, re.I)
@@ -42,6 +43,8 @@ class PowerShellParser:
                     self.name,
                 )
             )
+        for env in env_reads:
+            nodes.append(_node(ctx.action, new_id("anode"), "read_secret_env", f"env:{env}", f"$env:{env}", len(nodes), self.name))
         for path in writes:
             nodes.append(_node(ctx.action, new_id("anode"), "edit_source_file", path.strip("'\""), path, len(nodes), self.name))
         for proc in starts:
@@ -50,7 +53,7 @@ class PowerShellParser:
             nodes.append(_node(ctx.action, new_id("anode"), "send_network_request", sink, sink, len(nodes), self.name))
         if not nodes:
             return FallbackHeuristicParser().parse(ctx)
-        for src in [n for n in nodes if n.semantic_action == "read_secret_file"]:
+        for src in [n for n in nodes if n.semantic_action in {"read_secret_file", "read_secret_env"}]:
             for dst in [n for n in nodes if n.semantic_action == "send_network_request"]:
                 edges.append(
                     ActionEdge(

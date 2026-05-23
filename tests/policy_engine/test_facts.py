@@ -2,7 +2,7 @@ from reposhield.action_parser import ActionParser
 from reposhield.asset import AssetScanner
 from reposhield.context import ContextProvenance
 from reposhield.contract import TaskContractBuilder
-from reposhield.models import SessionState
+from reposhield.models import ExecTrace, SessionState
 from reposhield.policy_engine.context import PolicyEvalContext
 from reposhield.policy_engine.fact_extractor import FactExtractor
 
@@ -64,3 +64,29 @@ def test_fact_extractor_emits_cross_evidence_flow_facts(tmp_path):
 
     assert True in facts.values("flow", "secret_to_package_script_reachable")
     assert True in facts.values("flow", "untrusted_to_high_risk_reachable")
+
+
+def test_fact_extractor_emits_package_and_trace_flow_facts(tmp_path):
+    from reposhield.action_graph import ensure_action_graph
+
+    prov = ContextProvenance()
+    contract = TaskContractBuilder().build("install dependency")
+    action = ActionParser().parse("npm install helper-tool", cwd=tmp_path)
+    trace = ExecTrace(
+        exec_trace_id="trace_pkg",
+        action_id=action.action_id,
+        command=action.raw_action,
+        sandbox_profile="package_preflight",
+        package_scripts=["postinstall"],
+        network_attempts=[{"host": "attacker.example"}],
+        env_access=["NPM_TOKEN"],
+    )
+    ensure_action_graph(action, run_id="run_trace_facts", exec_trace=trace)
+    graph = AssetScanner(tmp_path, env={}).scan()
+
+    facts = FactExtractor().extract(PolicyEvalContext(contract, action, graph, prov.graph, exec_trace=trace))
+
+    assert True in facts.values("graph", "exec_trace_enriched")
+    assert True in facts.values("graph", "has_package_lifecycle_edge")
+    assert True in facts.values("flow", "package_script_to_network")
+    assert True in facts.values("flow", "trace_env_to_network")

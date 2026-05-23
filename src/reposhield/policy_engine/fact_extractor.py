@@ -74,6 +74,11 @@ class FactExtractor:
             has_memoryflow = any(edge.relation == "memoryflow" for edge in graph.edges)
             has_pipe = any(edge.relation == "pipe" for edge in graph.edges)
             has_redirect = any(edge.relation == "redirect" for edge in graph.edges)
+            has_package_lifecycle_edge = any(
+                edge.relation == "controlflow"
+                and any(node.node_id == edge.dst_node_id and node.semantic_action == "run_package_lifecycle_script" for node in graph.nodes)
+                for edge in graph.edges
+            )
             has_sequence = len(graph.nodes) > 1 or any(edge.relation in {"sequence", "controlflow"} for edge in graph.edges)
             confidence_values = [node.confidence for node in graph.nodes] + [edge.confidence for edge in graph.edges]
             facts.extend(
@@ -87,6 +92,13 @@ class FactExtractor:
                     PolicyFact.of("graph", "has_pipe_edge", has_pipe, evidence_refs=graph_refs, metadata={"edge_count": len(graph.edges)}),
                     PolicyFact.of(
                         "graph", "has_redirect_edge", has_redirect, evidence_refs=graph_refs, metadata={"edge_count": len(graph.edges)}
+                    ),
+                    PolicyFact.of(
+                        "graph",
+                        "has_package_lifecycle_edge",
+                        has_package_lifecycle_edge,
+                        evidence_refs=graph_refs,
+                        metadata={"edge_count": len(graph.edges)},
                     ),
                     PolicyFact.of(
                         "graph", "has_sequence", has_sequence, evidence_refs=graph_refs, metadata={"node_count": len(graph.nodes)}
@@ -118,6 +130,34 @@ class FactExtractor:
                     ),
                     PolicyFact.of(
                         "flow",
+                        "package_script_to_network",
+                        _graph_package_script_to_network(graph),
+                        evidence_refs=graph_refs,
+                        metadata={"source": "action_graph"},
+                    ),
+                    PolicyFact.of(
+                        "flow",
+                        "package_script_access_env",
+                        _graph_package_script_access_env(graph),
+                        evidence_refs=graph_refs,
+                        metadata={"source": "action_graph"},
+                    ),
+                    PolicyFact.of(
+                        "flow",
+                        "trace_secret_to_network",
+                        bool(graph.metadata.get("trace_enriched")) and _graph_secret_to_external(graph),
+                        evidence_refs=graph_refs,
+                        metadata={"source": "action_graph"},
+                    ),
+                    PolicyFact.of(
+                        "flow",
+                        "trace_env_to_network",
+                        bool(graph.metadata.get("trace_enriched")) and _graph_env_to_network(graph),
+                        evidence_refs=graph_refs,
+                        metadata={"source": "action_graph"},
+                    ),
+                    PolicyFact.of(
+                        "flow",
                         "untrusted_to_high_risk_reachable",
                         source_summary["has_untrusted"] and action.semantic_action in HIGH_RISK_ACTIONS,
                         evidence_refs=[*graph_refs, *action.source_ids],
@@ -126,6 +166,13 @@ class FactExtractor:
                     PolicyFact.of(
                         "trace",
                         "enriched_graph",
+                        bool(graph.metadata.get("trace_enriched")),
+                        evidence_refs=graph_refs,
+                        metadata={"parser": graph.metadata.get("parser")},
+                    ),
+                    PolicyFact.of(
+                        "graph",
+                        "exec_trace_enriched",
                         bool(graph.metadata.get("trace_enriched")),
                         evidence_refs=graph_refs,
                         metadata={"parser": graph.metadata.get("parser")},
@@ -474,6 +521,44 @@ def _graph_secret_to_package_script(graph: ActionGraph) -> bool:
     while frontier:
         node = frontier.pop(0)
         if node in script_nodes:
+            return True
+        for nxt in adjacency.get(node, set()):
+            if nxt not in seen:
+                seen.add(nxt)
+                frontier.append(nxt)
+    return False
+
+
+def _graph_package_script_to_network(graph: ActionGraph) -> bool:
+    script_nodes = {node.node_id for node in graph.nodes if node.semantic_action == "run_package_lifecycle_script"}
+    network_nodes = {node.node_id for node in graph.nodes if node.semantic_action == "send_network_request"}
+    return _reachable(graph, script_nodes, network_nodes)
+
+
+def _graph_package_script_access_env(graph: ActionGraph) -> bool:
+    script_nodes = {node.node_id for node in graph.nodes if node.semantic_action == "run_package_lifecycle_script"}
+    env_nodes = {node.node_id for node in graph.nodes if node.semantic_action == "read_secret_env"}
+    return _reachable(graph, script_nodes, env_nodes) or _reachable(graph, env_nodes, script_nodes)
+
+
+def _graph_env_to_network(graph: ActionGraph) -> bool:
+    env_nodes = {node.node_id for node in graph.nodes if node.semantic_action == "read_secret_env"}
+    network_nodes = {node.node_id for node in graph.nodes if node.semantic_action == "send_network_request"}
+    return _reachable(graph, env_nodes, network_nodes)
+
+
+def _reachable(graph: ActionGraph, sources: set[str], targets: set[str]) -> bool:
+    if not sources or not targets:
+        return False
+    adjacency: dict[str, set[str]] = {}
+    for edge in graph.edges:
+        if edge.relation in {"pipe", "redirect", "dataflow", "memoryflow", "controlflow", "sequence"}:
+            adjacency.setdefault(edge.src_node_id, set()).add(edge.dst_node_id)
+    frontier = list(sources)
+    seen = set(frontier)
+    while frontier:
+        node = frontier.pop(0)
+        if node in targets:
             return True
         for nxt in adjacency.get(node, set()):
             if nxt not in seen:

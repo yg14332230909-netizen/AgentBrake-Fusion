@@ -72,6 +72,7 @@ from reposhield.action_graph import ensure_action_graph, build_action_graph
 - `fallback_heuristic.py`：兼容旧启发式。
 - `shell_parser.py`：识别 pipe、redirect、controlflow、dataflow。
 - `shell_parser.py` 也识别 `$(...)` / backtick command substitution，并把内部命令到外层 sink 标注为 `dataflow`。
+- `shell_ast_parser.py` 是可选 `bashlex` 入口；安装 `reposhield[shell-ast]` 后会先尝试 AST 解析，失败或未安装时自动回退到 best-effort shell parser。
 - `powershell_parser.py`：识别 `-EncodedCommand`、`Get-Content`、`Invoke-WebRequest`。
 - `powershell_parser.py` 也覆盖 `Set-Content`、`Out-File`、`Start-Process` 等写入/执行形态。
 - `python_snippet_parser.py`：识别 `open(...).read()`、`requests.*`、`urllib`、`subprocess curl`。
@@ -102,6 +103,12 @@ metadata: dict[str, Any] = field(default_factory=dict)
 - `flow.secret_to_network_reachable`
 - `flow.secret_to_package_script_reachable`
 - `flow.untrusted_to_high_risk_reachable`
+- `flow.package_script_to_network`
+- `flow.package_script_access_env`
+- `flow.trace_secret_to_network`
+- `flow.trace_env_to_network`
+- `graph.has_package_lifecycle_edge`
+- `graph.exec_trace_enriched`
 - `history.loaded_from_persistent`
 - `history.state_hash`
 - `history.restore_source`

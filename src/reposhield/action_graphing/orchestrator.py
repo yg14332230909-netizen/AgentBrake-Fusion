@@ -11,6 +11,7 @@ from .fallback_heuristic import PARSER_VERSION, FallbackHeuristicParser, graph_f
 from .package_script_parser import enrich_with_exec_trace
 from .powershell_parser import PowerShellParser
 from .python_snippet_parser import PythonSnippetParser
+from .shell_ast_parser import ShellAstParser
 from .shell_parser import ShellParser
 from .tool_call_parser import enrich_with_tool_dependencies
 
@@ -69,7 +70,7 @@ def build_action_graph(
         package_event=package_event,
         session_state=session_state,
     )
-    parsers = [PowerShellParser(), PythonSnippetParser(), ShellParser(), FallbackHeuristicParser()]
+    parsers = [PowerShellParser(), PythonSnippetParser(), ShellAstParser(), ShellParser(), FallbackHeuristicParser()]
     fragment = None
     warnings: list[str] = []
     for parser in parsers:
