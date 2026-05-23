@@ -5,6 +5,7 @@ structured around backend profiles so a production build can swap in Linux
 namespaces, bubblewrap, firejail or containerd without changing the control
 plane or audit schema.
 """
+
 from __future__ import annotations
 
 import os
@@ -28,14 +29,28 @@ class SandboxBackend:
     def __init__(self, repo_root: str | Path):
         self.repo_root = Path(repo_root).resolve()
 
-    def preflight(self, action: ActionIR, profile: SandboxProfile, decision: PolicyDecision | None = None, package_event: PackageEvent | None = None, evidence_mode: str = "summary") -> ExecTrace:
+    def preflight(
+        self,
+        action: ActionIR,
+        profile: SandboxProfile,
+        decision: PolicyDecision | None = None,
+        package_event: PackageEvent | None = None,
+        evidence_mode: str = "summary",
+    ) -> ExecTrace:
         raise NotImplementedError
 
 
 class DryRunBackend(SandboxBackend):
     name = "dry_run"
 
-    def preflight(self, action: ActionIR, profile: SandboxProfile, decision: PolicyDecision | None = None, package_event: PackageEvent | None = None, evidence_mode: str = "summary") -> ExecTrace:
+    def preflight(
+        self,
+        action: ActionIR,
+        profile: SandboxProfile,
+        decision: PolicyDecision | None = None,
+        package_event: PackageEvent | None = None,
+        evidence_mode: str = "summary",
+    ) -> ExecTrace:
         trace = ExecTrace(
             exec_trace_id=new_id("trace"),
             action_id=action.action_id,
@@ -48,15 +63,23 @@ class DryRunBackend(SandboxBackend):
 
         if action.semantic_action.startswith("install_"):
             trace.files_read.extend(["package.json", "pyproject.toml", "requirements.txt"])
-            trace.files_written.extend(["package-lock.json", "node_modules/**"] if re.search(r"\b(npm|pnpm|yarn)\b", action.raw_action, re.I) else ["site-packages/**"])
+            trace.files_written.extend(
+                ["package-lock.json", "node_modules/**"]
+                if re.search(r"\b(npm|pnpm|yarn)\b", action.raw_action, re.I)
+                else ["site-packages/**"]
+            )
             if package_event:
                 trace.package_scripts.extend(package_event.lifecycle_scripts)
                 if package_event.source in {"git_url", "tarball_url"}:
-                    trace.network_attempts.append({"host": _host_from_package(package_event.package) or "github.com", "port": 443, "blocked": True})
+                    trace.network_attempts.append(
+                        {"host": _host_from_package(package_event.package) or "github.com", "port": 443, "blocked": True}
+                    )
                 if package_event.package and re.search(r"attacker|unknown|helper", package_event.package, re.I):
                     trace.env_access.append("RS_CANARY_NPM_TOKEN")
                     trace.network_attempts.append({"host": "attacker.local", "port": 8080, "blocked": True, "payload_digest": "redacted"})
-                    trace.risk_observed.extend(["external_dependency", "lifecycle_script_detected", "secret_access", "network_egress_attempt"])
+                    trace.risk_observed.extend(
+                        ["external_dependency", "lifecycle_script_detected", "secret_access", "network_egress_attempt"]
+                    )
             if trace.network_attempts or trace.package_scripts:
                 trace.recommended_decision = "block"
             return trace
@@ -120,12 +143,28 @@ class DryRunBackend(SandboxBackend):
 
 class SubprocessOverlayBackend(DryRunBackend):
     """Execute explicitly safe local tests in a sensitive-file-masked copy."""
+
     name = "subprocess_overlay"
 
-    def preflight(self, action: ActionIR, profile: SandboxProfile, decision: PolicyDecision | None = None, package_event: PackageEvent | None = None, evidence_mode: str = "summary") -> ExecTrace:
+    def preflight(
+        self,
+        action: ActionIR,
+        profile: SandboxProfile,
+        decision: PolicyDecision | None = None,
+        package_event: PackageEvent | None = None,
+        evidence_mode: str = "summary",
+    ) -> ExecTrace:
         if action.semantic_action != "run_tests":
             return super().preflight(action, profile, decision, package_event, evidence_mode=evidence_mode)
-        trace = ExecTrace(new_id("trace"), action.action_id, action.raw_action, profile.name, process_tree=_process_tree(action.raw_action), recommended_decision=decision.decision if decision else "allow", metadata={"requested_profile": profile.name, "actual_profile": profile.name, "evidence_mode": evidence_mode})
+        trace = ExecTrace(
+            new_id("trace"),
+            action.action_id,
+            action.raw_action,
+            profile.name,
+            process_tree=_process_tree(action.raw_action),
+            recommended_decision=decision.decision if decision else "allow",
+            metadata={"requested_profile": profile.name, "actual_profile": profile.name, "evidence_mode": evidence_mode},
+        )
         raw = action.raw_action.strip()
         if not any(raw == prefix or raw.startswith(prefix + " ") for prefix in SAFE_TEST_PREFIXES):
             trace.risk_observed.append("test_command_simulated")
@@ -143,7 +182,9 @@ class SubprocessOverlayBackend(DryRunBackend):
                 trace.recommended_decision = "sandbox_then_approval"
                 trace.trace_complete = False
                 return trace
-            proc = subprocess.run(args, cwd=dst, shell=False, env=env, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30)
+            proc = subprocess.run(
+                args, cwd=dst, shell=False, env=env, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30
+            )
             trace.exit_code = proc.returncode
             trace.files_read.extend(["src/**", "tests/**"])
             trace.diff_summary.append("safe test executed in overlay with shell disabled and secret env removed")
@@ -160,6 +201,7 @@ class SubprocessOverlayBackend(DryRunBackend):
 
 class BubblewrapBackend(DryRunBackend):
     """Placeholder backend descriptor for production Linux namespace execution."""
+
     name = "bubblewrap"
 
 
@@ -168,7 +210,14 @@ class SandboxRunner:
         self.repo_root = Path(repo_root).resolve()
         self.backend = self._make_backend(backend)
 
-    def preflight(self, action: ActionIR, decision: PolicyDecision | None = None, package_event: PackageEvent | None = None, profile: str | SandboxProfile | None = None, evidence_mode: str = "summary") -> ExecTrace:
+    def preflight(
+        self,
+        action: ActionIR,
+        decision: PolicyDecision | None = None,
+        package_event: PackageEvent | None = None,
+        profile: str | SandboxProfile | None = None,
+        evidence_mode: str = "summary",
+    ) -> ExecTrace:
         selected = self._profile(profile, action)
         return self.backend.preflight(action, selected, decision=decision, package_event=package_event, evidence_mode=evidence_mode)
 

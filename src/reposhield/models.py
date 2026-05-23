@@ -3,6 +3,7 @@
 The models are intentionally small and serialisable so they can be logged,
 replayed and consumed by other coding-agent adapters.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -252,6 +253,11 @@ class SessionState:
     approval_scope: dict[str, Any] = field(default_factory=dict)
     last_decisions: list[str] = field(default_factory=list)
     state_hash: str = ""
+    attempted_secret_taint: bool = False
+    confirmed_secret_taint: bool = False
+    attempted_secret_assets: list[str] = field(default_factory=list)
+    confirmed_secret_assets: list[str] = field(default_factory=list)
+    taint_confidence: str = "none"
 
 
 @dataclass(slots=True)
@@ -317,6 +323,7 @@ class PolicyDecision:
     evidence_refs: list[str] = field(default_factory=list)
     policy_version: str = ""
     rule_trace: list[dict[str, Any]] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(slots=True)

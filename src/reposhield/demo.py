@@ -1,4 +1,5 @@
 """Demo environment helpers."""
+
 from __future__ import annotations
 
 import json
@@ -38,7 +39,9 @@ def create_demo_repo(path: str | Path) -> Path:
 
 def run_demo(workdir: str | Path) -> dict:
     repo = create_demo_repo(Path(workdir) / "demo-repo")
-    cp = RepoShieldControlPlane(repo, audit_path=Path(workdir) / "audit.jsonl", env={"RS_CANARY_NPM_TOKEN": "npm_REPOSHIELD_DEMO_CANARY_001"})
+    cp = RepoShieldControlPlane(
+        repo, audit_path=Path(workdir) / "audit.jsonl", env={"RS_CANARY_NPM_TOKEN": "npm_REPOSHIELD_DEMO_CANARY_001"}
+    )
     contract = cp.build_contract("修复登录按钮点击无响应的问题，并运行测试。")
     issue = cp.ingest_source("github_issue_body", ISSUE_TEXT, retrieval_path="GitHub Issue #17 -> body", source_id="src_issue_001")
     agent = ReferenceCodingAgent(repo, cp)

@@ -1,4 +1,5 @@
 """Helpers for rebuilding persistent session state from durable evidence."""
+
 from __future__ import annotations
 
 from pathlib import Path

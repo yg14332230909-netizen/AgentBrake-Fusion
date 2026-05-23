@@ -1,4 +1,5 @@
 """Normalize AuditLog/Approval/Bench data into Studio Pro view models."""
+
 from __future__ import annotations
 
 import json
@@ -66,7 +67,9 @@ def read_jsonl(path: str | Path) -> list[dict[str, Any]]:
     return events
 
 
-def normalize_audit_events(events: list[dict[str, Any]], *, agent_name: str = "local", demo_scenario_id: str | None = None) -> list[StudioEvent]:
+def normalize_audit_events(
+    events: list[dict[str, Any]], *, agent_name: str = "local", demo_scenario_id: str | None = None
+) -> list[StudioEvent]:
     normalized: list[StudioEvent] = []
     trace_by_session: dict[str, str] = {}
     for event in events:
@@ -76,7 +79,9 @@ def normalize_audit_events(events: list[dict[str, Any]], *, agent_name: str = "l
             trace_by_session[session_id] = str(payload["trace_id"])
     for idx, event in enumerate(events):
         payload = event.get("payload") if isinstance(event.get("payload"), dict) else {}
-        trace_id = str(payload.get("trace_id") or trace_by_session.get(str(event.get("session_id") or "")) or event.get("session_id") or "run_default")
+        trace_id = str(
+            payload.get("trace_id") or trace_by_session.get(str(event.get("session_id") or "")) or event.get("session_id") or "run_default"
+        )
         event_type = str(event.get("event_type") or "event")
         run_id = str(payload.get("run_id") or trace_id)
         span_id = _span_id(event_type, payload, event, idx)
@@ -108,7 +113,14 @@ def build_run_summaries(events: list[StudioEvent]) -> list[RunSummary]:
     for event in events:
         run = runs.get(event.run_id)
         if not run:
-            run = RunSummary(event.run_id, event.session_id, event.timestamp, event.timestamp, agent_name=event.agent_name, demo_scenario_id=event.demo_scenario_id)
+            run = RunSummary(
+                event.run_id,
+                event.session_id,
+                event.timestamp,
+                event.timestamp,
+                agent_name=event.agent_name,
+                demo_scenario_id=event.demo_scenario_id,
+            )
             runs[event.run_id] = run
         run.updated_at = event.timestamp or run.updated_at
         run.event_count += 1
@@ -207,7 +219,8 @@ def judgment_view_model(detail: ActionDetail) -> dict[str, Any]:
         "candidate_rules": _candidate_rules(trace, rule_nodes),
         "predicate_rows": predicate_rows,
         "lattice_path": list(detail.policy_lattice_path or trace.get("decision_lattice_path") or []),
-        "causal_graph": detail.policy_causal_graph or {
+        "causal_graph": detail.policy_causal_graph
+        or {
             "fact_nodes": fact_nodes,
             "predicate_nodes": list(trace.get("predicate_nodes") or []),
             "rule_nodes": rule_nodes,
@@ -260,10 +273,15 @@ def _predicate_matrix(trace: dict[str, Any]) -> list[dict[str, Any]]:
 
 def _candidate_rules(trace: dict[str, Any], rule_nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
     candidate_count = int((trace.get("skipped_rules_summary") or {}).get("candidate_rules") or len(rule_nodes))
-    return [{"rule_id": rule.get("rule_id") or rule.get("id"), **rule} for rule in rule_nodes] or [{"rule_id": f"candidate_{idx + 1}"} for idx in range(candidate_count)]
+    return [{"rule_id": rule.get("rule_id") or rule.get("id"), **rule} for rule in rule_nodes] or [
+        {"rule_id": f"candidate_{idx + 1}"} for idx in range(candidate_count)
+    ]
 
 
 def _constraints_from_decision(decision: dict[str, Any]) -> dict[str, Any]:
+    metadata = decision.get("metadata")
+    if isinstance(metadata, dict) and isinstance(metadata.get("decision_constraints"), dict):
+        return dict(metadata["decision_constraints"])
     for trace in reversed(decision.get("rule_trace", []) or []):
         if isinstance(trace, dict) and isinstance(trace.get("constraints"), dict):
             return dict(trace["constraints"])
@@ -331,7 +349,11 @@ def _execution_items(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
             {
                 "id": str(payload.get("exec_trace_id") or event.get("span_id") or event.get("event_id")),
                 "label": "沙箱预检",
-                "value": {"risk_observed": payload.get("risk_observed"), "evidence_mode": payload.get("evidence_mode"), "profile": payload.get("profile")},
+                "value": {
+                    "risk_observed": payload.get("risk_observed"),
+                    "evidence_mode": payload.get("evidence_mode"),
+                    "profile": payload.get("profile"),
+                },
                 "evidence_refs": [str(payload.get("exec_trace_id"))] if payload.get("exec_trace_id") else [],
                 "source_module": "SandboxRunner",
             }
@@ -339,7 +361,9 @@ def _execution_items(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return items
 
 
-def _fact_items(fact_nodes: list[dict[str, Any]], namespace: str, source_module: str, fallback: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+def _fact_items(
+    fact_nodes: list[dict[str, Any]], namespace: str, source_module: str, fallback: dict[str, Any] | None = None
+) -> list[dict[str, Any]]:
     items = [
         {
             "id": str(fact.get("fact_id") or fact.get("id") or f"{namespace}.{fact.get('key')}"),
@@ -378,7 +402,10 @@ def _source_module_for_event(event_type: str) -> str:
 def _why_text(detail: ActionDetail, final_decision: str, invariant_hits: list[dict[str, Any]]) -> str:
     reasons = [str(code) for code in detail.decision.get("reason_codes", [])]
     action = str(detail.action.get("semantic_action") or detail.action_id)
-    source_untrusted = any(str(source.get("trust_level") or source.get("trust")) == "untrusted" for source in detail.sources) or "influenced_by_untrusted_source" in reasons
+    source_untrusted = (
+        any(str(source.get("trust_level") or source.get("trust")) == "untrusted" for source in detail.sources)
+        or "influenced_by_untrusted_source" in reasons
+    )
     invariant_ids = [str(rule.get("rule_id") or rule.get("id")) for rule in invariant_hits]
     if final_decision == "block" and invariant_ids:
         prefix = "低可信来源诱导" if source_untrusted else "该动作"
@@ -433,7 +460,14 @@ def _span_id(event_type: str, payload: dict[str, Any], event: dict[str, Any], in
         return str(event.get("event_id") or f"constraint_lattice_{index}")
     if event_type == "session_state_update":
         return str(payload.get("session_state_id") or event.get("event_id") or f"session_state_{index}")
-    return str(event.get("action_id") or payload.get("action_id") or event.get("decision_id") or payload.get("decision_id") or event.get("event_id") or f"event_{index}")
+    return str(
+        event.get("action_id")
+        or payload.get("action_id")
+        or event.get("decision_id")
+        or payload.get("decision_id")
+        or event.get("event_id")
+        or f"event_{index}"
+    )
 
 
 def _payload_for_ui(event_type: str, payload: dict[str, Any], event: dict[str, Any]) -> dict[str, Any]:
@@ -445,7 +479,15 @@ def _payload_for_ui(event_type: str, payload: dict[str, Any], event: dict[str, A
 
 
 def _parent_span(event_type: str, payload: dict[str, Any], event: dict[str, Any]) -> str | None:
-    if event_type in {"policy_decision", "policy_fact_set", "policy_eval_trace", "policy_runtime", "exec_trace", "secret_event", "package_event"}:
+    if event_type in {
+        "policy_decision",
+        "policy_fact_set",
+        "policy_eval_trace",
+        "policy_runtime",
+        "exec_trace",
+        "secret_event",
+        "package_event",
+    }:
         return str(event.get("action_id") or payload.get("action_id") or "") or None
     if event_type == "action_parsed":
         return str(payload.get("instruction_id") or payload.get("lowered_from_instruction_id") or "") or None

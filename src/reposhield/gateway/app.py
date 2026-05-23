@@ -1,4 +1,5 @@
 """RepoShield OpenAI-compatible Governance Gateway."""
+
 from __future__ import annotations
 
 import json
@@ -20,6 +21,7 @@ from ..plugins import ToolParserRegistry
 from ..policy_runtime import PolicyRuntime
 from .openai_compat import chat_completion_stream_events, extract_messages, latest_user_text, responses_api_response
 from .response_transform import transform_response
+from .session_identity import resolve_session_identity
 from .trace_state import GatewayTrace
 from .upstream import LocalHeuristicUpstream, OpenAICompatibleUpstream
 
@@ -52,19 +54,48 @@ class RepoShieldGateway:
         self.approval_store = ApprovalStore(approval_store_path or self.repo_root / ".reposhield" / "gateway_approvals.jsonl")
 
     def _new_request_control_plane(self, run_id: str | None = None) -> RepoShieldControlPlane:
-        return RepoShieldControlPlane(self.repo_root, audit=self.audit, policy_config=self.policy_config, session_state_path=self.session_state_path, run_id=run_id)
+        return RepoShieldControlPlane(
+            self.repo_root, audit=self.audit, policy_config=self.policy_config, session_state_path=self.session_state_path, run_id=run_id
+        )
 
     def handle_chat_completion(self, request: dict[str, Any]) -> dict[str, Any]:
-        metadata = request.get("metadata") if isinstance(request.get("metadata"), dict) else {}
-        run_id = str(metadata.get("run_id") or metadata.get("reposhield_run_id") or request.get("trace_id") or request.get("request_id") or new_id("gw_trace"))
+        identity = resolve_session_identity(
+            request=request,
+            repo_root=self.repo_root,
+            headers=request.get("_headers") if isinstance(request.get("_headers"), dict) else None,
+        )
+        run_id = identity.run_id
         request["trace_id"] = run_id
+        request.setdefault("metadata", {})["reposhield_run_id"] = run_id
         cp = self._new_request_control_plane(run_id)
         self.cp = cp
+        cp.audit.append(
+            "session_identity_resolved",
+            {
+                "run_id": identity.run_id,
+                "conversation_id": identity.conversation_id,
+                "turn_id": identity.turn_id,
+                "client_id": identity.client_id,
+                "task_id": identity.task_id,
+                "source": identity.source,
+            },
+            actor="gateway",
+        )
         lowerer = InstructionLowerer(cp.parser)
         trace = GatewayTrace(trace_id=run_id)
         messages = extract_messages(request)
         turn_id = trace.new_turn("chat_completion", {"model": request.get("model"), "message_count": len(messages)})
-        cp.audit.append("gateway_pre_call", {"trace_id": trace.trace_id, "turn_id": turn_id, "model": request.get("model"), "message_count": len(messages), "request_hash": sha256_json(request)}, actor="gateway")
+        cp.audit.append(
+            "gateway_pre_call",
+            {
+                "trace_id": trace.trace_id,
+                "turn_id": turn_id,
+                "model": request.get("model"),
+                "message_count": len(messages),
+                "request_hash": sha256_json(request),
+            },
+            actor="gateway",
+        )
 
         cp.build_contract(str(request.get("task") or latest_user_text(messages) or "general code maintenance task"))
         contexts = self._ingest_contexts(request, cp)
@@ -73,7 +104,12 @@ class RepoShieldGateway:
         if tool_mappings:
             cp.audit.append(
                 "tool_mappings_introspected",
-                {"trace_id": trace.trace_id, "turn_id": turn_id, "mapping_count": len(tool_mappings), "tools": [m.tool_name for m in tool_mappings]},
+                {
+                    "trace_id": trace.trace_id,
+                    "turn_id": turn_id,
+                    "mapping_count": len(tool_mappings),
+                    "tools": [m.tool_name for m in tool_mappings],
+                },
                 task_id=cp.contract.task_id if cp.contract else None,
                 actor="tool_introspector",
             )
@@ -83,21 +119,44 @@ class RepoShieldGateway:
             assistant_msg = self.upstream.complete_streaming(request, contexts=upstream_contexts)
         else:
             assistant_msg = self.upstream.complete(request, contexts=upstream_contexts)
-        cp.audit.append("gateway_post_call", {"trace_id": trace.trace_id, "turn_id": turn_id, "assistant_hash": sha256_json(assistant_msg), "tool_call_count": len(assistant_msg.get("tool_calls", []) or [])}, task_id=cp.contract.task_id if cp.contract else None, actor="gateway")
+        cp.audit.append(
+            "gateway_post_call",
+            {
+                "trace_id": trace.trace_id,
+                "turn_id": turn_id,
+                "assistant_hash": sha256_json(assistant_msg),
+                "tool_call_count": len(assistant_msg.get("tool_calls", []) or []),
+            },
+            task_id=cp.contract.task_id if cp.contract else None,
+            actor="gateway",
+        )
 
         trust_floor = "untrusted" if source_ids else "trusted"
         builder = InstructionBuilder(trace_id=trace.trace_id, registry=self.registry)
-        instructions = builder.response_to_instructions(assistant_msg, turn_id=turn_id, source_ids=source_ids, agent_type=self.agent_type, trust_floor=trust_floor)  # type: ignore[arg-type]
+        instructions = builder.response_to_instructions(
+            assistant_msg, turn_id=turn_id, source_ids=source_ids, agent_type=self.agent_type, trust_floor=trust_floor
+        )  # type: ignore[arg-type]
 
         guarded: list[dict[str, Any]] = []
         for ins in instructions:
-            cp.audit.append("instruction_ir", instruction_to_dict(ins), task_id=cp.contract.task_id if cp.contract else None, actor="instruction_builder", source_ids=ins.source_ids)
+            cp.audit.append(
+                "instruction_ir",
+                instruction_to_dict(ins),
+                task_id=cp.contract.task_id if cp.contract else None,
+                actor="instruction_builder",
+                source_ids=ins.source_ids,
+            )
             action = lowerer.lower(ins, cwd=self.repo_root)
             if not action:
                 continue
             action2, decision = cp.guard_action_ir(action)
             runtime = self.policy_runtime.apply(decision)
-            item = {"instruction": instruction_to_dict(ins), "action": asdict(action2), "decision": asdict(decision), "runtime": runtime.to_dict()}
+            item = {
+                "instruction": instruction_to_dict(ins),
+                "action": asdict(action2),
+                "decision": asdict(decision),
+                "runtime": runtime.to_dict(),
+            }
             if runtime.effective_decision in {"block", "quarantine", "sandbox_then_approval"}:
                 assert cp.contract is not None
                 plan = {"trace_id": trace.trace_id, "instructions": [instruction_to_dict(i) for i in instructions]}
@@ -106,13 +165,49 @@ class RepoShieldGateway:
                 approval_payload = asdict(approval)
                 item["approval_request"] = approval_payload
                 item["confirmation_request"] = approval_payload
-                cp.audit.append("gateway_approval_request", approval_payload, task_id=cp.contract.task_id if cp.contract else None, actor="gateway", source_ids=action2.source_ids, action_id=action2.action_id)
-            cp.audit.append("policy_runtime", runtime.to_dict(), task_id=cp.contract.task_id if cp.contract else None, actor="policy_runtime", source_ids=action2.source_ids, action_id=action2.action_id, decision_id=decision.decision_id)
+                cp.audit.append(
+                    "gateway_approval_request",
+                    approval_payload,
+                    task_id=cp.contract.task_id if cp.contract else None,
+                    actor="gateway",
+                    source_ids=action2.source_ids,
+                    action_id=action2.action_id,
+                )
+            cp.audit.append(
+                "policy_runtime",
+                runtime.to_dict(),
+                task_id=cp.contract.task_id if cp.contract else None,
+                actor="policy_runtime",
+                source_ids=action2.source_ids,
+                action_id=action2.action_id,
+                decision_id=decision.decision_id,
+            )
             guarded.append(item)
 
-        response = transform_response(assistant_msg, guarded, trace.trace_id, model=str(request.get("model") or "reposhield/local"), release_mode=self.release_mode)
-        result = {"trace_id": trace.trace_id, "turn_id": turn_id, "response": response, "instructions": [instruction_to_dict(i) for i in instructions], "guarded_results": guarded, "audit_log": str(cp.audit.log_path)}
-        cp.audit.append("gateway_response", {"trace_id": trace.trace_id, "turn_id": turn_id, "blocked_count": sum(1 for g in guarded if g.get("runtime", {}).get("effective_decision") in {"block", "quarantine", "sandbox_then_approval"}), "response_hash": sha256_json(response)}, task_id=cp.contract.task_id if cp.contract else None, actor="gateway")
+        response = transform_response(
+            assistant_msg, guarded, trace.trace_id, model=str(request.get("model") or "reposhield/local"), release_mode=self.release_mode
+        )
+        result = {
+            "trace_id": trace.trace_id,
+            "turn_id": turn_id,
+            "response": response,
+            "instructions": [instruction_to_dict(i) for i in instructions],
+            "guarded_results": guarded,
+            "audit_log": str(cp.audit.log_path),
+        }
+        cp.audit.append(
+            "gateway_response",
+            {
+                "trace_id": trace.trace_id,
+                "turn_id": turn_id,
+                "blocked_count": sum(
+                    1 for g in guarded if g.get("runtime", {}).get("effective_decision") in {"block", "quarantine", "sandbox_then_approval"}
+                ),
+                "response_hash": sha256_json(response),
+            },
+            task_id=cp.contract.task_id if cp.contract else None,
+            actor="gateway",
+        )
         return result
 
     def _introspect_request_tools(self, request: dict[str, Any]):
@@ -135,17 +230,26 @@ class RepoShieldGateway:
         contexts: list[dict[str, Any]] = []
         for idx, ctx in enumerate(raw_contexts):
             if isinstance(ctx, str):
-                ctx = {"source_type": "external_text", "content": ctx, "source_id": f"src_gateway_ctx_{idx+1:03d}"}
+                ctx = {"source_type": "external_text", "content": ctx, "source_id": f"src_gateway_ctx_{idx + 1:03d}"}
             content = str(ctx.get("content") or "")
             source_type = str(ctx.get("source_type") or ctx.get("type") or "external_text")
-            source_id = str(ctx.get("source_id") or f"src_gateway_ctx_{idx+1:03d}")
-            src = cp.ingest_source(source_type, content, retrieval_path=str(ctx.get("retrieval_path") or "gateway_context"), source_id=source_id)
+            source_id = str(ctx.get("source_id") or f"src_gateway_ctx_{idx + 1:03d}")
+            src = cp.ingest_source(
+                source_type, content, retrieval_path=str(ctx.get("retrieval_path") or "gateway_context"), source_id=source_id
+            )
             contexts.append({"source_id": src.source_id, "source_type": source_type, "content": content})
         return contexts
 
 
-def simulate_gateway_request(repo_root: str | Path, request: dict[str, Any], audit_path: str | Path | None = None, policy_mode: str = "enforce") -> dict[str, Any]:
-    gw = RepoShieldGateway(repo_root, audit_path=audit_path, policy_mode=policy_mode, unsafe_allow_disabled_policy=bool(request.get("unsafe_allow_disabled_policy")))
+def simulate_gateway_request(
+    repo_root: str | Path, request: dict[str, Any], audit_path: str | Path | None = None, policy_mode: str = "enforce"
+) -> dict[str, Any]:
+    gw = RepoShieldGateway(
+        repo_root,
+        audit_path=audit_path,
+        policy_mode=policy_mode,
+        unsafe_allow_disabled_policy=bool(request.get("unsafe_allow_disabled_policy")),
+    )
     return gw.handle_chat_completion(request)
 
 
@@ -200,7 +304,8 @@ def serve_gateway(
         policy_config=policy_config,
         release_mode=release_mode,
         unsafe_allow_disabled_policy=unsafe_allow_disabled_policy,
-        upstream=upstream or make_upstream(
+        upstream=upstream
+        or make_upstream(
             upstream_base_url=upstream_base_url,
             upstream_api_key=upstream_api_key,
             upstream_chat_path=upstream_chat_path,
@@ -297,7 +402,11 @@ def serve_gateway(
             payload = result["response"]
             if self.path == "/v1/responses":
                 payload = responses_api_response(payload, str(result["trace_id"]))
-            payload["reposhield"] = {"trace_id": result["trace_id"], "audit_log": result["audit_log"], "guarded_results": result["guarded_results"]}
+            payload["reposhield"] = {
+                "trace_id": result["trace_id"],
+                "audit_log": result["audit_log"],
+                "guarded_results": result["guarded_results"],
+            }
             for event in chat_completion_stream_events(payload, include_role=False):
                 self.wfile.write(event)
                 self.wfile.flush()
@@ -310,7 +419,9 @@ def serve_gateway(
                 self.wfile.write(b"not found")
                 return
             if required_gateway_key and self.headers.get("Authorization") != f"Bearer {required_gateway_key}":
-                gateway.cp.audit.append("rejected_gateway_request", {"path": self.path, "reason": "missing_or_invalid_authorization"}, actor="gateway")
+                gateway.cp.audit.append(
+                    "rejected_gateway_request", {"path": self.path, "reason": "missing_or_invalid_authorization"}, actor="gateway"
+                )
                 self.send_response(401)
                 self.send_header("Content-Type", "application/json; charset=utf-8")
                 self.end_headers()
@@ -319,6 +430,7 @@ def serve_gateway(
             try:
                 body = self.rfile.read(int(self.headers.get("Content-Length", "0") or "0"))
                 request = json.loads(body.decode("utf-8") or "{}")
+                request["_headers"] = {key: value for key, value in self.headers.items()}
                 if request.get("stream"):
                     self._serve_streaming_chat_completion(request)
                     return
@@ -326,7 +438,11 @@ def serve_gateway(
                 payload = result["response"]
                 if self.path == "/v1/responses":
                     payload = responses_api_response(payload, str(result["trace_id"]))
-                payload["reposhield"] = {"trace_id": result["trace_id"], "audit_log": result["audit_log"], "guarded_results": result["guarded_results"]}
+                payload["reposhield"] = {
+                    "trace_id": result["trace_id"],
+                    "audit_log": result["audit_log"],
+                    "guarded_results": result["guarded_results"],
+                }
                 data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json; charset=utf-8")

@@ -1,4 +1,5 @@
 """Generate a portable OpenClaw -> RepoShield setup."""
+
 from __future__ import annotations
 
 import json

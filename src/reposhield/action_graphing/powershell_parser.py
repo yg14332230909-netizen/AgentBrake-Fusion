@@ -1,4 +1,5 @@
 """PowerShell parser for encoded and common web/file cmdlet patterns."""
+
 from __future__ import annotations
 
 import base64
@@ -30,7 +31,17 @@ class PowerShellParser:
         nodes = []
         edges = []
         for idx, path in enumerate(reads):
-            nodes.append(_node(ctx.action, new_id("anode"), "read_secret_file" if ".env" in path.lower() else "read_file", path.strip("'\""), path, idx, self.name))
+            nodes.append(
+                _node(
+                    ctx.action,
+                    new_id("anode"),
+                    "read_secret_file" if ".env" in path.lower() else "read_file",
+                    path.strip("'\""),
+                    path,
+                    idx,
+                    self.name,
+                )
+            )
         for path in writes:
             nodes.append(_node(ctx.action, new_id("anode"), "edit_source_file", path.strip("'\""), path, len(nodes), self.name))
         for proc in starts:
@@ -41,7 +52,17 @@ class PowerShellParser:
             return FallbackHeuristicParser().parse(ctx)
         for src in [n for n in nodes if n.semantic_action == "read_secret_file"]:
             for dst in [n for n in nodes if n.semantic_action == "send_network_request"]:
-                edges.append(ActionEdge(new_id("aedge"), src.node_id, dst.node_id, "dataflow", evidence_refs=[ctx.action.action_id], confidence=0.8, metadata={"parser": self.name, "decoded": decoded is not None}))
+                edges.append(
+                    ActionEdge(
+                        new_id("aedge"),
+                        src.node_id,
+                        dst.node_id,
+                        "dataflow",
+                        evidence_refs=[ctx.action.action_id],
+                        confidence=0.8,
+                        metadata={"parser": self.name, "decoded": decoded is not None},
+                    )
+                )
         for node in nodes:
             node.metadata["decoded"] = decoded is not None
         return GraphFragment(nodes, edges, 0.8, True, self.name)

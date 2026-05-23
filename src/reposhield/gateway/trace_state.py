@@ -1,4 +1,5 @@
 """Gateway trace/session state."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

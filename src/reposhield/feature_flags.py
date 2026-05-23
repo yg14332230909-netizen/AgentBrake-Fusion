@@ -1,4 +1,5 @@
 """Runtime feature flags for backward-compatible architecture upgrades."""
+
 from __future__ import annotations
 
 import os

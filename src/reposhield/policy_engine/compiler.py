@@ -1,4 +1,5 @@
 """Tiny PolicyGraph DSL compiler."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -67,7 +68,9 @@ class PolicyRuleCompiler:
             path = str(pred.get("path") or "")
             if not path:
                 raise ValueError(f"{rule_id}: predicate.path is required")
-            normalised.append({"path": self._path(path), "operator": op, "expected": pred.get("expected"), "index": pred.get("index", True)})
+            normalised.append(
+                {"path": self._path(path), "operator": op, "expected": pred.get("expected"), "index": pred.get("index", True)}
+            )
         for group in ("any", "all"):
             if group in match:
                 items = match[group] if isinstance(match[group], list) else [match[group]]
@@ -160,7 +163,9 @@ class PolicyRuleCompiler:
         return []
 
     @staticmethod
-    def _signature(rule_id: str, category: str, hints: list[IndexHint], predicates: list[dict[str, Any]], unless: list[dict[str, Any]]) -> RuleSignature:
+    def _signature(
+        rule_id: str, category: str, hints: list[IndexHint], predicates: list[dict[str, Any]], unless: list[dict[str, Any]]
+    ) -> RuleSignature:
         signature = RuleSignature(rule_id=rule_id, has_unless=bool(unless), safety_category=category)
         for hint in hints:
             tokens = {f"{hint.path}={value}" for value in hint.expected_values if value}

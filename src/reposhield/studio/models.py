@@ -1,4 +1,5 @@
 """Studio Pro read-model dataclasses."""
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field

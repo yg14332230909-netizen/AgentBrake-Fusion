@@ -1,4 +1,5 @@
 """Preflight planning primitives for PolicyGraph decisions."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

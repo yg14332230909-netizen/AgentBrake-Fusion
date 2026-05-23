@@ -1,4 +1,5 @@
 """Causal evidence trace emitted by PolicyGraph decisions."""
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
@@ -79,7 +80,9 @@ class PolicyEvaluationTrace:
         return asdict(self)
 
 
-def _causal_graph(fact_set: PolicyFactSet, hits: list[RuleHit], lattice_path: list[dict[str, Any]], retrieval_trace: dict[str, Any] | None = None) -> dict[str, list[dict[str, Any]]]:
+def _causal_graph(
+    fact_set: PolicyFactSet, hits: list[RuleHit], lattice_path: list[dict[str, Any]], retrieval_trace: dict[str, Any] | None = None
+) -> dict[str, list[dict[str, Any]]]:
     fact_nodes = [
         {
             "id": fact.fact_id,
@@ -176,9 +179,26 @@ def _causal_graph(fact_set: PolicyFactSet, hits: list[RuleHit], lattice_path: li
             for fact_id in p.get("matched_fact_ids", []) or ([p.get("fact_id")] if p.get("fact_id") else []):
                 edges.append({"from": str(fact_id), "to": pred_id, "relation": "matched"})
             edges.append({"from": pred_id, "to": hit.rule_id, "relation": "predicate_of"})
-        rule_nodes.append({"id": hit.rule_id, "rule_id": hit.rule_id, "decision": hit.decision, "invariant": hit.invariant, "predicate_ids": predicate_ids})
+        rule_nodes.append(
+            {
+                "id": hit.rule_id,
+                "rule_id": hit.rule_id,
+                "decision": hit.decision,
+                "invariant": hit.invariant,
+                "predicate_ids": predicate_ids,
+            }
+        )
         if hit.invariant:
-            invariant_nodes.append({"id": f"invariant_{hit.rule_id}", "kind": "invariant_node", "rule_id": hit.rule_id, "decision": hit.decision, "constraints": hit.constraints, "predicate_ids": predicate_ids})
+            invariant_nodes.append(
+                {
+                    "id": f"invariant_{hit.rule_id}",
+                    "kind": "invariant_node",
+                    "rule_id": hit.rule_id,
+                    "decision": hit.decision,
+                    "constraints": hit.constraints,
+                    "predicate_ids": predicate_ids,
+                }
+            )
             edges.append({"from": f"invariant_{hit.rule_id}", "to": hit.rule_id, "relation": "semantic_invariant"})
     previous = ""
     for idx, step in enumerate(lattice_path):
@@ -186,7 +206,9 @@ def _causal_graph(fact_set: PolicyFactSet, hits: list[RuleHit], lattice_path: li
         lattice_nodes.append({"id": node_id, **step})
         if isinstance(step.get("constraints"), dict):
             constraint_id = f"constraint_{idx}"
-            constraint_nodes.append({"id": constraint_id, "kind": "constraint_node", "via": step.get("via"), "constraints": step["constraints"]})
+            constraint_nodes.append(
+                {"id": constraint_id, "kind": "constraint_node", "via": step.get("via"), "constraints": step["constraints"]}
+            )
             edges.append({"from": constraint_id, "to": node_id, "relation": "constraint_join"})
         via = str(step.get("via") or "")
         if via and via != "policygraph_baseline":

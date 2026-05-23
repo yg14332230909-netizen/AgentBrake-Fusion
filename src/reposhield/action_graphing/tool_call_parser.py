@@ -1,4 +1,5 @@
 """Tool-call and history dependency enrichment."""
+
 from __future__ import annotations
 
 from ..models import ActionEdge, ActionNode, new_id
@@ -8,7 +9,7 @@ from .base import GraphBuildContext, GraphFragment
 def enrich_with_tool_dependencies(fragment: GraphFragment, ctx: GraphBuildContext) -> GraphFragment:
     _add_explicit_output_references(fragment, ctx)
     state = ctx.session_state
-    if state is None or not state.secret_taint:
+    if state is None or not state.confirmed_secret_taint:
         return fragment
     network_nodes = [node for node in fragment.nodes if node.semantic_action == "send_network_request"]
     if not network_nodes:
@@ -28,6 +29,7 @@ def enrich_with_tool_dependencies(fragment: GraphFragment, ctx: GraphBuildContex
             "inferred": True,
             "state_hash": state.state_hash,
             "source": "persistent_session_state",
+            "taint_confidence": "confirmed",
         },
     )
     fragment.nodes.insert(0, history_node)
@@ -40,7 +42,12 @@ def enrich_with_tool_dependencies(fragment: GraphFragment, ctx: GraphBuildContex
                 "memoryflow",
                 evidence_refs=[state.session_state_id, ctx.action.action_id],
                 confidence=0.55,
-                metadata={"parser": "tool_call_dependency", "inferred": True, "state_hash": state.state_hash},
+                metadata={
+                    "parser": "tool_call_dependency",
+                    "inferred": True,
+                    "state_hash": state.state_hash,
+                    "taint_confidence": "confirmed",
+                },
             )
         )
     fragment.confidence = min(fragment.confidence, 0.55)
@@ -54,7 +61,9 @@ def _add_explicit_output_references(fragment: GraphFragment, ctx: GraphBuildCont
     network_nodes = [node for node in fragment.nodes if node.semantic_action == "send_network_request"]
     if not network_nodes:
         return
-    secret_like = bool(ctx.action.metadata.get("output_secret_taint")) or any("secret" in ref.lower() or ".env" in ref.lower() or "token" in ref.lower() for ref in refs)
+    secret_like = bool(ctx.action.metadata.get("output_secret_taint")) or any(
+        "secret" in ref.lower() or ".env" in ref.lower() or "token" in ref.lower() for ref in refs
+    )
     source_node = ActionNode(
         new_id("anode"),
         ctx.action.action_id,

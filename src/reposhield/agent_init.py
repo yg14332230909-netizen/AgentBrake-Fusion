@@ -1,4 +1,5 @@
 """Generate RepoShield agent integration scaffolding."""
+
 from __future__ import annotations
 
 import json
@@ -7,7 +8,9 @@ from pathlib import Path
 SHIM_NAMES = ["npm", "git", "curl", "python"]
 
 
-def init_agent(repo: str | Path, reposhield_home: str | Path, agent: str = "generic", task: str = "general coding task", force: bool = False) -> dict:
+def init_agent(
+    repo: str | Path, reposhield_home: str | Path, agent: str = "generic", task: str = "general coding task", force: bool = False
+) -> dict:
     repo_path = Path(repo).resolve()
     root = repo_path / ".reposhield"
     shims = root / "shims"
@@ -44,17 +47,17 @@ Use RepoShield for model and shell execution.
 Model API:
 
 ```text
-base_url = {config['gateway_base_url']}
-api_key  = {config['api_key']}
+base_url = {config["gateway_base_url"]}
+api_key  = {config["api_key"]}
 ```
 
 Shell commands:
 
 ```bash
-PYTHONPATH={config['reposhield_home']}/src python -m reposhield exec-guard --repo {config['repo']} --task "{config['task']}" -- <command>
+PYTHONPATH={config["reposhield_home"]}/src python -m reposhield exec-guard --repo {config["repo"]} --task "{config["task"]}" -- <command>
 ```
 
-If PATH shims are enabled, put `{config['repo']}/.reposhield/shims` first in PATH.
+If PATH shims are enabled, put `{config["repo"]}/.reposhield/shims` first in PATH.
 """
 
 
@@ -80,4 +83,3 @@ $env:PYTHONPATH = Join-Path $rs "src"
 python -m reposhield exec-guard --repo $repo --task $task -- {name} @args
 exit $LASTEXITCODE
 """
-

@@ -1,4 +1,5 @@
 """Display-time redaction helpers for Studio Pro."""
+
 from __future__ import annotations
 
 import json

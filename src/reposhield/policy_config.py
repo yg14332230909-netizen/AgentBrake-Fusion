@@ -1,4 +1,5 @@
 """Small configurable policy override layer."""
+
 from __future__ import annotations
 
 import json
@@ -40,6 +41,7 @@ class ConfigurablePolicyOverrides:
         else:
             try:
                 import yaml  # type: ignore
+
                 data = yaml.safe_load(text) or {}
             except ImportError as exc:
                 raise RuntimeError("PyYAML is required for YAML policy config; install reposhield[yaml] or use JSON") from exc
@@ -53,20 +55,42 @@ class ConfigurablePolicyOverrides:
             new_decision = str(rule.get("decision") or decision.decision)
             reason = str(rule.get("reason") or rule.get("name") or "configured_policy_override")
             if new_decision not in VALID_DECISIONS:
-                self._events.append({"event": "invalid_policy_override_decision", "rule": rule.get("name"), "requested_decision": new_decision, "kept_decision": decision.decision})
+                self._events.append(
+                    {
+                        "event": "invalid_policy_override_decision",
+                        "rule": rule.get("name"),
+                        "requested_decision": new_decision,
+                        "kept_decision": decision.decision,
+                    }
+                )
                 return replace(
                     decision,
                     reason_codes=list(dict.fromkeys([*decision.reason_codes, "invalid_policy_override_decision"])),
                 )
             if self._is_invariant_protected(decision) and self._is_unsafe_downgrade(decision.decision, new_decision):
-                self._events.append({"event": "unsafe_policy_downgrade_rejected", "rule": rule.get("name"), "from": decision.decision, "to": new_decision})
-                self._events.append({"event": "invariant_policy_downgrade_rejected", "rule": rule.get("name"), "from": decision.decision, "to": new_decision})
+                self._events.append(
+                    {"event": "unsafe_policy_downgrade_rejected", "rule": rule.get("name"), "from": decision.decision, "to": new_decision}
+                )
+                self._events.append(
+                    {
+                        "event": "invariant_policy_downgrade_rejected",
+                        "rule": rule.get("name"),
+                        "from": decision.decision,
+                        "to": new_decision,
+                    }
+                )
                 return replace(
                     decision,
-                    reason_codes=list(dict.fromkeys([*decision.reason_codes, "unsafe_policy_downgrade_rejected", "invariant_policy_downgrade_rejected", reason])),
+                    reason_codes=list(
+                        dict.fromkeys(
+                            [*decision.reason_codes, "unsafe_policy_downgrade_rejected", "invariant_policy_downgrade_rejected", reason]
+                        )
+                    ),
                 )
             if self._is_unsafe_downgrade(decision.decision, new_decision) and not self._has_trusted_unsafe_override(rule):
-                self._events.append({"event": "unsafe_policy_downgrade_rejected", "rule": rule.get("name"), "from": decision.decision, "to": new_decision})
+                self._events.append(
+                    {"event": "unsafe_policy_downgrade_rejected", "rule": rule.get("name"), "from": decision.decision, "to": new_decision}
+                )
                 return replace(
                     decision,
                     reason_codes=list(dict.fromkeys([*decision.reason_codes, "unsafe_policy_downgrade_rejected", reason])),

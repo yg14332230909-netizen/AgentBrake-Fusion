@@ -1,4 +1,5 @@
 """MCP/plugin zero-trust proxy MVP."""
+
 from __future__ import annotations
 
 import re

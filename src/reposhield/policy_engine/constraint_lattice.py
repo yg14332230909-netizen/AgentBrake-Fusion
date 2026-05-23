@@ -1,4 +1,5 @@
 """Internal product lattice for policy constraints."""
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
@@ -70,6 +71,31 @@ def constraints_to_decision(c: DecisionConstraints) -> Decision:
     if c.execution_env == "sandbox":
         return "allow_in_sandbox"
     return "allow"
+
+
+def explain_constraints(c: DecisionConstraints) -> str:
+    parts = []
+    if c.execution_env == "none":
+        parts.append("no execution")
+    elif c.execution_env == "sandbox":
+        parts.append("sandbox execution")
+    else:
+        parts.append("host execution")
+    if c.network_scope == "deny":
+        parts.append("no external network")
+    elif c.network_scope == "allowlist":
+        parts.append("network allowlist")
+    if c.data_scope == "redacted":
+        parts.append("redacted data")
+    elif c.data_scope == "no_secret":
+        parts.append("secret data denied")
+    if c.human_gate == "approval_required":
+        parts.append("approval required")
+    if c.persistence_scope == "no_persist":
+        parts.append("no persistence")
+    if c.audit_scope == "full":
+        parts.append("full audit")
+    return ", ".join(parts)
 
 
 def _max(left: str, right: str, order: list[str]) -> str:

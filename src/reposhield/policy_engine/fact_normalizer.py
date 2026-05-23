@@ -1,4 +1,5 @@
 """Normalize PolicyFact values into stable index keys."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

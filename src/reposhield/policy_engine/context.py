@@ -1,4 +1,5 @@
 """Evaluation context for the PolicyGraph engine."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

@@ -1,4 +1,5 @@
 """Response transformation after policy decisions."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -13,7 +14,9 @@ def transform_response(
     model: str = "reposhield/local",
     release_mode: str = "gateway_only",
 ) -> dict[str, Any]:
-    blocked = [r for r in guarded_results if r.get("runtime", {}).get("effective_decision") in {"block", "quarantine", "sandbox_then_approval"}]
+    blocked = [
+        r for r in guarded_results if r.get("runtime", {}).get("effective_decision") in {"block", "quarantine", "sandbox_then_approval"}
+    ]
     if blocked:
         message = safe_block_message("RepoShield Gateway policy result:", blocked, trace_id)
         return assistant_message_response(message, model=model)

@@ -1,4 +1,5 @@
 """Build InstructionIR objects from OpenAI-compatible messages and tool calls."""
+
 from __future__ import annotations
 
 from dataclasses import asdict
@@ -29,7 +30,9 @@ class InstructionBuilder:
         self._step += 1
         return self._step
 
-    def from_message(self, message: dict[str, Any], *, turn_id: str, source_ids: list[str] | None = None, trust_floor: TrustLevel = "unknown") -> InstructionIR:
+    def from_message(
+        self, message: dict[str, Any], *, turn_id: str, source_ids: list[str] | None = None, trust_floor: TrustLevel = "unknown"
+    ) -> InstructionIR:
         role = str(message.get("role", "unknown"))
         content = message.get("content", "")
         security = self._security_for_sources(source_ids or [], trust_floor, risk="low" if role == "system" else "medium")
@@ -49,7 +52,16 @@ class InstructionBuilder:
             metadata={"role": role},
         )
 
-    def from_tool_call(self, tool_call: dict[str, Any], *, turn_id: str, source_ids: list[str] | None = None, parent_instruction_id: str | None = None, agent_type: str = "openai", trust_floor: TrustLevel = "unknown") -> InstructionIR:
+    def from_tool_call(
+        self,
+        tool_call: dict[str, Any],
+        *,
+        turn_id: str,
+        source_ids: list[str] | None = None,
+        parent_instruction_id: str | None = None,
+        agent_type: str = "openai",
+        trust_floor: TrustLevel = "unknown",
+    ) -> InstructionIR:
         parsed = self.registry.parse(tool_call, agent_type=agent_type)
         security = self._security_for_sources(source_ids or [], trust_floor, risk=parsed.default_risk)
         return new_instruction(
@@ -68,7 +80,15 @@ class InstructionBuilder:
             metadata={"canonical_tool": parsed.canonical_tool, "tool_name": parsed.tool_name, "tool_parse": asdict(parsed)},
         )
 
-    def response_to_instructions(self, response_message: dict[str, Any], *, turn_id: str, source_ids: list[str] | None = None, agent_type: str = "openai", trust_floor: TrustLevel = "unknown") -> list[InstructionIR]:
+    def response_to_instructions(
+        self,
+        response_message: dict[str, Any],
+        *,
+        turn_id: str,
+        source_ids: list[str] | None = None,
+        agent_type: str = "openai",
+        trust_floor: TrustLevel = "unknown",
+    ) -> list[InstructionIR]:
         instructions: list[InstructionIR] = []
         parent = None
         if response_message.get("content"):
@@ -76,7 +96,16 @@ class InstructionBuilder:
             instructions.append(plan)
             parent = plan.instruction_id
         for tool_call in response_message.get("tool_calls", []) or []:
-            instructions.append(self.from_tool_call(tool_call, turn_id=turn_id, source_ids=source_ids, parent_instruction_id=parent, agent_type=agent_type, trust_floor=trust_floor))
+            instructions.append(
+                self.from_tool_call(
+                    tool_call,
+                    turn_id=turn_id,
+                    source_ids=source_ids,
+                    parent_instruction_id=parent,
+                    agent_type=agent_type,
+                    trust_floor=trust_floor,
+                )
+            )
         return instructions
 
     @staticmethod
@@ -85,4 +114,11 @@ class InstructionBuilder:
         if source_ids and trust_floor in {"untrusted", "tool_untrusted", "tainted", "unknown"}:
             tw = "LOW"
         confidentiality = "HIGH" if risk == "critical" else "MEDIUM" if risk == "high" else "LOW"
-        return SecurityType(confidentiality=confidentiality, trustworthiness=tw, prop_confidentiality=confidentiality, prop_trustworthiness=tw, risk=risk, confidence="HIGH" if tw != "UNKNOWN" else "MEDIUM")  # type: ignore[arg-type]
+        return SecurityType(
+            confidentiality=confidentiality,
+            trustworthiness=tw,
+            prop_confidentiality=confidentiality,
+            prop_trustworthiness=tw,
+            risk=risk,
+            confidence="HIGH" if tw != "UNKNOWN" else "MEDIUM",
+        )  # type: ignore[arg-type]

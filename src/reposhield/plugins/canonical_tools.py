@@ -1,4 +1,5 @@
 """Canonical coding-agent tool names understood by RepoShield."""
+
 from __future__ import annotations
 
 CANONICAL_TOOLS = {

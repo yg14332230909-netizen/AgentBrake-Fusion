@@ -1,4 +1,5 @@
 """Evidence-indexed candidate retrieval for PolicyGraph DSL rules."""
+
 from __future__ import annotations
 
 from collections import defaultdict
@@ -177,13 +178,15 @@ class RuleIndex:
             if impossible is None:
                 kept.add(rule_id)
                 continue
-            trace.pruned.append({
-                "rule_id": rule_id,
-                "path": impossible["path"],
-                "expected": sorted(impossible["expected"]),
-                "actual": sorted(impossible["actual"]),
-                "reason": "single-valued fact has no overlap with rule's required value",
-            })
+            trace.pruned.append(
+                {
+                    "rule_id": rule_id,
+                    "path": impossible["path"],
+                    "expected": sorted(impossible["expected"]),
+                    "actual": sorted(impossible["actual"]),
+                    "reason": "single-valued fact has no overlap with rule's required value",
+                }
+            )
         return kept
 
     @staticmethod

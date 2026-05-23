@@ -7,12 +7,14 @@ from reposhield.policy_engine.rule_index import RuleIndex
 
 def test_rule_index_keeps_large_policy_pack_candidate_set_small():
     rules = PolicyRuleCompiler().compile(_synthetic_policy_pack(1000))
-    facts = PolicyFactSet([
-        PolicyFact.of("action", "semantic_action", "target_action"),
-        PolicyFact.of("source", "has_untrusted", True),
-        PolicyFact.of("contract", "match", "violation"),
-        PolicyFact.of("package", "source", "registry"),
-    ])
+    facts = PolicyFactSet(
+        [
+            PolicyFact.of("action", "semantic_action", "target_action"),
+            PolicyFact.of("source", "has_untrusted", True),
+            PolicyFact.of("contract", "match", "violation"),
+            PolicyFact.of("package", "source", "registry"),
+        ]
+    )
 
     index = RuleIndex(rules)
     elapsed = []
@@ -49,10 +51,12 @@ def _synthetic_policy_pack(size: int) -> list[dict[str, object]]:
         elif idx % 11 == 0:
             predicates.append({"path": "source.has_untrusted", "operator": "eq", "expected": False})
 
-        rules.append({
-            "rule_id": f"PERF-{idx}",
-            "category": "perf",
-            "decision": "block",
-            "predicates": predicates,
-        })
+        rules.append(
+            {
+                "rule_id": f"PERF-{idx}",
+                "category": "perf",
+                "decision": "block",
+                "predicates": predicates,
+            }
+        )
     return rules

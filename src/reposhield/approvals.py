@@ -1,4 +1,5 @@
 """Human-in-the-loop approval centre with plan/action hash binding."""
+
 from __future__ import annotations
 
 import json
@@ -79,12 +80,20 @@ class ApprovalCenter:
             affected_assets=action.affected_assets,
             observed_sandbox_risks=exec_trace.risk_observed if exec_trace else [],
             recommended_decision=decision.decision,
-            available_grants=["deny", "allow_once_sandbox_only", "allow_once_no_network", "allow_once_no_lifecycle", "allow_temporarily_with_constraints"],
+            available_grants=[
+                "deny",
+                "allow_once_sandbox_only",
+                "allow_once_no_network",
+                "allow_once_no_lifecycle",
+                "allow_temporarily_with_constraints",
+            ],
             action_hash_v1=action_hash_v1,
             action_hash_v2=action_hash_v2,
         )
 
-    def grant(self, request: ApprovalRequest, constraints: list[str] | None = None, minutes: int = 30, granted_by: str = "local_user") -> ApprovalGrant:
+    def grant(
+        self, request: ApprovalRequest, constraints: list[str] | None = None, minutes: int = 30, granted_by: str = "local_user"
+    ) -> ApprovalGrant:
         self.grants_issued += 1
         expires = datetime.now(timezone.utc) + timedelta(minutes=minutes)
         return ApprovalGrant(
@@ -104,7 +113,14 @@ class ApprovalCenter:
         self.denials += 1
         return {"approval_request_id": request.approval_request_id, "decision": "denied"}
 
-    def validate(self, grant: ApprovalGrant, action: ActionIR, plan: dict[str, Any] | None = None, contract: TaskContract | None = None, exec_trace: ExecTrace | None = None) -> tuple[bool, str]:
+    def validate(
+        self,
+        grant: ApprovalGrant,
+        action: ActionIR,
+        plan: dict[str, Any] | None = None,
+        contract: TaskContract | None = None,
+        exec_trace: ExecTrace | None = None,
+    ) -> tuple[bool, str]:
         now = datetime.now(timezone.utc)
         expires = datetime.fromisoformat(grant.expires_at)
         if now > expires:
@@ -174,7 +190,15 @@ class ApprovalStore:
         self._append("grant", asdict(grant))
 
     def append_denial(self, request: ApprovalRequest, denied_by: str = "local_user") -> None:
-        self._append("denial", {"approval_request_id": request.approval_request_id, "task_id": request.task_id, "action_id": request.action_id, "denied_by": denied_by})
+        self._append(
+            "denial",
+            {
+                "approval_request_id": request.approval_request_id,
+                "task_id": request.task_id,
+                "action_id": request.action_id,
+                "denied_by": denied_by,
+            },
+        )
 
     def list_events(self) -> list[dict[str, Any]]:
         if not self.path.exists():

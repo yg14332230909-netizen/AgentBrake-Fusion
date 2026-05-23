@@ -1,4 +1,5 @@
 """Session-level history summaries for cross-action policy evidence."""
+
 from __future__ import annotations
 
 import json
@@ -36,11 +37,14 @@ class SessionStateStore:
         task_id: str | None = None,
     ) -> SessionState:
         state = self.load(run_id, task_id)
-        if secret_event or action.semantic_action == "read_secret_file":
-            state.secret_taint = True
-            for asset in [*(action.affected_assets or []), secret_event.asset if secret_event else ""]:
-                if asset:
-                    state.touched_secret_assets.append(str(asset))
+        level = _secret_taint_level(action, decision, trace, secret_event)
+        secret_assets = [str(asset) for asset in [*(action.affected_assets or []), secret_event.asset if secret_event else ""] if asset]
+        if level == "attempted":
+            state.attempted_secret_taint = True
+            state.attempted_secret_assets.extend(secret_assets)
+        elif level == "confirmed":
+            state.confirmed_secret_taint = True
+            state.confirmed_secret_assets.extend(secret_assets)
         if action.metadata.get("source_has_untrusted"):
             state.untrusted_source_seen = True
         if action.semantic_action in {"install_git_dependency", "install_tarball_dependency", "install_registry_dependency"}:
@@ -52,6 +56,7 @@ class SessionStateStore:
         if trace:
             state.prior_external_sinks.extend(str(item.get("host") or item.get("url") or item) for item in trace.network_attempts)
         state.last_decisions.append(decision.decision)
+        _sync_secret_compat(state)
         state.touched_secret_assets = list(dict.fromkeys(state.touched_secret_assets))[-20:]
         state.prior_external_sinks = list(dict.fromkeys(state.prior_external_sinks))[-20:]
         state.last_decisions = state.last_decisions[-20:]
@@ -252,6 +257,7 @@ class PersistentSessionStateStore(SessionStateStore):
 
 
 def session_state_payload(state: SessionState) -> dict:
+    _sync_secret_compat(state)
     payload = asdict(state)
     payload["touched_secret_assets"] = [str(item) for item in state.touched_secret_assets]
     payload["prior_external_sinks"] = [str(item) for item in state.prior_external_sinks]
@@ -269,30 +275,88 @@ def _state_from_dict(value: object) -> SessionState | None:
     if not isinstance(value, dict):
         return None
     try:
+        legacy_secret_taint = bool(value.get("secret_taint", False))
+        attempted = bool(value.get("attempted_secret_taint", False))
+        confirmed = bool(value.get("confirmed_secret_taint", False))
+        if legacy_secret_taint and not attempted and not confirmed:
+            confirmed = True
+        attempted_assets = [str(item) for item in value.get("attempted_secret_assets", []) if item]
+        confirmed_assets = [str(item) for item in value.get("confirmed_secret_assets", []) if item]
+        legacy_assets = [str(item) for item in value.get("touched_secret_assets", []) if item]
+        if confirmed and not confirmed_assets:
+            confirmed_assets = list(legacy_assets)
+        if attempted and not attempted_assets:
+            attempted_assets = list(legacy_assets)
         state = SessionState(
             session_state_id=str(value.get("session_state_id") or new_id("state")),
             run_id=str(value.get("run_id") or "run_default"),
             task_id=str(value["task_id"]) if value.get("task_id") else None,
-            secret_taint=bool(value.get("secret_taint", False)),
-            touched_secret_assets=[str(item) for item in value.get("touched_secret_assets", []) if item],
+            secret_taint=legacy_secret_taint or attempted or confirmed,
+            touched_secret_assets=legacy_assets,
             untrusted_source_seen=bool(value.get("untrusted_source_seen", False)),
             package_taint=bool(value.get("package_taint", False)),
             ci_taint=bool(value.get("ci_taint", False)),
             prior_external_sinks=[str(item) for item in value.get("prior_external_sinks", []) if item],
             approval_scope=dict(value.get("approval_scope") or {}),
             last_decisions=[str(item) for item in value.get("last_decisions", []) if item],
+            attempted_secret_taint=attempted,
+            confirmed_secret_taint=confirmed,
+            attempted_secret_assets=attempted_assets,
+            confirmed_secret_assets=confirmed_assets,
+            taint_confidence=str(value.get("taint_confidence") or ("confirmed" if confirmed else "attempted" if attempted else "none")),
         )
+        _sync_secret_compat(state)
         return _finalise(state)
     except Exception:
         return None
 
 
 def _sanitize_state(state: SessionState, max_history_items: int = 20) -> SessionState:
-    state.touched_secret_assets = list(dict.fromkeys(_sanitize_asset(item) for item in state.touched_secret_assets if item))[-max_history_items:]
+    _sync_secret_compat(state)
+    state.attempted_secret_assets = list(dict.fromkeys(_sanitize_asset(item) for item in state.attempted_secret_assets if item))[
+        -max_history_items:
+    ]
+    state.confirmed_secret_assets = list(dict.fromkeys(_sanitize_asset(item) for item in state.confirmed_secret_assets if item))[
+        -max_history_items:
+    ]
+    state.touched_secret_assets = list(dict.fromkeys(_sanitize_asset(item) for item in state.touched_secret_assets if item))[
+        -max_history_items:
+    ]
     state.prior_external_sinks = list(dict.fromkeys(_sink_host(item) for item in state.prior_external_sinks if item))[-max_history_items:]
     state.last_decisions = [str(item) for item in state.last_decisions[-max_history_items:]]
     state.approval_scope = _sanitize_mapping(state.approval_scope)
+    _sync_secret_compat(state)
     return _finalise(state)
+
+
+def _secret_taint_level(
+    action: ActionIR,
+    decision: PolicyDecision,
+    trace: ExecTrace | None,
+    secret_event: SecretTaintEvent | None,
+) -> str:
+    if not (secret_event or action.semantic_action == "read_secret_file"):
+        return "none"
+    if decision.decision in {"block", "quarantine"}:
+        return "attempted"
+    if trace and ("secret_access" in trace.risk_observed or trace.files_read or trace.env_access):
+        return "confirmed"
+    if decision.decision in {"allow", "allow_in_sandbox", "sandbox_then_approval"}:
+        return "confirmed"
+    return "attempted"
+
+
+def _sync_secret_compat(state: SessionState) -> None:
+    if state.secret_taint and not state.attempted_secret_taint and not state.confirmed_secret_taint:
+        state.confirmed_secret_taint = True
+        state.confirmed_secret_assets.extend(state.touched_secret_assets)
+    state.attempted_secret_assets = list(dict.fromkeys(str(item) for item in state.attempted_secret_assets if item))
+    state.confirmed_secret_assets = list(dict.fromkeys(str(item) for item in state.confirmed_secret_assets if item))
+    state.secret_taint = state.attempted_secret_taint or state.confirmed_secret_taint
+    state.touched_secret_assets = list(
+        dict.fromkeys([*state.attempted_secret_assets, *state.confirmed_secret_assets, *state.touched_secret_assets])
+    )
+    state.taint_confidence = "confirmed" if state.confirmed_secret_taint else "attempted" if state.attempted_secret_taint else "none"
 
 
 def _sanitize_asset(value: object) -> str:

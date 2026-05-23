@@ -1,4 +1,3 @@
-
 from reposhield.asset import AssetScanner
 from reposhield.context import ContextProvenance
 
@@ -29,7 +28,9 @@ def test_asset_scanner_skips_local_runtime_and_test_output_dirs(tmp_path):
     paths = {a.path for a in graph.assets}
 
     assert "package.json" in paths
-    assert not any(path.startswith((".reposhield/", ".pytest_tmp_run/", ".pytest_cache/", ".ruff_cache/", "reports_tmp_demo/")) for path in paths)
+    assert not any(
+        path.startswith((".reposhield/", ".pytest_tmp_run/", ".pytest_cache/", ".ruff_cache/", "reports_tmp_demo/")) for path in paths
+    )
 
 
 def test_context_untrusted_cannot_authorize_tool_use():

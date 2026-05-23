@@ -1,4 +1,5 @@
 """Context provenance and trust tagging."""
+
 from __future__ import annotations
 
 import re

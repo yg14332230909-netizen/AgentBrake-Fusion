@@ -1,4 +1,5 @@
 """Minimal local HTML dashboard renderer."""
+
 from __future__ import annotations
 
 import html
@@ -13,7 +14,8 @@ def render_dashboard(audit_path: str | Path, output_path: str | Path, approvals_
     events = audit.read_events()
     approvals = _read_jsonl(approvals_path) if approvals_path else []
     blocked = [
-        e for e in events
+        e
+        for e in events
         if e.get("event_type") == "policy_decision"
         and e.get("payload", {}).get("decision") in {"block", "quarantine", "sandbox_then_approval"}
     ]
@@ -61,11 +63,11 @@ def render_dashboard(audit_path: str | Path, output_path: str | Path, approvals_
 <h1>RepoShield Dashboard</h1>
 <div class="card"><strong>Audit:</strong> {html.escape(str(audit_path))}<br><strong>Events:</strong> {len(events)}<br><strong>Blocked / approval-required:</strong> {len(blocked)}</div>
 <h2>Recent Policy Blocks</h2>
-<table><thead><tr><th>time</th><th>decision</th><th>risk</th><th>reasons</th><th>rules</th><th>evidence</th><th>action</th></tr></thead><tbody>{''.join(rows)}</tbody></table>
+<table><thead><tr><th>time</th><th>decision</th><th>risk</th><th>reasons</th><th>rules</th><th>evidence</th><th>action</th></tr></thead><tbody>{"".join(rows)}</tbody></table>
 <h2>Evidence Chains</h2>
-<table><thead><tr><th>action</th><th>sources</th><th>rules</th><th>decisions</th></tr></thead><tbody>{''.join(chain_rows)}</tbody></table>
+<table><thead><tr><th>action</th><th>sources</th><th>rules</th><th>decisions</th></tr></thead><tbody>{"".join(chain_rows)}</tbody></table>
 <h2>Approval Events</h2>
-<table><thead><tr><th>time</th><th>type</th><th>approval</th><th>action</th></tr></thead><tbody>{''.join(approval_rows)}</tbody></table>
+<table><thead><tr><th>time</th><th>type</th><th>approval</th><th>action</th></tr></thead><tbody>{"".join(approval_rows)}</tbody></table>
 </body></html>"""
     out.write_text(doc, encoding="utf-8")
     return out

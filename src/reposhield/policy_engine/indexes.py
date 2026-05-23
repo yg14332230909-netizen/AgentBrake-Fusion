@@ -1,4 +1,5 @@
 """Indexes over repository assets and source provenance."""
+
 from __future__ import annotations
 
 import fnmatch
@@ -43,7 +44,13 @@ class AssetIndex:
             rel = norm
             repo_escape = bool(path and not norm.startswith(("env:", "http:", "https:")))
 
-        asset = self.by_path.get(rel) or self.by_path.get(norm) or self.by_canonical.get(norm) or self.graph.asset_for_path(rel) or self.graph.asset_for_path(norm)
+        asset = (
+            self.by_path.get(rel)
+            or self.by_path.get(norm)
+            or self.by_canonical.get(norm)
+            or self.graph.asset_for_path(rel)
+            or self.graph.asset_for_path(norm)
+        )
         symlink_escape = bool(asset and asset.asset_type == "symlink" and asset.metadata.get("points_outside_repo"))
         if norm.startswith("../") or "/../" in norm:
             repo_escape = True

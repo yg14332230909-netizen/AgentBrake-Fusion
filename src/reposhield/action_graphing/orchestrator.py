@@ -1,4 +1,5 @@
 """ActionGraph parser orchestration."""
+
 from __future__ import annotations
 
 from dataclasses import asdict
@@ -35,7 +36,15 @@ def ensure_action_graph(
     ):
         action.graph_id = str(existing["graph_id"])
         return graph_from_dict(existing)
-    graph = build_action_graph(action, run_id=run_id, repo_root=repo_root, exec_trace=exec_trace, package_event=package_event, session_state=session_state, parser_mode=parser_mode)
+    graph = build_action_graph(
+        action,
+        run_id=run_id,
+        repo_root=repo_root,
+        exec_trace=exec_trace,
+        package_event=package_event,
+        session_state=session_state,
+        parser_mode=parser_mode,
+    )
     action.graph_id = graph.graph_id
     action.metadata["action_graph_id"] = graph.graph_id
     action.metadata["action_graph"] = asdict(graph)
@@ -52,7 +61,14 @@ def build_action_graph(
     session_state: SessionState | None = None,
     parser_mode: str = "auto",
 ) -> ActionGraph:
-    ctx = GraphBuildContext(action=action, run_id=run_id, repo_root=Path(repo_root).resolve() if repo_root else None, exec_trace=exec_trace, package_event=package_event, session_state=session_state)
+    ctx = GraphBuildContext(
+        action=action,
+        run_id=run_id,
+        repo_root=Path(repo_root).resolve() if repo_root else None,
+        exec_trace=exec_trace,
+        package_event=package_event,
+        session_state=session_state,
+    )
     parsers = [PowerShellParser(), PythonSnippetParser(), ShellParser(), FallbackHeuristicParser()]
     fragment = None
     warnings: list[str] = []

@@ -1,4 +1,5 @@
 """Guarded command adapter for real agent shell-tool integration."""
+
 from __future__ import annotations
 
 import shlex
@@ -84,7 +85,13 @@ class GuardedExecAdapter:
 
         if decision.decision == "allow_in_sandbox":
             trace = self.cp.sandbox.preflight(action, decision=decision)
-            self.cp.audit.append("exec_trace", asdict(trace), task_id=self.cp.contract.task_id if self.cp.contract else None, actor="guarded_exec_adapter", action_id=action.action_id)
+            self.cp.audit.append(
+                "exec_trace",
+                asdict(trace),
+                task_id=self.cp.contract.task_id if self.cp.contract else None,
+                actor="guarded_exec_adapter",
+                action_id=action.action_id,
+            )
             result.sandboxed = True
             result.exit_code = trace.exit_code
             result.notes.append("allowed_in_sandbox: command was preflighted instead of executed on host")

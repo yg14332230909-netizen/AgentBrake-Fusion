@@ -1,4 +1,5 @@
 """Typed facts used by the PolicyGraph engine."""
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field

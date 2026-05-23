@@ -37,15 +37,17 @@ def test_invariant_decision_cannot_be_downgraded_by_admin_signed_override():
         matched_rules=[{"rule_id": "INV-SECRET-001", "invariant": True}],
         rule_trace=[{"invariant_hits": ["INV-SECRET-001"]}],
     )
-    overrides = ConfigurablePolicyOverrides([
-        {
-            "name": "try_allow_secret",
-            "match": {"decision": "block"},
-            "decision": "allow",
-            "unsafe_override": True,
-            "admin_signed": True,
-        }
-    ])
+    overrides = ConfigurablePolicyOverrides(
+        [
+            {
+                "name": "try_allow_secret",
+                "match": {"decision": "block"},
+                "decision": "allow",
+                "unsafe_override": True,
+                "admin_signed": True,
+            }
+        ]
+    )
 
     updated = overrides.apply(ActionParser().parse("cat .env"), decision)
 

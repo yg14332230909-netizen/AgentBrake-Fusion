@@ -3,6 +3,7 @@ import type { JudgmentTraceViewModel } from "../../types";
 import { AlgorithmTracePanel } from "./AlgorithmTracePanel";
 import { CausalEvidenceGraph } from "./CausalEvidenceGraph";
 import { CounterfactualPanel } from "./CounterfactualPanel";
+import { ConstraintPanel } from "./ConstraintPanel";
 import { DecisionLatticeStepper } from "./DecisionLatticeStepper";
 import { EvidenceIntakePanel } from "./EvidenceIntakePanel";
 import { FactMatrix } from "./FactMatrix";
@@ -29,6 +30,7 @@ export function JudgmentWorkspace({ judgment }: { judgment: JudgmentTraceViewMod
           <RuleCandidatePruner judgment={judgment} />
           <PredicateMatrix judgment={judgment} />
           <DecisionLatticeStepper judgment={judgment} />
+          <ConstraintPanel judgment={judgment} />
           <WhyDecisionPanel judgment={judgment} />
           <CounterfactualPanel judgment={judgment} />
         </div>

@@ -1,4 +1,5 @@
 """Two-layer RepoShield registry: immutable source rules + user/project overrides."""
+
 from __future__ import annotations
 
 import fnmatch
@@ -42,7 +43,16 @@ class TwoLayerRegistry:
         for rule in self.source_rules:
             if fnmatch.fnmatch(norm, self._norm(rule.pattern)):
                 return {"path": norm, "layer": "source", **asdict(rule)}
-        return {"path": norm, "layer": "default", "pattern": "*", "confidentiality": "LOW", "trust": "semi_trusted", "risk": "low", "capabilities": [], "metadata": {}}
+        return {
+            "path": norm,
+            "layer": "default",
+            "pattern": "*",
+            "confidentiality": "LOW",
+            "trust": "semi_trusted",
+            "risk": "low",
+            "capabilities": [],
+            "metadata": {},
+        }
 
     @staticmethod
     def _norm(path: str) -> str:

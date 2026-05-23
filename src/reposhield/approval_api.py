@@ -1,4 +1,5 @@
 """Tiny local approval HTTP API for RepoShield demos."""
+
 from __future__ import annotations
 
 import json
@@ -18,7 +19,12 @@ def approval_events_summary(store: ApprovalStore) -> dict[str, Any]:
     grants = [e for e in events if e.get("event_type") == "grant"]
     denials = [e for e in events if e.get("event_type") == "denial"]
     return {
-        "metrics": {"requests": len(requests), "grants": len(grants), "denials": len(denials), "pending": max(len(requests) - len(grants) - len(denials), 0)},
+        "metrics": {
+            "requests": len(requests),
+            "grants": len(grants),
+            "denials": len(denials),
+            "pending": max(len(requests) - len(grants) - len(denials), 0),
+        },
         "events": events,
     }
 

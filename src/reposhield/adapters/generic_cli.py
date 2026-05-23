@@ -3,6 +3,7 @@
 The adapter can read a transcript emitted by any coding agent. Only actions
 allowed by RepoShield are applied; dangerous actions are never passed through.
 """
+
 from __future__ import annotations
 
 import json
@@ -53,7 +54,12 @@ class GenericCLIAdapter:
                 )
             self.cp.audit.append(
                 "unsafe_adapter_command_collection",
-                {"adapter": self.name, "command": self.command, "mode": self.command_collection_mode, "warning": "external command collection was constrained to a temporary sandbox copy"},
+                {
+                    "adapter": self.name,
+                    "command": self.command,
+                    "mode": self.command_collection_mode,
+                    "warning": "external command collection was constrained to a temporary sandbox copy",
+                },
                 task_id=self.cp.contract.task_id if self.cp.contract else None,
                 actor="generic_cli_adapter",
             )
@@ -61,14 +67,25 @@ class GenericCLIAdapter:
                 sandbox_repo = Path(tmp) / "repo"
                 import shutil
 
-                shutil.copytree(self.repo_root, sandbox_repo, ignore=shutil.ignore_patterns(".git", "node_modules", ".venv", ".env", ".npmrc", ".pypirc"))
-                proc = subprocess.run(self.command, cwd=sandbox_repo, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)
+                shutil.copytree(
+                    self.repo_root,
+                    sandbox_repo,
+                    ignore=shutil.ignore_patterns(".git", "node_modules", ".venv", ".env", ".npmrc", ".pypirc"),
+                )
+                proc = subprocess.run(
+                    self.command, cwd=sandbox_repo, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120
+                )
             text = proc.stdout + "\n" + proc.stderr
         else:
             text = "EDIT: src/login.js\nRS_ACTION: npm test\n"
         self._ingest_transcript_sources(text)
         calls = parse_reposhield_action_lines(text, strict=self.strict_transcript)
-        self.cp.audit.append("adapter_plan_collected", {"adapter": self.name, "calls": [asdict(c) for c in calls]}, task_id=self.cp.contract.task_id if self.cp.contract else None, actor="generic_cli_adapter")
+        self.cp.audit.append(
+            "adapter_plan_collected",
+            {"adapter": self.name, "calls": [asdict(c) for c in calls]},
+            task_id=self.cp.contract.task_id if self.cp.contract else None,
+            actor="generic_cli_adapter",
+        )
         return calls
 
     def run(self) -> AdapterRunResult:
@@ -76,7 +93,9 @@ class GenericCLIAdapter:
             self.cp.build_contract(self.task)
         result = AdapterRunResult(adapter=self.name, repo_root=str(self.repo_root), task=self.task, audit_log=str(self.cp.audit.log_path))
         for call in self.collect_plan():
-            _action, decision = self.cp.guard_action(call.raw_action, source_ids=call.source_ids or [], tool=call.tool, operation=call.operation, file_path=call.file_path)
+            _action, decision = self.cp.guard_action(
+                call.raw_action, source_ids=call.source_ids or [], tool=call.tool, operation=call.operation, file_path=call.file_path
+            )
             result.events.append({"raw_action": call.raw_action, "decision": asdict(decision)})
             if decision.decision == "allow":
                 self.apply_allowed_action(call)
@@ -85,14 +104,25 @@ class GenericCLIAdapter:
                 result.executed.append(call.raw_action)
             elif decision.decision == "allow_in_sandbox":
                 trace = self.cp.sandbox.preflight(_action, decision=decision)
-                self.cp.audit.append("exec_trace", asdict(trace), task_id=self.cp.contract.task_id if self.cp.contract else None, actor="generic_cli_adapter", action_id=_action.action_id)
+                self.cp.audit.append(
+                    "exec_trace",
+                    asdict(trace),
+                    task_id=self.cp.contract.task_id if self.cp.contract else None,
+                    actor="generic_cli_adapter",
+                    action_id=_action.action_id,
+                )
                 result.sandboxed.append(call.raw_action)
                 result.simulated.append(call.raw_action)
             elif decision.decision == "sandbox_then_approval":
                 result.approval_required.append(call.raw_action)
             else:
                 result.blocked.append(call.raw_action)
-        self.cp.audit.append("adapter_run_result", asdict(result), task_id=self.cp.contract.task_id if self.cp.contract else None, actor="generic_cli_adapter")
+        self.cp.audit.append(
+            "adapter_run_result",
+            asdict(result),
+            task_id=self.cp.contract.task_id if self.cp.contract else None,
+            actor="generic_cli_adapter",
+        )
         return result
 
     def apply_allowed_action(self, call: AgentToolCall) -> None:

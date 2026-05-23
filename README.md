@@ -8,13 +8,13 @@ Short version:
 RepoShield = a pre-execution safety gate for coding agents
 ```
 
-## Core Algorithm: Repository-aware Multi-Evidence Policy Fusion
+## Core Algorithm: Multi-Source Evidence Judgment (R-MPF)
 
-RepoShield's core decision procedure is **R-MPF: Repository-aware
-Multi-Evidence Policy Fusion**. The goal is to make a coding-agent decision
-from repository context, user intent, tool semantics, source trust, asset risk,
-package risk, sandbox observations, and approval state, rather than from a
-single rule or a raw tool name.
+RepoShield's core decision procedure is the **Multi-Source Evidence Judgment
+algorithm (R-MPF)**. R-MPF, short for Repository-aware Multi-Evidence Policy
+Fusion, makes coding-agent decisions from repository context, user intent, tool
+semantics, source trust, asset risk, package risk, sandbox observations, and
+approval state rather than from a single rule or raw tool name.
 
 **Input**
 

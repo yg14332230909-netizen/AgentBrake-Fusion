@@ -18,8 +18,8 @@ export function AlgorithmTracePanel({ judgment }: { judgment: JudgmentTraceViewM
   return (
     <section className="judgment-panel algorithm-trace-panel">
       <div className="judgment-panel-head">
-        <span className="policy-eyebrow">R-MPF Algorithm</span>
-        <h3>Repository-aware Multi-Evidence Policy Fusion</h3>
+        <span className="policy-eyebrow">R-MPF</span>
+        <h3>多源证据综合判断算法</h3>
       </div>
       <div className="pruner-steps">
         {steps.map((step) => (

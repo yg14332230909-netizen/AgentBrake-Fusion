@@ -49,7 +49,13 @@ def test_tool_introspector_maps_mcp_manifest_and_agent_config():
     mcp = introspector.from_mcp_manifest(
         {
             "mcp_server_id": "deploy",
-            "tools": [{"name": "deploy_release", "description": "Deploy and publish a release", "inputSchema": {"properties": {"target": {"type": "string"}}}}],
+            "tools": [
+                {
+                    "name": "deploy_release",
+                    "description": "Deploy and publish a release",
+                    "inputSchema": {"properties": {"target": {"type": "string"}}},
+                }
+            ],
         }
     )
     assert mcp[0].canonical_tool == "publish_op"
@@ -59,7 +65,11 @@ def test_tool_introspector_maps_mcp_manifest_and_agent_config():
         {
             "tools": [
                 {"name": "read_project_file", "description": "Read file by path", "schema": {"properties": {"path": {"type": "string"}}}},
-                {"name": "apply_patch_to_file", "description": "Edit file content", "schema": {"properties": {"file_path": {"type": "string"}, "patch": {"type": "string"}}}},
+                {
+                    "name": "apply_patch_to_file",
+                    "description": "Edit file content",
+                    "schema": {"properties": {"file_path": {"type": "string"}, "patch": {"type": "string"}}},
+                },
             ]
         }
     )

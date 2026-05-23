@@ -1,4 +1,5 @@
 """AuditLog tailing and in-memory Studio Pro index."""
+
 from __future__ import annotations
 
 import threading

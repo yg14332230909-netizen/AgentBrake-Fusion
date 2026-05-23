@@ -1,4 +1,5 @@
 """Python snippet parser for common secret-to-network patterns."""
+
 from __future__ import annotations
 
 import ast
@@ -40,7 +41,19 @@ class PythonSnippetParser:
                     arg = _first_string_arg(node)
                     if arg:
                         reads.append(f"env:{arg}")
-                if any(name.endswith(suffix) for suffix in ("requests.get", "requests.post", "requests.put", "requests.request", "urllib.request.urlopen", "http.client.HTTPSConnection", "http.client.HTTPConnection", "socket.create_connection")):
+                if any(
+                    name.endswith(suffix)
+                    for suffix in (
+                        "requests.get",
+                        "requests.post",
+                        "requests.put",
+                        "requests.request",
+                        "urllib.request.urlopen",
+                        "http.client.HTTPSConnection",
+                        "http.client.HTTPConnection",
+                        "socket.create_connection",
+                    )
+                ):
                     host = _host_from_call(node)
                     if host:
                         sinks.append(host)
@@ -51,7 +64,17 @@ class PythonSnippetParser:
         nodes = []
         edges = []
         for idx, path in enumerate(reads or ([] if sinks else [ctx.action.raw_action])):
-            nodes.append(_node(ctx.action, new_id("anode"), "read_secret_file" if (".env" in path or path.startswith("env:")) else "read_file", path, path, idx, self.name))
+            nodes.append(
+                _node(
+                    ctx.action,
+                    new_id("anode"),
+                    "read_secret_file" if (".env" in path or path.startswith("env:")) else "read_file",
+                    path,
+                    path,
+                    idx,
+                    self.name,
+                )
+            )
         for sink in sinks:
             nodes.append(_node(ctx.action, new_id("anode"), "send_network_request", sink, sink, len(nodes), self.name))
         if not nodes:
@@ -60,7 +83,17 @@ class PythonSnippetParser:
         network_nodes = [node for node in nodes if node.semantic_action == "send_network_request"]
         for src in secret_nodes:
             for dst in network_nodes:
-                edges.append(ActionEdge(new_id("aedge"), src.node_id, dst.node_id, "dataflow", evidence_refs=[ctx.action.action_id], confidence=0.85, metadata={"parser": self.name}))
+                edges.append(
+                    ActionEdge(
+                        new_id("aedge"),
+                        src.node_id,
+                        dst.node_id,
+                        "dataflow",
+                        evidence_refs=[ctx.action.action_id],
+                        confidence=0.85,
+                        metadata={"parser": self.name},
+                    )
+                )
         return GraphFragment(nodes, edges, 0.85, True, self.name)
 
 

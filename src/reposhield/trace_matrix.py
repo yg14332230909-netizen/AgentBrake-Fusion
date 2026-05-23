@@ -1,4 +1,5 @@
 """Agent trace compatibility matrix for parser/schema drift experiments."""
+
 from __future__ import annotations
 
 import html
@@ -78,7 +79,9 @@ def run_trace_matrix(trace_root: str | Path, output_dir: str | Path | None = Non
     by_agent: dict[str, dict[str, Any]] = {}
     for row in rows:
         agent = str(row["agent_type"])
-        bucket = by_agent.setdefault(agent, {"agent_type": agent, "count": 0, "passed": 0, "failed": 0, "parse_coverage": 0.0, "semantic_accuracy": 0.0})
+        bucket = by_agent.setdefault(
+            agent, {"agent_type": agent, "count": 0, "passed": 0, "failed": 0, "parse_coverage": 0.0, "semantic_accuracy": 0.0}
+        )
         bucket["count"] += 1
         if row["ok"]:
             bucket["passed"] += 1
@@ -98,7 +101,9 @@ def run_trace_matrix(trace_root: str | Path, output_dir: str | Path | None = Non
             "trace_count": len(rows),
             "agent_count": len(by_agent),
             "pass_rate": round(sum(1 for r in rows if r["ok"]) / max(len(rows), 1), 3),
-            "parse_coverage": round(sum(1 for r in rows if r.get("canonical_tool") and r.get("parser_confidence", 0) >= 0.5) / max(len(rows), 1), 3),
+            "parse_coverage": round(
+                sum(1 for r in rows if r.get("canonical_tool") and r.get("parser_confidence", 0) >= 0.5) / max(len(rows), 1), 3
+            ),
         },
         "by_agent": sorted(by_agent.values(), key=lambda x: x["agent_type"]),
         "rows": rows,
@@ -130,12 +135,12 @@ def render_trace_matrix_html(report: dict[str, Any], output_path: str | Path) ->
     body = f"""<!doctype html><html><head><meta charset="utf-8"><title>RepoShield Trace Matrix</title>
 <style>body{{font-family:system-ui;margin:32px;color:#24292f}}table{{border-collapse:collapse;width:100%}}td,th{{border:1px solid #d0d7de;padding:8px;vertical-align:top}}th{{background:#f6f8fa}}.metric{{display:inline-block;border:1px solid #d0d7de;padding:12px;margin:6px;border-radius:8px}}</style></head><body>
 <h1>RepoShield Agent Trace Compatibility Matrix</h1>
-<div class="metric">traces: <b>{report.get('metrics', {}).get('trace_count', 0)}</b></div>
-<div class="metric">agents: <b>{report.get('metrics', {}).get('agent_count', 0)}</b></div>
-<div class="metric">pass rate: <b>{report.get('metrics', {}).get('pass_rate', 0)}</b></div>
-<div class="metric">parse coverage: <b>{report.get('metrics', {}).get('parse_coverage', 0)}</b></div>
-<h2>By Agent</h2><pre>{html.escape(json.dumps(report.get('by_agent', []), ensure_ascii=False, indent=2))}</pre>
-<h2>Rows</h2><table><thead><tr><th>status</th><th>agent</th><th>canonical tool</th><th>semantic action</th><th>raw action</th><th>errors</th></tr></thead><tbody>{''.join(rows)}</tbody></table>
+<div class="metric">traces: <b>{report.get("metrics", {}).get("trace_count", 0)}</b></div>
+<div class="metric">agents: <b>{report.get("metrics", {}).get("agent_count", 0)}</b></div>
+<div class="metric">pass rate: <b>{report.get("metrics", {}).get("pass_rate", 0)}</b></div>
+<div class="metric">parse coverage: <b>{report.get("metrics", {}).get("parse_coverage", 0)}</b></div>
+<h2>By Agent</h2><pre>{html.escape(json.dumps(report.get("by_agent", []), ensure_ascii=False, indent=2))}</pre>
+<h2>Rows</h2><table><thead><tr><th>status</th><th>agent</th><th>canonical tool</th><th>semantic action</th><th>raw action</th><th>errors</th></tr></thead><tbody>{"".join(rows)}</tbody></table>
 </body></html>"""
     output.write_text(body, encoding="utf-8")
     return output

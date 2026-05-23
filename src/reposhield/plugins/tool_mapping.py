@@ -1,4 +1,5 @@
 """Tool introspection and dynamic mapping for agent tool schemas."""
+
 from __future__ import annotations
 
 import json
@@ -119,13 +120,25 @@ class ToolIntrospector:
             if not name:
                 continue
             schema = tool.get("schema") or tool.get("parameters") or tool.get("input_schema") or tool.get("inputSchema") or {}
-            mappings.append(self.infer(name, description=str(tool.get("description") or ""), schema=schema, source=source, metadata={"agent_config": True}))
+            mappings.append(
+                self.infer(
+                    name, description=str(tool.get("description") or ""), schema=schema, source=source, metadata={"agent_config": True}
+                )
+            )
         return mappings
 
     def from_json_schema(self, name: str, schema: dict[str, Any], *, description: str = "", source: str = "json_schema") -> ToolMapping:
         return self.infer(name, description=description, schema=schema, source=source)
 
-    def infer(self, name: str, *, description: str = "", schema: dict[str, Any] | None = None, source: str = "introspection", metadata: dict[str, Any] | None = None) -> ToolMapping:
+    def infer(
+        self,
+        name: str,
+        *,
+        description: str = "",
+        schema: dict[str, Any] | None = None,
+        source: str = "introspection",
+        metadata: dict[str, Any] | None = None,
+    ) -> ToolMapping:
         schema = schema or {}
         props = _schema_properties(schema)
         canonical, confidence = _infer_canonical(name, description, props)

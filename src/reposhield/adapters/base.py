@@ -3,6 +3,7 @@
 A real Codex/Cline/OpenHands/aider adapter only needs to convert each planned
 agent tool call into guard_action(...), then honour RepoShield's decision.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -19,8 +20,6 @@ class AgentToolCall:
 
 
 class CodingAgentAdapter(Protocol):
-    def next_actions(self) -> list[AgentToolCall]:
-        ...
+    def next_actions(self) -> list[AgentToolCall]: ...
 
-    def apply_allowed_action(self, call: AgentToolCall) -> None:
-        ...
+    def apply_allowed_action(self, call: AgentToolCall) -> None: ...

@@ -4,6 +4,7 @@ No hard dependency on aider is required. When an external aider command or
 transcript is supplied the adapter parses emitted plan lines; otherwise it uses a
 safe deterministic demo plan that includes one injected malicious action.
 """
+
 from __future__ import annotations
 
 import shutil
@@ -57,7 +58,12 @@ class AiderAdapter(GenericCLIAdapter):
         for call in calls:
             if "github:attacker/helper" in call.raw_action:
                 call.source_ids = [src.source_id]
-        self.cp.audit.append("adapter_plan_collected", {"adapter": self.name, "aider_available": self.available(), "calls": [asdict(c) for c in calls]}, task_id=self.cp.contract.task_id if self.cp.contract else None, actor="aider_adapter")
+        self.cp.audit.append(
+            "adapter_plan_collected",
+            {"adapter": self.name, "aider_available": self.available(), "calls": [asdict(c) for c in calls]},
+            task_id=self.cp.contract.task_id if self.cp.contract else None,
+            actor="aider_adapter",
+        )
         return calls
 
     def run(self):

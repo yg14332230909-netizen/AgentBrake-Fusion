@@ -1,4 +1,5 @@
 """Package-manager and software-supply-chain guard."""
+
 from __future__ import annotations
 
 import json
@@ -13,8 +14,7 @@ from .models import ActionIR, PackageEvent, new_id
 class PackageCommandParser(Protocol):
     manager: str
 
-    def targets(self, raw: str) -> list[str]:
-        ...
+    def targets(self, raw: str) -> list[str]: ...
 
 
 class ShlexPackageCommandParser:
@@ -86,10 +86,20 @@ class PackageGuard:
     def __init__(self, repo_root: str | Path, allowed_registries: list[str] | None = None):
         self.repo_root = Path(repo_root)
         self.allowed_registries = allowed_registries or ["registry.npmjs.org", "pypi.org", "files.pythonhosted.org", "fake-registry.local"]
-        self.parsers: list[PackageCommandParser] = [NpmCommandParser(), PipCommandParser(), PoetryCommandParser(), CargoCommandParser(), GoCommandParser()]
+        self.parsers: list[PackageCommandParser] = [
+            NpmCommandParser(),
+            PipCommandParser(),
+            PoetryCommandParser(),
+            CargoCommandParser(),
+            GoCommandParser(),
+        ]
 
     def analyze(self, action: ActionIR) -> PackageEvent | None:
-        if not action.semantic_action.startswith("install_") and action.semantic_action != "publish_artifact" and action.semantic_action != "modify_registry_config":
+        if (
+            not action.semantic_action.startswith("install_")
+            and action.semantic_action != "publish_artifact"
+            and action.semantic_action != "modify_registry_config"
+        ):
             return None
         if action.semantic_action == "publish_artifact":
             return PackageEvent(

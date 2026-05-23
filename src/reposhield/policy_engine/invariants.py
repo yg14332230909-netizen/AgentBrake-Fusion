@@ -1,4 +1,5 @@
 """Non-downgradable safety invariants for PolicyGraph."""
+
 from __future__ import annotations
 
 from .facts import PolicyFactSet

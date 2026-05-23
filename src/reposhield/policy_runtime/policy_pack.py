@@ -1,4 +1,5 @@
 """Policy pack runtime and mode handling."""
+
 from __future__ import annotations
 
 import json
@@ -55,15 +56,23 @@ class PolicyRuntime:
             decision.reason_codes,
             decision.decision,
             would_block,
-            {"risk_score": decision.risk_score, "policy_version": decision.policy_version, "unsafe_allow_disabled": self.unsafe_allow_disabled},
+            {
+                "risk_score": decision.risk_score,
+                "policy_version": decision.policy_version,
+                "unsafe_allow_disabled": self.unsafe_allow_disabled,
+            },
         )
         if self.mode == "disabled":
             return RuntimePolicyResult("allow", decision.decision, self.mode, [hit], warning="policy disabled")
         if self.mode == "observe_only":
-            return RuntimePolicyResult("allow", decision.decision, self.mode, [hit], warning="observe_only:would_block" if would_block else None)
+            return RuntimePolicyResult(
+                "allow", decision.decision, self.mode, [hit], warning="observe_only:would_block" if would_block else None
+            )
         if self.mode == "warn":
             effective = "allow_in_sandbox" if would_block else decision.decision
-            return RuntimePolicyResult(effective, decision.decision, self.mode, [hit], warning="warning:policy_triggered" if would_block else None)
+            return RuntimePolicyResult(
+                effective, decision.decision, self.mode, [hit], warning="warning:policy_triggered" if would_block else None
+            )
         return RuntimePolicyResult(decision.decision, decision.decision, self.mode, [hit])
 
 

@@ -1,4 +1,5 @@
 """Legacy-compatible ActionGraph heuristics."""
+
 from __future__ import annotations
 
 import re
@@ -26,9 +27,28 @@ class FallbackHeuristicParser:
             nodes.append(_node(action, node_id, semantic, target_hint(part, action.affected_assets), part, idx, "fallback_heuristic"))
         if idx > 0:
             relation = edge_relation(action.raw_action, idx)
-            edges.append(ActionEdge(new_id("aedge"), nodes[idx - 1].node_id, node_id, relation, evidence_refs=[action.action_id], metadata={"separator_index": idx - 1}))
+            edges.append(
+                ActionEdge(
+                    new_id("aedge"),
+                    nodes[idx - 1].node_id,
+                    node_id,
+                    relation,
+                    evidence_refs=[action.action_id],
+                    metadata={"separator_index": idx - 1},
+                )
+            )
             if relation == "pipe":
-                edges.append(ActionEdge(new_id("aedge"), nodes[idx - 1].node_id, node_id, "dataflow", evidence_refs=[action.action_id], confidence=0.9, metadata={"separator_index": idx - 1, "derived_from": "pipe"}))
+                edges.append(
+                    ActionEdge(
+                        new_id("aedge"),
+                        nodes[idx - 1].node_id,
+                        node_id,
+                        "dataflow",
+                        evidence_refs=[action.action_id],
+                        confidence=0.9,
+                        metadata={"separator_index": idx - 1, "derived_from": "pipe"},
+                    )
+                )
         if len(nodes) == 1 and looks_like_pipe(action.raw_action):
             nodes[0].metadata["pipe_like"] = True
         return GraphFragment(nodes, edges, action.parser_confidence, True, self.name)
@@ -48,7 +68,9 @@ def graph_from_dict(data: dict) -> ActionGraph:
     )
 
 
-def _node(action: ActionIR, node_id: str, semantic_action: str, target: str | None, raw_part: str, part_index: int, parser_name: str) -> ActionNode:
+def _node(
+    action: ActionIR, node_id: str, semantic_action: str, target: str | None, raw_part: str, part_index: int, parser_name: str
+) -> ActionNode:
     affected = list(action.affected_assets)
     if target and target not in affected and (semantic_action in {"read_secret_file", "send_network_request"} or "." in target):
         affected.append(target)
@@ -88,7 +110,9 @@ def looks_like_pipe(raw: str) -> bool:
 
 def semantic_hint(part: str, fallback: str) -> str:
     low = part.lower()
-    if any(token in low for token in ("curl", "wget", "invoke-webrequest", "invoke-restmethod", "http://", "https://", "requests.", "urlopen")):
+    if any(
+        token in low for token in ("curl", "wget", "invoke-webrequest", "invoke-restmethod", "http://", "https://", "requests.", "urlopen")
+    ):
         return "send_network_request"
     if any(token in low for token in (".env", "secret", "get-content", "open(", "read_text", "os.environ", "os.getenv")):
         return "read_secret_file"
@@ -115,4 +139,10 @@ def target_hint(part: str, fallback_assets: list[str]) -> str | None:
 
 
 def has_side_effect(part: str) -> bool:
-    return bool(re.search(r"\b(curl|wget|invoke-webrequest|invoke-restmethod|npm install|pip install|rm|mv|cp|echo|tee|sed -i|publish|requests\.)\b|>|>>", part, re.I))
+    return bool(
+        re.search(
+            r"\b(curl|wget|invoke-webrequest|invoke-restmethod|npm install|pip install|rm|mv|cp|echo|tee|sed -i|publish|requests\.)\b|>|>>",
+            part,
+            re.I,
+        )
+    )

@@ -1,4 +1,5 @@
 """Compatibility wrapper and PolicyGraph implementation."""
+
 from __future__ import annotations
 
 import os
@@ -77,9 +78,23 @@ class PolicyGraphEngine:
             required = True
         if decision.decision == "block" and run_even_if_blocked:
             required = True
-        profile = "package_preflight" if "package_preflight" in controls else "network-off" if "network_off" in controls or "no_egress" in controls else "dry-run"
+        profile = (
+            "package_preflight"
+            if "package_preflight" in controls
+            else "network-off"
+            if "network_off" in controls or "no_egress" in controls
+            else "dry-run"
+        )
         evidence_mode = "full" if run_even_if_blocked else "summary"
-        return PreflightPlan(required=required, profile=profile, evidence_mode=evidence_mode, run_even_if_blocked=run_even_if_blocked, decision_phase="pre_decide", reason_codes=decision.reason_codes, required_controls=decision.required_controls)
+        return PreflightPlan(
+            required=required,
+            profile=profile,
+            evidence_mode=evidence_mode,
+            run_even_if_blocked=run_even_if_blocked,
+            decision_phase="pre_decide",
+            reason_codes=decision.reason_codes,
+            required_controls=decision.required_controls,
+        )
 
     def _decorate_decision(
         self,
@@ -160,9 +175,30 @@ class PolicyGraphEngine:
             reasons.append("memory_authorization_denied")
             controls.append("memory_taint_gate")
             score += 20
-        return self._decision(action, "allow", min(score, 100), reasons, controls, "PolicyGraph baseline; domain rules and invariants determine the final decision.", intent, ctx.package_event, ctx.exec_trace)
+        return self._decision(
+            action,
+            "allow",
+            min(score, 100),
+            reasons,
+            controls,
+            "PolicyGraph baseline; domain rules and invariants determine the final decision.",
+            intent,
+            ctx.package_event,
+            ctx.exec_trace,
+        )
 
-    def _decision(self, action: ActionIR, decision: str, score: int, reasons: list[str], controls: list[str], explanation: str, intent: IntentDiff | None, package_event: PackageEvent | None, exec_trace: ExecTrace | None) -> PolicyDecision:
+    def _decision(
+        self,
+        action: ActionIR,
+        decision: str,
+        score: int,
+        reasons: list[str],
+        controls: list[str],
+        explanation: str,
+        intent: IntentDiff | None,
+        package_event: PackageEvent | None,
+        exec_trace: ExecTrace | None,
+    ) -> PolicyDecision:
         dedup_reasons = list(dict.fromkeys(reasons))
         dedup_controls = list(dict.fromkeys(controls))
         evidence_refs = [*action.source_ids]
@@ -214,6 +250,7 @@ class PolicyGraphEngine:
             raise ValueError(f"policy pack rules must be a list: {path}")
         return [dict(rule) for rule in rules]
 
+
 class PolicyEngine:
     """Backward-compatible PolicyEngine entrypoint backed only by PolicyGraph."""
 
@@ -240,18 +277,30 @@ class PolicyEngine:
         exec_trace: ExecTrace | None = None,
         session_state: SessionState | None = None,
     ) -> PolicyDecision:
-        ctx = PolicyEvalContext(contract, action, asset_graph, context_graph, package_event, secret_event, exec_trace, "post_decide" if exec_trace else "pre_decide", session_state)
+        ctx = PolicyEvalContext(
+            contract,
+            action,
+            asset_graph,
+            context_graph,
+            package_event,
+            secret_event,
+            exec_trace,
+            "post_decide" if exec_trace else "pre_decide",
+            session_state,
+        )
         graph_decision, trace = self.policygraph.decide(ctx, mode=self.mode)
         event = trace.to_dict()
         self._eval_events.append(event)
-        self._fact_events.append({
-            "fact_set_id": trace.fact_set_id,
-            "fact_hash": trace.fact_hash,
-            "fact_count": len(trace.fact_nodes),
-            "namespace_counts": _fact_namespace_counts(trace.fact_nodes),
-            "summary": _fact_summary(trace.fact_nodes),
-            "policy_eval_trace_id": trace.policy_eval_trace_id,
-        })
+        self._fact_events.append(
+            {
+                "fact_set_id": trace.fact_set_id,
+                "fact_hash": trace.fact_hash,
+                "fact_count": len(trace.fact_nodes),
+                "namespace_counts": _fact_namespace_counts(trace.fact_nodes),
+                "summary": _fact_summary(trace.fact_nodes),
+                "policy_eval_trace_id": trace.policy_eval_trace_id,
+            }
+        )
         return graph_decision
 
     def plan_preflight(self, decision: PolicyDecision) -> PreflightPlan:
@@ -271,6 +320,7 @@ class PolicyEngine:
 def _load_policy_yaml(path: Path) -> dict[str, Any]:
     try:
         import yaml  # type: ignore
+
         return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     except ImportError as exc:
         raise RuntimeError("PyYAML is required for PolicyGraph YAML policy packs") from exc
@@ -285,7 +335,22 @@ def _fact_namespace_counts(nodes: list[dict[str, Any]]) -> dict[str, int]:
 
 
 def _fact_summary(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    important = {"action", "source", "asset", "contract", "package", "secret", "mcp", "memory", "sandbox", "graph", "flow", "history", "constraint", "exec"}
+    important = {
+        "action",
+        "source",
+        "asset",
+        "contract",
+        "package",
+        "secret",
+        "mcp",
+        "memory",
+        "sandbox",
+        "graph",
+        "flow",
+        "history",
+        "constraint",
+        "exec",
+    }
     out = []
     for node in nodes:
         if node.get("namespace") in important:

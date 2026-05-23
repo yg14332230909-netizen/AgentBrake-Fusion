@@ -5,6 +5,7 @@ and RepoShield's execution-facing ActionIR.  It records message lineage,
 provenance, parser confidence and taint/security propagation so incident reports
 can explain *why a model output became an executable action*.
 """
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field

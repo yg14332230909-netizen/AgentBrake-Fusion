@@ -46,7 +46,7 @@ Evidence -> Facts -> RuleIndex -> PolicyGraph -> Decision
 
 详见：[PolicyGraph / RuleIndex 多源证据引擎](docs/POLICYGRAPH_RULEINDEX.zh-CN.md)。
 
-## 核心算法：R-MPF
+## 核心算法：多源证据综合判断算法（R-MPF）
 
 R-MPF 全称为 **Repository-aware Multi-Evidence Policy Fusion**，即“仓库感知的多源证据策略融合算法”。
 

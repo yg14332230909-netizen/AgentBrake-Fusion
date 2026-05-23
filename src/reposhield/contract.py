@@ -1,4 +1,5 @@
 """Task contract generation and intent-boundary checks."""
+
 from __future__ import annotations
 
 import fnmatch

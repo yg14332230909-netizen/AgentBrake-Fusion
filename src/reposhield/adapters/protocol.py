@@ -1,4 +1,5 @@
 """Common adapter protocol objects for external coding agents."""
+
 from __future__ import annotations
 
 import json

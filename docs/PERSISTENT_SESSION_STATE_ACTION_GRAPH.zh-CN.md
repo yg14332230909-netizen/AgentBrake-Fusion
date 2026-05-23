@@ -38,17 +38,26 @@
 
 ## Gateway Run ID
 
-Gateway 为每次请求选择稳定 run id，优先级为：
+Gateway 通过 `gateway/session_identity.py` 为每次请求解析稳定身份，输出 `run_id`、`conversation_id`、`turn_id`、`client_id` 与 `task_id`。`run_id` 优先级为：
 
 ```text
-metadata.run_id
 metadata.reposhield_run_id
-trace_id
-request_id
+metadata.run_id
+X-RepoShield-Run-Id
+metadata.conversation_id / thread_id / session_id 派生
+request.conversation_id / thread_id / session_id 派生
+client_id 派生
 fallback generated id
 ```
 
 同一 `run_id` 下，新的 ControlPlane 会从 `.reposhield/session_state.jsonl` 或 audit log 恢复最新状态。
+
+`SessionState` 现在区分两类 secret taint：
+
+- `attempted_secret_taint`：动作尝试触碰 secret，但已被 block/quarantine 或尚未确认读取成功。
+- `confirmed_secret_taint`：secret 已被允许进入上下文，或 ExecTrace 观测到文件/环境变量读取。
+
+旧字段 `secret_taint` 仍保留，语义为 attempted 或 confirmed 的兼容并集；旧持久化记录中的 `secret_taint=true` 会迁移为 `confirmed_secret_taint=true`，避免安全降级。
 
 ## ActionGraph Parser
 
@@ -97,6 +106,9 @@ metadata: dict[str, Any] = field(default_factory=dict)
 - `history.state_hash`
 - `history.restore_source`
 - `history.state_age_seconds`
+- `history.attempted_secret_taint`
+- `history.confirmed_secret_taint`
+- `history.secret_taint_level`
 - `trace.enriched_graph`
 
 Bench suite 同步新增聚合指标：
@@ -111,6 +123,8 @@ Bench suite 同步新增聚合指标：
 `INV-EGRESS-001` 现在可以由 `flow.secret_to_network_reachable` 直接触发，也可以由历史 `secret_taint` 与当前网络能力共同触发。
 
 ## 验收场景
+
+注意：blocked / quarantined 的 secret read 会记录为 `attempted_secret_taint`；只有 allow / sandbox 观测确认或旧状态迁移才进入 `confirmed_secret_taint`。Confirmed secret taint 后续外联命中 `INV-EGRESS-001` 并 block；attempted secret taint 后续外联命中 `INV-EGRESS-001B`，进入 sandbox / approval / no_egress 治理约束。
 
 最小验收场景：
 

@@ -1,4 +1,5 @@
 """Local Studio Pro HTTP/SSE server."""
+
 from __future__ import annotations
 
 import json
@@ -58,7 +59,15 @@ def serve_studio_pro(
             if path.startswith("/api/") and not self._authorized(required_key, query=query):
                 return
             if path == "/api/health":
-                self._json({"ok": True, "version": "studio.pro.v0.1", "audit_path": str(audit), "approvals_path": str(Path(approvals_path)), "demo_mode": demo_mode})
+                self._json(
+                    {
+                        "ok": True,
+                        "version": "studio.pro.v0.1",
+                        "audit_path": str(audit),
+                        "approvals_path": str(Path(approvals_path)),
+                        "demo_mode": demo_mode,
+                    }
+                )
                 return
             if path == "/api/runs":
                 self._json({"runs": index.runs()})
@@ -143,7 +152,12 @@ def serve_studio_pro(
                 if expected_hash and expected_hash != req.action_hash:
                     self._json({"error": "action_hash_mismatch"}, status=409)
                     return
-                grant = ApprovalCenter().grant(req, constraints=list(body.get("constraints") or ["sandbox_only", "no_network"]), minutes=int(body.get("minutes") or 30), granted_by=str(body.get("granted_by") or "studio"))
+                grant = ApprovalCenter().grant(
+                    req,
+                    constraints=list(body.get("constraints") or ["sandbox_only", "no_network"]),
+                    minutes=int(body.get("minutes") or 30),
+                    granted_by=str(body.get("granted_by") or "studio"),
+                )
                 approvals.append_grant(grant)
                 self._json({"grant": asdict(grant)})
                 return

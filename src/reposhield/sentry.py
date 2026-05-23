@@ -1,4 +1,5 @@
 """Sensitive-information and egress sentinel."""
+
 from __future__ import annotations
 
 import re

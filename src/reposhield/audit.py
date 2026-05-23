@@ -1,4 +1,5 @@
 """Hash-chain audit log and replay bundle support."""
+
 from __future__ import annotations
 
 import json
@@ -137,7 +138,9 @@ class AuditLog:
                 edges.append({"from": event_id, "to": decision_id, "relation": "decision"})
         return {"nodes": nodes, "edges": edges, "hash_head": self._head, "event_count": len(nodes)}
 
-    def write_replay_bundle(self, bundle_dir: str | Path, repo_snapshot: str | Path | None = None, extra: dict[str, Any] | None = None) -> Path:
+    def write_replay_bundle(
+        self, bundle_dir: str | Path, repo_snapshot: str | Path | None = None, extra: dict[str, Any] | None = None
+    ) -> Path:
         bundle = Path(bundle_dir)
         bundle.mkdir(parents=True, exist_ok=True)
         shutil.copy2(self.log_path, bundle / "audit.jsonl")

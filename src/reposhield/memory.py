@@ -1,4 +1,5 @@
 """Long-term memory write/read gates with trust inheritance."""
+
 from __future__ import annotations
 
 import json
@@ -10,7 +11,13 @@ from .context import ContextProvenance
 from .models import ContextGraph, MemoryRecord, SourceRecord, TrustLevel, new_id, sha256_text, utc_now
 
 TRUST_ORDER: list[TrustLevel] = ["admin", "trusted", "semi_trusted", "untrusted", "tool_untrusted", "tainted", "unknown"]
-HIGH_RISK_AUTH_USES = {"authorize_dependency_install", "authorize_network_egress", "authorize_publish", "override_policy", "authorize_ci_modify"}
+HIGH_RISK_AUTH_USES = {
+    "authorize_dependency_install",
+    "authorize_network_egress",
+    "authorize_publish",
+    "override_policy",
+    "authorize_ci_modify",
+}
 SENSITIVE_WORDS = ["token", "secret", "install", "curl", "deploy", "publish", "registry", "workflow", "github:", "npmrc", "pypirc"]
 
 
@@ -21,13 +28,25 @@ class MemoryStore:
         if not self.path.exists():
             self.path.write_text("[]", encoding="utf-8")
 
-    def write(self, summary: str, source_ids: list[str], context_graph: ContextGraph, created_by: str = "agent", ttl_seconds: int = 86400, write_decision_id: str | None = None) -> MemoryRecord:
+    def write(
+        self,
+        summary: str,
+        source_ids: list[str],
+        context_graph: ContextGraph,
+        created_by: str = "agent",
+        ttl_seconds: int = 86400,
+        write_decision_id: str | None = None,
+    ) -> MemoryRecord:
         trust_floor = self._trust_floor([context_graph.get(s).trust_level for s in source_ids if context_graph.get(s)])
         tainted = trust_floor in {"untrusted", "tool_untrusted", "tainted", "unknown"}
         sensitive_keywords = any(word in summary.lower() for word in SENSITIVE_WORDS)
         memory_trust: TrustLevel = "tainted" if tainted or sensitive_keywords else trust_floor
         allowed = ["forensic_reference", "summarize"] if memory_trust == "tainted" else ["recall_project_context", "summarize"]
-        forbidden = ["authorize_dependency_install", "override_policy", "authorize_network_egress", "authorize_publish", "authorize_ci_modify"] if memory_trust == "tainted" else ["override_admin_policy"]
+        forbidden = (
+            ["authorize_dependency_install", "override_policy", "authorize_network_egress", "authorize_publish", "authorize_ci_modify"]
+            if memory_trust == "tainted"
+            else ["override_admin_policy"]
+        )
         record = MemoryRecord(
             memory_id=new_id("mem"),
             content_hash=sha256_text(summary),

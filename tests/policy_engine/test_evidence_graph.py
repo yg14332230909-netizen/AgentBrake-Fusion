@@ -15,7 +15,18 @@ def test_policy_eval_trace_contains_causal_graph_edges():
         ["block"],
         ["asset_1"],
         True,
-        [{"predicate_id": "pred_1", "path": "asset.touched_type", "operator": "in", "expected": ["secret_file"], "actual": ["secret_file"], "matched": True, "matched_fact_ids": [fact.fact_id], "evidence_refs": ["asset_1"]}],
+        [
+            {
+                "predicate_id": "pred_1",
+                "path": "asset.touched_type",
+                "operator": "in",
+                "expected": ["secret_file"],
+                "actual": ["secret_file"],
+                "matched": True,
+                "matched_fact_ids": [fact.fact_id],
+                "evidence_refs": ["asset_1"],
+            }
+        ],
     )
 
     trace = PolicyEvaluationTrace.build(

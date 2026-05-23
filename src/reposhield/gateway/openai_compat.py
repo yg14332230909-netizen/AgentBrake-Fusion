@@ -1,4 +1,5 @@
 """OpenAI-compatible request/response helpers."""
+
 from __future__ import annotations
 
 import json
@@ -83,18 +84,22 @@ def chat_completion_stream_events(response: dict[str, Any], *, include_role: boo
     """
     model = str(response.get("model") or "reposhield/local")
     message = ((response.get("choices") or [{}])[0].get("message") or {}) if isinstance(response.get("choices"), list) else {}
-    finish_reason = ((response.get("choices") or [{}])[0].get("finish_reason") or "stop") if isinstance(response.get("choices"), list) else "stop"
+    finish_reason = (
+        ((response.get("choices") or [{}])[0].get("finish_reason") or "stop") if isinstance(response.get("choices"), list) else "stop"
+    )
     stream_id = str(response.get("id") or new_id("chatcmpl"))
     created = response.get("created") or utc_now()
     events: list[dict[str, Any]] = []
     if include_role:
-        events.append({
-            "id": stream_id,
-            "object": "chat.completion.chunk",
-            "created": created,
-            "model": model,
-            "choices": [{"index": 0, "delta": {"role": "assistant"}, "finish_reason": None}],
-        })
+        events.append(
+            {
+                "id": stream_id,
+                "object": "chat.completion.chunk",
+                "created": created,
+                "model": model,
+                "choices": [{"index": 0, "delta": {"role": "assistant"}, "finish_reason": None}],
+            }
+        )
 
     content = str(message.get("content") or "")
     for chunk in _content_chunks(content):
@@ -150,7 +155,7 @@ def chat_completion_stream_events(response: dict[str, Any], *, include_role: boo
 def _content_chunks(content: str, size: int = 256) -> list[str]:
     if not content:
         return []
-    return [content[i:i + size] for i in range(0, len(content), size)]
+    return [content[i : i + size] for i in range(0, len(content), size)]
 
 
 def safe_block_message(reason: str, decisions: list[dict[str, Any]], trace_id: str) -> dict[str, Any]:

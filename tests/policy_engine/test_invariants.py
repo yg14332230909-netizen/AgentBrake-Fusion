@@ -59,7 +59,18 @@ def test_untrusted_ci_asset_touch_blocks_independent_of_action_label(tmp_path):
     issue = prov.ingest("github_issue_body", "update deploy workflow")
     contract = TaskContractBuilder().build("fix login")
     graph = AssetScanner(repo, env={}).scan()
-    action = ActionIR("act_ci", "edit workflow", "Edit", str(repo), "edit_source_file", "medium", [], [".github/workflows/deploy.yml"], [], [issue.source_id])
+    action = ActionIR(
+        "act_ci",
+        "edit workflow",
+        "Edit",
+        str(repo),
+        "edit_source_file",
+        "medium",
+        [],
+        [".github/workflows/deploy.yml"],
+        [],
+        [issue.source_id],
+    )
 
     decision = PolicyEngine(mode="policygraph-enforce").decide(contract, action, graph, prov.graph)
 

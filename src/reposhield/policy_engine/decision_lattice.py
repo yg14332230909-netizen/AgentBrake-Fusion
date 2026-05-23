@@ -1,4 +1,5 @@
 """Monotonic decision lattice for merging rule hits."""
+
 from __future__ import annotations
 
 from dataclasses import replace
@@ -6,7 +7,7 @@ from typing import Any
 
 from ..feature_flags import feature_enabled
 from ..models import Decision, PolicyDecision
-from .constraint_lattice import constraints_for_decision, constraints_to_decision
+from .constraint_lattice import constraints_for_decision, constraints_to_decision, explain_constraints
 from .rule_schema import RuleHit
 
 DECISION_RANK: dict[Decision, int] = {
@@ -23,7 +24,15 @@ class DecisionLattice:
         constraint_enabled = feature_enabled("REPOSHIELD_ENABLE_CONSTRAINT_LATTICE", default=True)
         decision: Decision = baseline.decision
         constraints = constraints_for_decision(baseline.decision, baseline.required_controls)
-        path: list[dict[str, Any]] = [{"from": None, "to": baseline.decision, "via": "policygraph_baseline", "rank": DECISION_RANK[baseline.decision], "constraints": constraints.to_dict()}]
+        path: list[dict[str, Any]] = [
+            {
+                "from": None,
+                "to": baseline.decision,
+                "via": "policygraph_baseline",
+                "rank": DECISION_RANK[baseline.decision],
+                "constraints": constraints.to_dict(),
+            }
+        ]
         reasons = list(baseline.reason_codes)
         controls = list(baseline.required_controls)
         risk_score = baseline.risk_score
@@ -38,9 +47,28 @@ class DecisionLattice:
             if accepted:
                 previous = decision
                 decision = hit.decision
-                path.append({"from": previous, "to": decision, "via": hit.rule_id, "rank": hit_rank, "constraints": constraints.to_dict(), "constraint_join": hit_constraints.to_dict()})
+                path.append(
+                    {
+                        "from": previous,
+                        "to": decision,
+                        "via": hit.rule_id,
+                        "rank": hit_rank,
+                        "constraints": constraints.to_dict(),
+                        "constraint_join": hit_constraints.to_dict(),
+                    }
+                )
             else:
-                path.append({"from": decision, "to": decision, "via": hit.rule_id, "rank": cur_rank, "skipped_lower_rank": hit.decision, "constraints": constraints.to_dict(), "constraint_join": hit_constraints.to_dict()})
+                path.append(
+                    {
+                        "from": decision,
+                        "to": decision,
+                        "via": hit.rule_id,
+                        "rank": cur_rank,
+                        "skipped_lower_rank": hit.decision,
+                        "constraints": constraints.to_dict(),
+                        "constraint_join": hit_constraints.to_dict(),
+                    }
+                )
             reasons.extend(hit.reason_codes)
             controls.extend(hit.required_controls)
             risk_score = max(risk_score, hit.risk_score)
@@ -49,7 +77,15 @@ class DecisionLattice:
         if constraint_enabled and DECISION_RANK[mapped_decision] > DECISION_RANK[decision]:
             previous = decision
             decision = mapped_decision
-            path.append({"from": previous, "to": decision, "via": "constraint_lattice", "rank": DECISION_RANK[decision], "constraints": constraints.to_dict()})
+            path.append(
+                {
+                    "from": previous,
+                    "to": decision,
+                    "via": "constraint_lattice",
+                    "rank": DECISION_RANK[decision],
+                    "constraints": constraints.to_dict(),
+                }
+            )
         matched = [*baseline.matched_rules, *[hit.to_matched_rule() for hit in hits]]
         refs = [*baseline.evidence_refs, *[ref for hit in hits for ref in hit.evidence_refs]]
         return replace(
@@ -60,5 +96,13 @@ class DecisionLattice:
             required_controls=list(dict.fromkeys(controls)),
             matched_rules=matched,
             evidence_refs=list(dict.fromkeys(refs)),
-            rule_trace=[*baseline.rule_trace, {"engine": "constraint_lattice", "constraints": constraints.to_dict(), "mapped_decision": decision}],
+            rule_trace=[
+                *baseline.rule_trace,
+                {"engine": "constraint_lattice", "constraints": constraints.to_dict(), "mapped_decision": decision},
+            ],
+            metadata={
+                **baseline.metadata,
+                "decision_constraints": constraints.to_dict(),
+                "constraint_summary": explain_constraints(constraints),
+            },
         ), path

@@ -1,4 +1,5 @@
 """RepoShield control plane orchestration."""
+
 from __future__ import annotations
 
 from dataclasses import asdict
@@ -77,7 +78,9 @@ class RepoShieldControlPlane:
         user_src = self.ingest_source("user_request", user_prompt, retrieval_path="current_user")
         contract = self.contract_builder.build(user_prompt)
         self.contract = contract
-        self.audit.append("task_contract", asdict(contract), task_id=contract.task_id, actor="contract_builder", source_ids=[user_src.source_id])
+        self.audit.append(
+            "task_contract", asdict(contract), task_id=contract.task_id, actor="contract_builder", source_ids=[user_src.source_id]
+        )
         return contract
 
     def guard_action(
@@ -91,7 +94,9 @@ class RepoShieldControlPlane:
     ) -> tuple[ActionIR, PolicyDecision]:
         if self.contract is None:
             self.build_contract("general code maintenance task")
-        action = self.parser.parse(raw_action, tool=tool, cwd=self.repo_root, source_ids=source_ids or [], operation=operation, file_path=file_path)
+        action = self.parser.parse(
+            raw_action, tool=tool, cwd=self.repo_root, source_ids=source_ids or [], operation=operation, file_path=file_path
+        )
         return self.guard_action_ir(action, run_preflight=run_preflight)
 
     def guard_action_ir(
@@ -106,70 +111,203 @@ class RepoShieldControlPlane:
         assert self.contract is not None
         for sid in action.source_ids:
             self.provenance.influence(sid, action.action_id)
-        state = self.session_states.load(self.run_id, self.contract.task_id) if feature_enabled("REPOSHIELD_ENABLE_SESSION_STATE", default=True) else None
+        state = (
+            self.session_states.load(self.run_id, self.contract.task_id)
+            if feature_enabled("REPOSHIELD_ENABLE_SESSION_STATE", default=True)
+            else None
+        )
         action.metadata["source_has_untrusted"] = self.provenance.graph.has_untrusted(action.source_ids)
 
         secret_event = self.sentry.observe_action(action)
         if secret_event:
-            self.audit.append("secret_event", asdict(secret_event), task_id=self.contract.task_id, actor="secret_sentry", action_id=action.action_id)
+            self.audit.append(
+                "secret_event", asdict(secret_event), task_id=self.contract.task_id, actor="secret_sentry", action_id=action.action_id
+            )
 
         package_event = self.package_guard.analyze(action)
         if package_event:
-            self.audit.append("package_event", asdict(package_event), task_id=self.contract.task_id, actor="package_guard", action_id=action.action_id)
+            self.audit.append(
+                "package_event", asdict(package_event), task_id=self.contract.task_id, actor="package_guard", action_id=action.action_id
+            )
         if feature_enabled("REPOSHIELD_ENABLE_ACTION_GRAPH", default=True):
-            graph = ensure_action_graph(action, run_id=self.run_id, repo_root=self.repo_root, package_event=package_event, session_state=state)
-            self.audit.append("action_graph", asdict(graph), task_id=self.contract.task_id, actor="action_graph", source_ids=action.source_ids, action_id=action.action_id)
-        self.audit.append("action_parsed", asdict(action), task_id=self.contract.task_id, actor="action_parser", source_ids=action.source_ids, action_id=action.action_id)
+            graph = ensure_action_graph(
+                action, run_id=self.run_id, repo_root=self.repo_root, package_event=package_event, session_state=state
+            )
+            self.audit.append(
+                "action_graph",
+                asdict(graph),
+                task_id=self.contract.task_id,
+                actor="action_graph",
+                source_ids=action.source_ids,
+                action_id=action.action_id,
+            )
+        self.audit.append(
+            "action_parsed",
+            asdict(action),
+            task_id=self.contract.task_id,
+            actor="action_parser",
+            source_ids=action.source_ids,
+            action_id=action.action_id,
+        )
 
         mcp_invocation = None
         if action.semantic_action in {"invoke_mcp_tool", "invoke_destructive_mcp_tool"}:
-            mcp_args = action.metadata.get("mcp_args") if isinstance(action.metadata.get("mcp_args"), dict) else {"raw_action": action.raw_action}
+            mcp_args = (
+                action.metadata.get("mcp_args") if isinstance(action.metadata.get("mcp_args"), dict) else {"raw_action": action.raw_action}
+            )
             server_id = str(action.metadata.get("mcp_server_id") or "mcp_adapter")
             tool_name = str(action.metadata.get("mcp_tool_name") or action.raw_action)
             mcp_invocation = self.mcp_proxy.invoke(server_id, tool_name, mcp_args)
             action.metadata["mcp_decision"] = mcp_invocation.decision
             action.metadata["mcp_reason_codes"] = mcp_invocation.reason_codes
-            self.audit.append("mcp_invocation", asdict(mcp_invocation), task_id=self.contract.task_id, actor="mcp_proxy", source_ids=action.source_ids, action_id=action.action_id)
+            self.audit.append(
+                "mcp_invocation",
+                asdict(mcp_invocation),
+                task_id=self.contract.task_id,
+                actor="mcp_proxy",
+                source_ids=action.source_ids,
+                action_id=action.action_id,
+            )
             if mcp_invocation.output_source_id:
-                self.audit.append("source_ingested", {"source_id": mcp_invocation.output_source_id, "source_type": "mcp_output"}, task_id=self.contract.task_id, actor="mcp_proxy", source_ids=[mcp_invocation.output_source_id], action_id=action.action_id)
+                self.audit.append(
+                    "source_ingested",
+                    {"source_id": mcp_invocation.output_source_id, "source_type": "mcp_output"},
+                    task_id=self.contract.task_id,
+                    actor="mcp_proxy",
+                    source_ids=[mcp_invocation.output_source_id],
+                    action_id=action.action_id,
+                )
 
         if action.semantic_action == "memory_write":
             record = self.memory.write(action.raw_action, action.source_ids, self.provenance.graph, created_by="control_plane")
-            self.audit.append("memory_event", asdict(record), task_id=self.contract.task_id, actor="memory_store", source_ids=action.source_ids, action_id=action.action_id)
+            self.audit.append(
+                "memory_event",
+                asdict(record),
+                task_id=self.contract.task_id,
+                actor="memory_store",
+                source_ids=action.source_ids,
+                action_id=action.action_id,
+            )
         elif action.semantic_action == "memory_read":
-            self.audit.append("memory_event", {"event": "memory_read_requested", "raw_action_hash": action.raw_action}, task_id=self.contract.task_id, actor="memory_store", source_ids=action.source_ids, action_id=action.action_id)
+            self.audit.append(
+                "memory_event",
+                {"event": "memory_read_requested", "raw_action_hash": action.raw_action},
+                task_id=self.contract.task_id,
+                actor="memory_store",
+                source_ids=action.source_ids,
+                action_id=action.action_id,
+            )
         self._apply_memory_authorization_gate(action)
 
         # First decision: may already hard-block before sandbox. Preflight can enrich evidence for high-risk actions.
         trace = None
-        decision = self.policy.decide(self.contract, action, self.asset_graph, self.provenance.graph, package_event=package_event, secret_event=secret_event, session_state=state)
+        decision = self.policy.decide(
+            self.contract,
+            action,
+            self.asset_graph,
+            self.provenance.graph,
+            package_event=package_event,
+            secret_event=secret_event,
+            session_state=state,
+        )
         preflight_plan = self.policy.plan_preflight(decision) if hasattr(self.policy, "plan_preflight") else None
         if run_preflight and preflight_plan and preflight_plan.required:
-            trace = self.sandbox.preflight(action, decision=decision, package_event=package_event, profile=preflight_plan.profile, evidence_mode=preflight_plan.evidence_mode)
+            trace = self.sandbox.preflight(
+                action,
+                decision=decision,
+                package_event=package_event,
+                profile=preflight_plan.profile,
+                evidence_mode=preflight_plan.evidence_mode,
+            )
             self.audit.append("exec_trace", asdict(trace), task_id=self.contract.task_id, actor="sandbox", action_id=action.action_id)
             if feature_enabled("REPOSHIELD_ENABLE_ACTION_GRAPH", default=True):
-                enriched_graph = ensure_action_graph(action, run_id=self.run_id, repo_root=self.repo_root, exec_trace=trace, package_event=package_event, session_state=state)
-                self.audit.append("action_graph_enriched", asdict(enriched_graph), task_id=self.contract.task_id, actor="action_graph", source_ids=action.source_ids, action_id=action.action_id)
-            decision = self.policy.decide(self.contract, action, self.asset_graph, self.provenance.graph, package_event=package_event, secret_event=secret_event, exec_trace=trace, session_state=state)
+                enriched_graph = ensure_action_graph(
+                    action, run_id=self.run_id, repo_root=self.repo_root, exec_trace=trace, package_event=package_event, session_state=state
+                )
+                self.audit.append(
+                    "action_graph_enriched",
+                    asdict(enriched_graph),
+                    task_id=self.contract.task_id,
+                    actor="action_graph",
+                    source_ids=action.source_ids,
+                    action_id=action.action_id,
+                )
+            decision = self.policy.decide(
+                self.contract,
+                action,
+                self.asset_graph,
+                self.provenance.graph,
+                package_event=package_event,
+                secret_event=secret_event,
+                exec_trace=trace,
+                session_state=state,
+            )
 
         if state is not None:
             updated = self.session_states.update(action, decision, trace, secret_event, run_id=self.run_id, task_id=self.contract.task_id)
-            self.audit.append("session_state_update", session_state_payload(updated), task_id=self.contract.task_id, actor="session_state", source_ids=action.source_ids, action_id=action.action_id, decision_id=decision.decision_id)
+            self.audit.append(
+                "session_state_update",
+                session_state_payload(updated),
+                task_id=self.contract.task_id,
+                actor="session_state",
+                source_ids=action.source_ids,
+                action_id=action.action_id,
+                decision_id=decision.decision_id,
+            )
 
         policy_fact_events = self.policy.consume_fact_events() if hasattr(self.policy, "consume_fact_events") else []
         policy_eval_events = self.policy.consume_eval_events() if hasattr(self.policy, "consume_eval_events") else []
         decision = self.policy_overrides.apply(action, decision)
         for event in self.policy_overrides.consume_events():
-            self.audit.append("policy_override_event", event, task_id=self.contract.task_id, actor="policy_config", action_id=action.action_id, decision_id=decision.decision_id)
+            self.audit.append(
+                "policy_override_event",
+                event,
+                task_id=self.contract.task_id,
+                actor="policy_config",
+                action_id=action.action_id,
+                decision_id=decision.decision_id,
+            )
 
         for event in policy_fact_events:
-            self.audit.append("policy_fact_set", event, task_id=self.contract.task_id, actor="policy_engine", source_ids=action.source_ids, action_id=action.action_id, decision_id=decision.decision_id)
+            self.audit.append(
+                "policy_fact_set",
+                event,
+                task_id=self.contract.task_id,
+                actor="policy_engine",
+                source_ids=action.source_ids,
+                action_id=action.action_id,
+                decision_id=decision.decision_id,
+            )
         for event in policy_eval_events:
-            self.audit.append("policy_eval_trace", event, task_id=self.contract.task_id, actor="policy_engine", source_ids=action.source_ids, action_id=action.action_id, decision_id=decision.decision_id)
+            self.audit.append(
+                "policy_eval_trace",
+                event,
+                task_id=self.contract.task_id,
+                actor="policy_engine",
+                source_ids=action.source_ids,
+                action_id=action.action_id,
+                decision_id=decision.decision_id,
+            )
         constraint_trace = _constraint_lattice_payload(decision)
         if constraint_trace:
-            self.audit.append("constraint_lattice_trace", constraint_trace, task_id=self.contract.task_id, actor="policy_engine", source_ids=action.source_ids, action_id=action.action_id, decision_id=decision.decision_id)
-        self.audit.append("policy_decision", asdict(decision), task_id=self.contract.task_id, actor="policy_engine", source_ids=action.source_ids, action_id=action.action_id, decision_id=decision.decision_id)
+            self.audit.append(
+                "constraint_lattice_trace",
+                constraint_trace,
+                task_id=self.contract.task_id,
+                actor="policy_engine",
+                source_ids=action.source_ids,
+                action_id=action.action_id,
+                decision_id=decision.decision_id,
+            )
+        self.audit.append(
+            "policy_decision",
+            asdict(decision),
+            task_id=self.contract.task_id,
+            actor="policy_engine",
+            source_ids=action.source_ids,
+            action_id=action.action_id,
+            decision_id=decision.decision_id,
+        )
         return action, decision
 
     def _apply_memory_authorization_gate(self, action: ActionIR) -> None:
@@ -187,7 +325,14 @@ class RepoShieldControlPlane:
                 denied.append({"source_id": sid, "memory_id": memory_id, "use": use, "reason": reason})
         if denied:
             action.metadata["memory_authorization_denied"] = denied
-            self.audit.append("memory_event", {"event": "memory_authorization_denied", "denials": denied}, task_id=self.contract.task_id if self.contract else None, actor="memory_store", source_ids=action.source_ids, action_id=action.action_id)
+            self.audit.append(
+                "memory_event",
+                {"event": "memory_authorization_denied", "denials": denied},
+                task_id=self.contract.task_id if self.contract else None,
+                actor="memory_store",
+                source_ids=action.source_ids,
+                action_id=action.action_id,
+            )
 
     @staticmethod
     def _authorization_use(semantic_action: str) -> str | None:

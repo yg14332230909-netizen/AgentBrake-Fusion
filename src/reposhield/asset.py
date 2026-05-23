@@ -1,4 +1,5 @@
 """Repository asset and attack-surface scanner."""
+
 from __future__ import annotations
 
 import os
@@ -69,11 +70,13 @@ class AssetScanner:
                     if record.risk in {"high", "critical"} and record.asset_type not in {"secret_env"}:
                         graph.critical_files.append(record)
             except OSError as exc:
-                graph.visibility_gaps.append({
-                    "path": self._rel(item),
-                    "reason": type(exc).__name__,
-                    "policy": "raise_risk_for_related_actions",
-                })
+                graph.visibility_gaps.append(
+                    {
+                        "path": self._rel(item),
+                        "reason": type(exc).__name__,
+                        "policy": "raise_risk_for_related_actions",
+                    }
+                )
 
         for name in sorted(self.env):
             if SECRET_ENV_RE.search(name):
@@ -246,6 +249,7 @@ class AssetScanner:
             return []
         try:
             import json
+
             data = json.loads(path.read_text(encoding="utf-8"))
             scripts = data.get("scripts", {}) if isinstance(data, dict) else {}
             return [s for s in ("preinstall", "install", "postinstall", "prepublish", "prepare") if s in scripts]

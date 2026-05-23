@@ -1,4 +1,5 @@
 """Extract typed policy facts from RepoShield evidence objects."""
+
 from __future__ import annotations
 
 from dataclasses import asdict
@@ -21,7 +22,13 @@ HIGH_RISK_ACTIONS = {
     "git_push_force",
     "invoke_destructive_mcp_tool",
 }
-NETWORK_ACTIONS = {"send_network_request", "install_registry_dependency", "install_git_dependency", "install_tarball_dependency", "publish_artifact"}
+NETWORK_ACTIONS = {
+    "send_network_request",
+    "install_registry_dependency",
+    "install_git_dependency",
+    "install_tarball_dependency",
+    "publish_artifact",
+}
 
 
 class FactExtractor:
@@ -42,7 +49,13 @@ class FactExtractor:
                 PolicyFact.of("action", "risk", action.risk, evidence_refs=[action.action_id]),
                 PolicyFact.of("action", "tool", action.tool, evidence_refs=[action.action_id]),
                 PolicyFact.of("action", "side_effect", action.side_effect, evidence_refs=[action.action_id]),
-                PolicyFact.of("action", "parser_confidence", action.parser_confidence, evidence_refs=[action.action_id], confidence=action.parser_confidence),
+                PolicyFact.of(
+                    "action",
+                    "parser_confidence",
+                    action.parser_confidence,
+                    evidence_refs=[action.action_id],
+                    confidence=action.parser_confidence,
+                ),
                 PolicyFact.of("action", "high_risk", action.semantic_action in HIGH_RISK_ACTIONS, evidence_refs=[action.action_id]),
                 PolicyFact.of("action", "network_capability", action.semantic_action in NETWORK_ACTIONS, evidence_refs=[action.action_id]),
                 PolicyFact.of("source", "trust_floor", source_summary["trust_floor"], evidence_refs=action.source_ids),
@@ -65,20 +78,58 @@ class FactExtractor:
             confidence_values = [node.confidence for node in graph.nodes] + [edge.confidence for edge in graph.edges]
             facts.extend(
                 [
-                    PolicyFact.of("graph", "has_dataflow_edge", has_dataflow, evidence_refs=graph_refs, metadata={"edge_count": len(graph.edges)}),
-                    PolicyFact.of("graph", "has_memoryflow_edge", has_memoryflow, evidence_refs=graph_refs, metadata={"edge_count": len(graph.edges)}),
+                    PolicyFact.of(
+                        "graph", "has_dataflow_edge", has_dataflow, evidence_refs=graph_refs, metadata={"edge_count": len(graph.edges)}
+                    ),
+                    PolicyFact.of(
+                        "graph", "has_memoryflow_edge", has_memoryflow, evidence_refs=graph_refs, metadata={"edge_count": len(graph.edges)}
+                    ),
                     PolicyFact.of("graph", "has_pipe_edge", has_pipe, evidence_refs=graph_refs, metadata={"edge_count": len(graph.edges)}),
-                    PolicyFact.of("graph", "has_redirect_edge", has_redirect, evidence_refs=graph_refs, metadata={"edge_count": len(graph.edges)}),
-                    PolicyFact.of("graph", "has_sequence", has_sequence, evidence_refs=graph_refs, metadata={"node_count": len(graph.nodes)}),
+                    PolicyFact.of(
+                        "graph", "has_redirect_edge", has_redirect, evidence_refs=graph_refs, metadata={"edge_count": len(graph.edges)}
+                    ),
+                    PolicyFact.of(
+                        "graph", "has_sequence", has_sequence, evidence_refs=graph_refs, metadata={"node_count": len(graph.nodes)}
+                    ),
                     PolicyFact.of("graph", "node_count", len(graph.nodes), evidence_refs=graph_refs),
                     PolicyFact.of("graph", "edge_count", len(graph.edges), evidence_refs=graph_refs),
                     PolicyFact.of("graph", "complete", graph.complete, evidence_refs=graph_refs),
-                    PolicyFact.of("graph", "confidence_min", min(confidence_values) if confidence_values else 1.0, evidence_refs=graph_refs, metadata={"parser": graph.metadata.get("parser")}),
+                    PolicyFact.of(
+                        "graph",
+                        "confidence_min",
+                        min(confidence_values) if confidence_values else 1.0,
+                        evidence_refs=graph_refs,
+                        metadata={"parser": graph.metadata.get("parser")},
+                    ),
                     PolicyFact.of("flow", "secret_to_external", _graph_secret_to_external(graph), evidence_refs=graph_refs),
-                    PolicyFact.of("flow", "secret_to_network_reachable", _graph_secret_to_external(graph), evidence_refs=graph_refs, metadata={"source": "action_graph"}),
-                    PolicyFact.of("flow", "secret_to_package_script_reachable", _graph_secret_to_package_script(graph), evidence_refs=graph_refs, metadata={"source": "action_graph"}),
-                    PolicyFact.of("flow", "untrusted_to_high_risk_reachable", source_summary["has_untrusted"] and action.semantic_action in HIGH_RISK_ACTIONS, evidence_refs=[*graph_refs, *action.source_ids], metadata={"source": "context_graph"}),
-                    PolicyFact.of("trace", "enriched_graph", bool(graph.metadata.get("trace_enriched")), evidence_refs=graph_refs, metadata={"parser": graph.metadata.get("parser")}),
+                    PolicyFact.of(
+                        "flow",
+                        "secret_to_network_reachable",
+                        _graph_secret_to_external(graph),
+                        evidence_refs=graph_refs,
+                        metadata={"source": "action_graph"},
+                    ),
+                    PolicyFact.of(
+                        "flow",
+                        "secret_to_package_script_reachable",
+                        _graph_secret_to_package_script(graph),
+                        evidence_refs=graph_refs,
+                        metadata={"source": "action_graph"},
+                    ),
+                    PolicyFact.of(
+                        "flow",
+                        "untrusted_to_high_risk_reachable",
+                        source_summary["has_untrusted"] and action.semantic_action in HIGH_RISK_ACTIONS,
+                        evidence_refs=[*graph_refs, *action.source_ids],
+                        metadata={"source": "context_graph"},
+                    ),
+                    PolicyFact.of(
+                        "trace",
+                        "enriched_graph",
+                        bool(graph.metadata.get("trace_enriched")),
+                        evidence_refs=graph_refs,
+                        metadata={"parser": graph.metadata.get("parser")},
+                    ),
                 ]
             )
 
@@ -95,9 +146,23 @@ class FactExtractor:
                 [
                     PolicyFact.of("asset", "touched_path", classified["path"], evidence_refs=refs),
                     PolicyFact.of("asset", "touched_type", asset_type, evidence_refs=refs, metadata={"path": classified["path"]}),
-                    PolicyFact.of("asset", "touched_risk", classified["asset_risk"], evidence_refs=refs, metadata={"path": classified["path"]}),
-                    PolicyFact.of("asset", "repo_escape", classified["repo_escape"] or "path_escape_repo_root" in action.risk_tags, evidence_refs=refs, metadata={"path": classified["path"]}),
-                    PolicyFact.of("asset", "symlink_escape", classified["symlink_escape"] or "symlink_escape_repo_root" in action.risk_tags, evidence_refs=refs, metadata={"path": classified["path"]}),
+                    PolicyFact.of(
+                        "asset", "touched_risk", classified["asset_risk"], evidence_refs=refs, metadata={"path": classified["path"]}
+                    ),
+                    PolicyFact.of(
+                        "asset",
+                        "repo_escape",
+                        classified["repo_escape"] or "path_escape_repo_root" in action.risk_tags,
+                        evidence_refs=refs,
+                        metadata={"path": classified["path"]},
+                    ),
+                    PolicyFact.of(
+                        "asset",
+                        "symlink_escape",
+                        classified["symlink_escape"] or "symlink_escape_repo_root" in action.risk_tags,
+                        evidence_refs=refs,
+                        metadata={"path": classified["path"]},
+                    ),
                     PolicyFact.of("contract", "forbidden_file_touch", forbidden, evidence_refs=refs, metadata={"path": classified["path"]}),
                 ]
             )
@@ -110,7 +175,13 @@ class FactExtractor:
                     PolicyFact.of("package", "source", pkg.source, evidence_refs=refs),
                     PolicyFact.of("package", "registry", pkg.registry, evidence_refs=refs),
                     PolicyFact.of("package", "risk", pkg.risk, evidence_refs=refs),
-                    PolicyFact.of("package", "lifecycle_scripts", bool(pkg.lifecycle_scripts), evidence_refs=refs, metadata={"scripts": pkg.lifecycle_scripts}),
+                    PolicyFact.of(
+                        "package",
+                        "lifecycle_scripts",
+                        bool(pkg.lifecycle_scripts),
+                        evidence_refs=refs,
+                        metadata={"scripts": pkg.lifecycle_scripts},
+                    ),
                     PolicyFact.of("package", "reason_codes", pkg.reason_codes, evidence_refs=refs),
                 ]
             )
@@ -131,11 +202,35 @@ class FactExtractor:
             refs = [trace.exec_trace_id, action.action_id]
             facts.extend(
                 [
-                    PolicyFact.of("sandbox", "network_attempts", bool(trace.network_attempts), evidence_refs=refs, metadata={"network_attempts": trace.network_attempts}),
-                    PolicyFact.of("sandbox", "package_scripts", bool(trace.package_scripts), evidence_refs=refs, metadata={"package_scripts": trace.package_scripts}),
+                    PolicyFact.of(
+                        "sandbox",
+                        "network_attempts",
+                        bool(trace.network_attempts),
+                        evidence_refs=refs,
+                        metadata={"network_attempts": trace.network_attempts},
+                    ),
+                    PolicyFact.of(
+                        "sandbox",
+                        "package_scripts",
+                        bool(trace.package_scripts),
+                        evidence_refs=refs,
+                        metadata={"package_scripts": trace.package_scripts},
+                    ),
                     PolicyFact.of("sandbox", "risk_observed", trace.risk_observed, evidence_refs=refs),
-                    PolicyFact.of("exec", "network_attempts", bool(trace.network_attempts), evidence_refs=refs, metadata={"network_attempts": trace.network_attempts}),
-                    PolicyFact.of("exec", "package_scripts", bool(trace.package_scripts), evidence_refs=refs, metadata={"package_scripts": trace.package_scripts}),
+                    PolicyFact.of(
+                        "exec",
+                        "network_attempts",
+                        bool(trace.network_attempts),
+                        evidence_refs=refs,
+                        metadata={"network_attempts": trace.network_attempts},
+                    ),
+                    PolicyFact.of(
+                        "exec",
+                        "package_scripts",
+                        bool(trace.package_scripts),
+                        evidence_refs=refs,
+                        metadata={"package_scripts": trace.package_scripts},
+                    ),
                     PolicyFact.of("exec", "trace_scope", trace.metadata.get("trace_scope", "current_action"), evidence_refs=refs),
                 ]
             )
@@ -151,35 +246,139 @@ class FactExtractor:
             facts.extend(
                 [
                     PolicyFact.of("mcp", "decision", mcp_decision, evidence_refs=[action.action_id]),
-                    PolicyFact.of("mcp", "capability", action.metadata.get("mcp_capability") or action.semantic_action, evidence_refs=[action.action_id]),
+                    PolicyFact.of(
+                        "mcp",
+                        "capability",
+                        action.metadata.get("mcp_capability") or action.semantic_action,
+                        evidence_refs=[action.action_id],
+                    ),
                     PolicyFact.of("mcp", "reason_codes", action.metadata.get("mcp_reason_codes", []), evidence_refs=[action.action_id]),
                 ]
             )
 
         if action.metadata.get("memory_authorization_denied"):
-            facts.append(PolicyFact.of("memory", "authorization_denied", True, evidence_refs=[action.action_id], metadata={"denials": action.metadata["memory_authorization_denied"]}))
+            facts.append(
+                PolicyFact.of(
+                    "memory",
+                    "authorization_denied",
+                    True,
+                    evidence_refs=[action.action_id],
+                    metadata={"denials": action.metadata["memory_authorization_denied"]},
+                )
+            )
 
         if ctx.session_state:
             state = ctx.session_state
             refs = [state.session_state_id, action.action_id]
+            attempted_taint = bool(state.attempted_secret_taint)
+            confirmed_taint = bool(state.confirmed_secret_taint)
+            if state.secret_taint and not attempted_taint and not confirmed_taint:
+                confirmed_taint = True
+            taint_level = "confirmed" if confirmed_taint else "attempted" if attempted_taint else "none"
+            if state.taint_confidence in {"attempted", "confirmed"}:
+                taint_level = state.taint_confidence
             facts.extend(
                 [
-                    PolicyFact.of("history", "secret_taint", state.secret_taint, evidence_refs=refs, metadata={"state_hash": state.state_hash}),
-                    PolicyFact.of("history", "untrusted_seen", state.untrusted_source_seen, evidence_refs=refs, metadata={"state_hash": state.state_hash}),
-                    PolicyFact.of("history", "package_taint", state.package_taint, evidence_refs=refs, metadata={"state_hash": state.state_hash}),
+                    PolicyFact.of(
+                        "history", "secret_taint", state.secret_taint, evidence_refs=refs, metadata={"state_hash": state.state_hash}
+                    ),
+                    PolicyFact.of(
+                        "history", "attempted_secret_taint", attempted_taint, evidence_refs=refs, metadata={"state_hash": state.state_hash}
+                    ),
+                    PolicyFact.of(
+                        "history", "confirmed_secret_taint", confirmed_taint, evidence_refs=refs, metadata={"state_hash": state.state_hash}
+                    ),
+                    PolicyFact.of(
+                        "history", "secret_taint_level", taint_level, evidence_refs=refs, metadata={"state_hash": state.state_hash}
+                    ),
+                    PolicyFact.of(
+                        "history",
+                        "untrusted_seen",
+                        state.untrusted_source_seen,
+                        evidence_refs=refs,
+                        metadata={"state_hash": state.state_hash},
+                    ),
+                    PolicyFact.of(
+                        "history", "package_taint", state.package_taint, evidence_refs=refs, metadata={"state_hash": state.state_hash}
+                    ),
                     PolicyFact.of("history", "ci_taint", state.ci_taint, evidence_refs=refs, metadata={"state_hash": state.state_hash}),
-                    PolicyFact.of("history", "approval_scope", bool(state.approval_scope), evidence_refs=refs, metadata={"approval_scope": state.approval_scope, "state_hash": state.state_hash}),
-                    PolicyFact.of("history", "loaded_from_persistent", state.approval_scope.get("restore_source") in {"file", "audit"}, evidence_refs=refs, metadata={"restore_source": state.approval_scope.get("restore_source", "memory"), "state_hash": state.state_hash}),
-                    PolicyFact.of("history", "state_hash", state.state_hash, evidence_refs=refs, metadata={"restore_source": state.approval_scope.get("restore_source", "memory")}),
-                    PolicyFact.of("history", "restore_source", state.approval_scope.get("restore_source", "memory"), evidence_refs=refs, metadata={"state_hash": state.state_hash}),
-                    PolicyFact.of("history", "state_age_seconds", _state_age_seconds(state.approval_scope.get("updated_at")), evidence_refs=refs, metadata={"state_hash": state.state_hash, "updated_at": state.approval_scope.get("updated_at")}),
-                    PolicyFact.of("flow", "secret_to_network_reachable", state.secret_taint and action.semantic_action in NETWORK_ACTIONS, evidence_refs=refs, metadata={"source": "session_state"}),
-                    PolicyFact.of("flow", "secret_to_package_script_reachable", state.secret_taint and state.package_taint, evidence_refs=refs, metadata={"source": "session_state"}),
-                    PolicyFact.of("flow", "untrusted_to_high_risk_reachable", state.untrusted_source_seen and action.semantic_action in HIGH_RISK_ACTIONS, evidence_refs=refs, metadata={"source": "session_state"}),
+                    PolicyFact.of(
+                        "history",
+                        "approval_scope",
+                        bool(state.approval_scope),
+                        evidence_refs=refs,
+                        metadata={"approval_scope": state.approval_scope, "state_hash": state.state_hash},
+                    ),
+                    PolicyFact.of(
+                        "history",
+                        "loaded_from_persistent",
+                        state.approval_scope.get("restore_source") in {"file", "audit"},
+                        evidence_refs=refs,
+                        metadata={"restore_source": state.approval_scope.get("restore_source", "memory"), "state_hash": state.state_hash},
+                    ),
+                    PolicyFact.of(
+                        "history",
+                        "state_hash",
+                        state.state_hash,
+                        evidence_refs=refs,
+                        metadata={"restore_source": state.approval_scope.get("restore_source", "memory")},
+                    ),
+                    PolicyFact.of(
+                        "history",
+                        "restore_source",
+                        state.approval_scope.get("restore_source", "memory"),
+                        evidence_refs=refs,
+                        metadata={"state_hash": state.state_hash},
+                    ),
+                    PolicyFact.of(
+                        "history",
+                        "state_age_seconds",
+                        _state_age_seconds(state.approval_scope.get("updated_at")),
+                        evidence_refs=refs,
+                        metadata={"state_hash": state.state_hash, "updated_at": state.approval_scope.get("updated_at")},
+                    ),
+                    PolicyFact.of(
+                        "flow",
+                        "secret_to_network_reachable",
+                        confirmed_taint and action.semantic_action in NETWORK_ACTIONS,
+                        evidence_refs=refs,
+                        metadata={"source": "session_state"},
+                    ),
+                    PolicyFact.of(
+                        "flow",
+                        "attempted_secret_to_network_reachable",
+                        attempted_taint and not confirmed_taint and action.semantic_action in NETWORK_ACTIONS,
+                        evidence_refs=refs,
+                        metadata={"source": "session_state"},
+                    ),
+                    PolicyFact.of(
+                        "flow",
+                        "secret_to_package_script_reachable",
+                        confirmed_taint and state.package_taint,
+                        evidence_refs=refs,
+                        metadata={"source": "session_state"},
+                    ),
+                    PolicyFact.of(
+                        "flow",
+                        "untrusted_to_high_risk_reachable",
+                        state.untrusted_source_seen and action.semantic_action in HIGH_RISK_ACTIONS,
+                        evidence_refs=refs,
+                        metadata={"source": "session_state"},
+                    ),
                 ]
             )
+            for asset in state.attempted_secret_assets:
+                facts.append(
+                    PolicyFact.of("history", "attempted_secret_asset", asset, evidence_refs=refs, metadata={"state_hash": state.state_hash})
+                )
+            for asset in state.confirmed_secret_assets:
+                facts.append(
+                    PolicyFact.of("history", "confirmed_secret_asset", asset, evidence_refs=refs, metadata={"state_hash": state.state_hash})
+                )
             for sink in state.prior_external_sinks:
-                facts.append(PolicyFact.of("history", "prior_external_sink", sink, evidence_refs=refs, metadata={"state_hash": state.state_hash}))
+                facts.append(
+                    PolicyFact.of("history", "prior_external_sink", sink, evidence_refs=refs, metadata={"state_hash": state.state_hash})
+                )
 
         facts.append(PolicyFact.of("policy", "eval_context", asdict(ctx), evidence_refs=[action.action_id], metadata={"phase": ctx.phase}))
         return PolicyFactSet(facts)
@@ -218,8 +417,20 @@ def _action_graph_from_metadata(value: object) -> ActionGraph | None:
 
 
 def _graph_secret_to_external(graph: ActionGraph) -> bool:
-    secret_nodes = {node.node_id for node in graph.nodes if node.semantic_action in {"read_secret_file", "read_secret_env"} or any("secret" in str(asset).lower() or ".env" in str(asset).lower() or str(asset).startswith("env:") for asset in node.affected_assets)}
-    network_nodes = {node.node_id for node in graph.nodes if node.semantic_action == "send_network_request" or any(str(tag).startswith(("http", "attacker")) for tag in [node.target])}
+    secret_nodes = {
+        node.node_id
+        for node in graph.nodes
+        if node.semantic_action in {"read_secret_file", "read_secret_env"}
+        or any(
+            "secret" in str(asset).lower() or ".env" in str(asset).lower() or str(asset).startswith("env:")
+            for asset in node.affected_assets
+        )
+    }
+    network_nodes = {
+        node.node_id
+        for node in graph.nodes
+        if node.semantic_action == "send_network_request" or any(str(tag).startswith(("http", "attacker")) for tag in [node.target])
+    }
     if not secret_nodes or not network_nodes:
         return False
     adjacency: dict[str, set[str]] = {}
@@ -240,7 +451,15 @@ def _graph_secret_to_external(graph: ActionGraph) -> bool:
 
 
 def _graph_secret_to_package_script(graph: ActionGraph) -> bool:
-    secret_nodes = {node.node_id for node in graph.nodes if node.semantic_action in {"read_secret_file", "read_secret_env"} or any("secret" in str(asset).lower() or ".env" in str(asset).lower() or str(asset).startswith("env:") for asset in node.affected_assets)}
+    secret_nodes = {
+        node.node_id
+        for node in graph.nodes
+        if node.semantic_action in {"read_secret_file", "read_secret_env"}
+        or any(
+            "secret" in str(asset).lower() or ".env" in str(asset).lower() or str(asset).startswith("env:")
+            for asset in node.affected_assets
+        )
+    }
     script_nodes = {node.node_id for node in graph.nodes if node.semantic_action == "run_package_lifecycle_script"}
     if not secret_nodes or not script_nodes:
         return False
