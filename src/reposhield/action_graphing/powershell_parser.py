@@ -20,6 +20,8 @@ class PowerShellParser:
         decoded = _decode_encoded_command(raw)
         text = decoded or raw
         reads = re.findall(r"Get-Content\s+([^\s|;]+)", text, re.I)
+        writes = re.findall(r"(?:Out-File|Set-Content)\s+([^\s|;]+)", text, re.I)
+        starts = re.findall(r"Start-Process\s+([^\s|;]+)", text, re.I)
         sinks = re.findall(r"https?://([^/\s'\")]+)", text, re.I)
         if re.search(r"\b(?:Invoke-WebRequest|Invoke-RestMethod|iwr|irm)\b", text, re.I) and not sinks:
             target = target_hint(text, ctx.action.affected_assets)
@@ -29,6 +31,10 @@ class PowerShellParser:
         edges = []
         for idx, path in enumerate(reads):
             nodes.append(_node(ctx.action, new_id("anode"), "read_secret_file" if ".env" in path.lower() else "read_file", path.strip("'\""), path, idx, self.name))
+        for path in writes:
+            nodes.append(_node(ctx.action, new_id("anode"), "edit_source_file", path.strip("'\""), path, len(nodes), self.name))
+        for proc in starts:
+            nodes.append(_node(ctx.action, new_id("anode"), "unknown_side_effect", proc.strip("'\""), proc, len(nodes), self.name))
         for sink in sinks:
             nodes.append(_node(ctx.action, new_id("anode"), "send_network_request", sink, sink, len(nodes), self.name))
         if not nodes:

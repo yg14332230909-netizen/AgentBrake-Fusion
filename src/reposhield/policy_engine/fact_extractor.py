@@ -76,6 +76,8 @@ class FactExtractor:
                     PolicyFact.of("graph", "confidence_min", min(confidence_values) if confidence_values else 1.0, evidence_refs=graph_refs, metadata={"parser": graph.metadata.get("parser")}),
                     PolicyFact.of("flow", "secret_to_external", _graph_secret_to_external(graph), evidence_refs=graph_refs),
                     PolicyFact.of("flow", "secret_to_network_reachable", _graph_secret_to_external(graph), evidence_refs=graph_refs, metadata={"source": "action_graph"}),
+                    PolicyFact.of("flow", "secret_to_package_script_reachable", _graph_secret_to_package_script(graph), evidence_refs=graph_refs, metadata={"source": "action_graph"}),
+                    PolicyFact.of("flow", "untrusted_to_high_risk_reachable", source_summary["has_untrusted"] and action.semantic_action in HIGH_RISK_ACTIONS, evidence_refs=[*graph_refs, *action.source_ids], metadata={"source": "context_graph"}),
                     PolicyFact.of("trace", "enriched_graph", bool(graph.metadata.get("trace_enriched")), evidence_refs=graph_refs, metadata={"parser": graph.metadata.get("parser")}),
                 ]
             )
@@ -172,6 +174,8 @@ class FactExtractor:
                     PolicyFact.of("history", "restore_source", state.approval_scope.get("restore_source", "memory"), evidence_refs=refs, metadata={"state_hash": state.state_hash}),
                     PolicyFact.of("history", "state_age_seconds", _state_age_seconds(state.approval_scope.get("updated_at")), evidence_refs=refs, metadata={"state_hash": state.state_hash, "updated_at": state.approval_scope.get("updated_at")}),
                     PolicyFact.of("flow", "secret_to_network_reachable", state.secret_taint and action.semantic_action in NETWORK_ACTIONS, evidence_refs=refs, metadata={"source": "session_state"}),
+                    PolicyFact.of("flow", "secret_to_package_script_reachable", state.secret_taint and state.package_taint, evidence_refs=refs, metadata={"source": "session_state"}),
+                    PolicyFact.of("flow", "untrusted_to_high_risk_reachable", state.untrusted_source_seen and action.semantic_action in HIGH_RISK_ACTIONS, evidence_refs=refs, metadata={"source": "session_state"}),
                 ]
             )
             for sink in state.prior_external_sinks:
@@ -227,6 +231,30 @@ def _graph_secret_to_external(graph: ActionGraph) -> bool:
     while frontier:
         node = frontier.pop(0)
         if node in network_nodes:
+            return True
+        for nxt in adjacency.get(node, set()):
+            if nxt not in seen:
+                seen.add(nxt)
+                frontier.append(nxt)
+    return False
+
+
+def _graph_secret_to_package_script(graph: ActionGraph) -> bool:
+    secret_nodes = {node.node_id for node in graph.nodes if node.semantic_action in {"read_secret_file", "read_secret_env"} or any("secret" in str(asset).lower() or ".env" in str(asset).lower() or str(asset).startswith("env:") for asset in node.affected_assets)}
+    script_nodes = {node.node_id for node in graph.nodes if node.semantic_action == "run_package_lifecycle_script"}
+    if not secret_nodes or not script_nodes:
+        return False
+    adjacency: dict[str, set[str]] = {}
+    for edge in graph.edges:
+        if edge.relation in {"pipe", "redirect", "dataflow", "memoryflow", "controlflow", "sequence"}:
+            adjacency.setdefault(edge.src_node_id, set()).add(edge.dst_node_id)
+            if edge.relation == "controlflow":
+                adjacency.setdefault(edge.dst_node_id, set()).add(edge.src_node_id)
+    frontier = list(secret_nodes)
+    seen = set(frontier)
+    while frontier:
+        node = frontier.pop(0)
+        if node in script_nodes:
             return True
         for nxt in adjacency.get(node, set()):
             if nxt not in seen:

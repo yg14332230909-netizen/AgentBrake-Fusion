@@ -26,6 +26,10 @@ class PythonSnippetParser:
         reads: list[str] = []
         sinks: list[str] = []
         for node in ast.walk(tree):
+            if isinstance(node, ast.Subscript) and _call_name(node.value) == "os.environ":
+                key = _subscript_string(node)
+                if key:
+                    reads.append(f"env:{key}")
             if isinstance(node, ast.Call):
                 name = _call_name(node.func)
                 if name in {"open", "pathlib.path.read_text"} or name.endswith(".read_text"):
@@ -36,7 +40,7 @@ class PythonSnippetParser:
                     arg = _first_string_arg(node)
                     if arg:
                         reads.append(f"env:{arg}")
-                if any(name.endswith(suffix) for suffix in ("requests.get", "requests.post", "urllib.request.urlopen", "socket.create_connection")):
+                if any(name.endswith(suffix) for suffix in ("requests.get", "requests.post", "requests.put", "requests.request", "urllib.request.urlopen", "http.client.HTTPSConnection", "http.client.HTTPConnection", "socket.create_connection")):
                     host = _host_from_call(node)
                     if host:
                         sinks.append(host)
@@ -77,6 +81,13 @@ def _call_name(func: ast.AST) -> str:
 def _first_string_arg(node: ast.Call) -> str:
     if node.args and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str):
         return node.args[0].value
+    return ""
+
+
+def _subscript_string(node: ast.Subscript) -> str:
+    target = node.slice
+    if isinstance(target, ast.Constant) and isinstance(target.value, str):
+        return target.value
     return ""
 
 
