@@ -32,9 +32,10 @@ def serve_studio_pro(
     demo_mode: bool = False,
 ) -> None:
     """Serve the local Studio Pro API and browser UI."""
-    required_key = api_key if api_key is not None else os.getenv("REPOSHIELD_STUDIO_API_KEY", "reposhield-local")
-    if host not in {"127.0.0.1", "localhost", "::1"} and not required_key:
+    env_key = os.getenv("REPOSHIELD_STUDIO_API_KEY")
+    if host not in {"127.0.0.1", "localhost", "::1"} and api_key is None and not env_key:
         raise RuntimeError("Studio Pro refuses non-loopback exposure without a bearer token.")
+    required_key = api_key if api_key is not None else env_key or "reposhield-local"
     index = StudioEventIndex(audit_path)
     approvals = ApprovalStore(approvals_path)
     repo = Path(repo_root).resolve()
@@ -53,6 +54,8 @@ def serve_studio_pro(
                 return
             if path.startswith("/assets/"):
                 self._static(path.removeprefix("/assets/"))
+                return
+            if path.startswith("/api/") and not self._authorized(required_key, query=query):
                 return
             if path == "/api/health":
                 self._json({"ok": True, "version": "studio.pro.v0.1", "audit_path": str(audit), "approvals_path": str(Path(approvals_path)), "demo_mode": demo_mode})
@@ -156,10 +159,11 @@ def serve_studio_pro(
                 return
             self._json({"error": "not found"}, status=404)
 
-        def _authorized(self, key: str | None) -> bool:
+        def _authorized(self, key: str | None, query: dict[str, list[str]] | None = None) -> bool:
             if not key:
                 return True
-            if self.headers.get("Authorization") != f"Bearer {key}":
+            query_token = (query or {}).get("token", [""])[0]
+            if self.headers.get("Authorization") != f"Bearer {key}" and query_token != key:
                 self._json({"error": "missing or invalid Authorization bearer token"}, status=401)
                 return False
             return True
@@ -393,7 +397,8 @@ async function selectRun(runId) {
   events = data.events || []; renderTimeline();
   renderGraph(await api('/api/runs/' + encodeURIComponent(runId) + '/graph'));
   if (source) source.close();
-  source = new EventSource('/api/events/stream?run_id=' + encodeURIComponent(runId));
+  const token = localStorage.getItem('reposhieldToken') || 'reposhield-local';
+  source = new EventSource('/api/events/stream?run_id=' + encodeURIComponent(runId) + '&token=' + encodeURIComponent(token));
   source.addEventListener('studio_event', (msg) => { const e = JSON.parse(msg.data); if (!events.find(x => x.event_id === e.event_id)) { events.push(e); renderTimeline(); } });
   await loadAllRunsOnly();
 }

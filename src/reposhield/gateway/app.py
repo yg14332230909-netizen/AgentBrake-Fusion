@@ -203,7 +203,10 @@ def serve_gateway(
             upstream_timeout=upstream_timeout,
         ),
     )
-    required_gateway_key = gateway_api_key if gateway_api_key is not None else os.getenv("REPOSHIELD_GATEWAY_API_KEY", "reposhield-local")
+    env_gateway_key = os.getenv("REPOSHIELD_GATEWAY_API_KEY")
+    if host not in {"127.0.0.1", "localhost", "::1"} and gateway_api_key is None and not env_gateway_key:
+        raise RuntimeError("Refusing to expose gateway on a non-loopback host without an explicit bearer token.")
+    required_gateway_key = gateway_api_key if gateway_api_key is not None else env_gateway_key or "reposhield-local"
     if host not in {"127.0.0.1", "localhost", "::1"}:
         gateway.cp.audit.append("gateway_network_exposure_warning", {"host": host, "requires_authorization": True}, actor="gateway")
         print("RepoShield warning: gateway is listening on a non-loopback host; Authorization is required.", flush=True)

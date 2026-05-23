@@ -279,6 +279,17 @@ def test_serve_gateway_rejects_missing_authorization(tmp_path: Path):
     assert any(e["event_type"] == "rejected_gateway_request" for e in events)
 
 
+def test_gateway_non_loopback_requires_explicit_token(tmp_path: Path, monkeypatch):
+    repo = make_repo(tmp_path)
+    monkeypatch.delenv("REPOSHIELD_GATEWAY_API_KEY", raising=False)
+    try:
+        serve_gateway(repo, host="0.0.0.0", port=0, audit_path=tmp_path / "audit.jsonl")
+    except RuntimeError as exc:
+        assert "non-loopback" in str(exc)
+    else:
+        raise AssertionError("gateway should require explicit token when exposed on a non-loopback host")
+
+
 def test_serve_gateway_streaming_sends_prelude_before_slow_upstream(tmp_path: Path):
     repo = make_repo(tmp_path)
 

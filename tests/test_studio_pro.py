@@ -1,6 +1,12 @@
 from __future__ import annotations
 
+import json
+import socket
+import threading
+import time
 from pathlib import Path
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
 
 from reposhield.audit import AuditLog
 from reposhield.gateway import simulate_gateway_request
@@ -15,7 +21,7 @@ from reposhield.studio.normalizer import (
     read_jsonl,
 )
 from reposhield.studio.scenario_runner import list_scenarios, run_scenario
-from reposhield.studio.server import _clear_records, _static_root, _studio_html
+from reposhield.studio.server import _clear_records, _static_root, _studio_html, serve_studio_pro
 
 
 def make_repo(tmp_path: Path) -> Path:
@@ -188,3 +194,63 @@ def test_studio_read_jsonl_skips_incomplete_lines(tmp_path: Path):
     audit.write_text('{"event_type":"ok"}\n{"event_type": "broken"\n{"event_type":"ok2"}\n', encoding="utf-8")
     events = read_jsonl(audit)
     assert [event["event_type"] for event in events] == ["ok", "ok2"]
+
+
+def test_studio_get_api_requires_authorization(tmp_path: Path):
+    audit = tmp_path / "audit.jsonl"
+    approvals = tmp_path / "approvals.jsonl"
+    audit.write_text("", encoding="utf-8")
+    approvals.write_text("", encoding="utf-8")
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        port = sock.getsockname()[1]
+    thread = threading.Thread(
+        target=serve_studio_pro,
+        kwargs={"audit_path": audit, "approvals_path": approvals, "repo_root": tmp_path, "host": "127.0.0.1", "port": port},
+        daemon=True,
+    )
+    thread.start()
+    time.sleep(0.25)
+
+    try:
+        urlopen(f"http://127.0.0.1:{port}/api/runs", timeout=5)
+    except HTTPError as exc:
+        assert exc.code == 401
+    else:
+        raise AssertionError("Studio GET API should reject missing Authorization")
+
+    req = Request(f"http://127.0.0.1:{port}/api/runs", headers={"Authorization": "Bearer reposhield-local"})
+    with urlopen(req, timeout=5) as resp:
+        payload = json.loads(resp.read().decode("utf-8"))
+    assert payload == {"runs": []}
+
+
+def test_studio_event_stream_accepts_query_token(tmp_path: Path):
+    audit = tmp_path / "audit.jsonl"
+    approvals = tmp_path / "approvals.jsonl"
+    audit.write_text("", encoding="utf-8")
+    approvals.write_text("", encoding="utf-8")
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        port = sock.getsockname()[1]
+    thread = threading.Thread(
+        target=serve_studio_pro,
+        kwargs={"audit_path": audit, "approvals_path": approvals, "repo_root": tmp_path, "host": "127.0.0.1", "port": port},
+        daemon=True,
+    )
+    thread.start()
+    time.sleep(0.25)
+
+    with urlopen(f"http://127.0.0.1:{port}/api/events/stream?token=reposhield-local", timeout=1) as resp:
+        assert resp.status == 200
+        assert resp.headers.get_content_type() == "text/event-stream"
+
+
+def test_studio_non_loopback_requires_explicit_token(tmp_path: Path, monkeypatch):
+    monkeypatch.delenv("REPOSHIELD_STUDIO_API_KEY", raising=False)
+    try:
+        serve_studio_pro(tmp_path / "audit.jsonl", tmp_path / "approvals.jsonl", repo_root=tmp_path, host="0.0.0.0", port=0)
+    except RuntimeError as exc:
+        assert "non-loopback" in str(exc)
+    else:
+        raise AssertionError("Studio should require explicit token when exposed on a non-loopback host")

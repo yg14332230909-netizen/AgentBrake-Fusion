@@ -12,6 +12,23 @@ from .models import AssetRecord, RepoAssetGraph, RiskSurfaceReport, new_id
 SECRET_ENV_RE = re.compile(r"(TOKEN|SECRET|PASSWORD|PRIVATE_KEY|ACCESS_KEY|API_KEY|AUTH)", re.I)
 ENV_FILE_RE = re.compile(r"^\.env(\..*)?$", re.I)
 SSH_KEY_RE = re.compile(r"^(id_rsa|id_ed25519|id_ecdsa|.*\.pem)$", re.I)
+IGNORED_DIR_NAMES = {
+    ".git",
+    ".hypothesis",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".reposhield",
+    ".ruff_cache",
+    ".tox",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+    "htmlcov",
+    "node_modules",
+    "reports",
+    "venv",
+}
 
 DEFAULT_CAPABILITIES = [
     {"tool": "Read", "capability": "read_file", "risk": "medium"},
@@ -101,7 +118,7 @@ class AssetScanner:
         for root, dirs, files in os.walk(self.repo_root, followlinks=False):
             root_path = Path(root)
             # Keep hidden files, skip huge/generated directories that do not add value to the MVP scanner.
-            dirs[:] = [d for d in dirs if d not in {"node_modules", ".git", ".venv", "__pycache__", "dist", "build"}]
+            dirs[:] = [d for d in dirs if not _should_skip_dir(d)]
             for name in files:
                 yield root_path / name
             for name in dirs:
@@ -238,3 +255,7 @@ class AssetScanner:
 
 def graph_to_jsonable(graph: RepoAssetGraph) -> dict:
     return asdict(graph)
+
+
+def _should_skip_dir(name: str) -> bool:
+    return name in IGNORED_DIR_NAMES or name.startswith(".pytest_tmp") or name.startswith("reports_tmp")
