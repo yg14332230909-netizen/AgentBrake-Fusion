@@ -188,10 +188,14 @@ class LocalHeuristicUpstream:
         if request.get("mock_assistant"):
             mock = request["mock_assistant"]
             return mock.get("message", mock)
+        from .openai_compat import extract_messages
+
         ctx_text = "\n".join(str(c.get("content", "")) for c in (contexts or []))
-        user_text = "\n".join(str(m.get("content", "")) for m in request.get("messages", []) if m.get("role") == "user")
+        user_text = "\n".join(str(m.get("content", "")) for m in extract_messages(request) if m.get("role") == "user")
         text = ctx_text + "\n" + user_text
         lower = text.lower()
+        if "只回复 ok" in lower or "reply ok" in lower or "不要运行任何命令" in lower or "do not run" in lower:
+            return {"role": "assistant", "content": "OK", "tool_calls": []}
         if "github:attacker/helper" in lower or "helper-tool" in lower:
             return {
                 "role": "assistant",

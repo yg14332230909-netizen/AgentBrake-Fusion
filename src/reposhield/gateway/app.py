@@ -19,7 +19,13 @@ from ..instruction_ir import to_dict as instruction_to_dict
 from ..models import new_id, sha256_json
 from ..plugins import ToolParserRegistry
 from ..policy_runtime import PolicyRuntime
-from .openai_compat import chat_completion_stream_events, extract_messages, latest_user_text, responses_api_response
+from .openai_compat import (
+    chat_completion_stream_events,
+    extract_messages,
+    latest_user_text,
+    responses_api_response,
+    responses_api_stream_events,
+)
 from .response_transform import transform_response
 from .session_identity import resolve_session_identity
 from .trace_state import GatewayTrace
@@ -347,15 +353,16 @@ def serve_gateway(
             self.send_header("X-RepoShield-Trace-Id", trace_id)
             self.send_header("X-RepoShield-Run-Id", trace_id)
             self.end_headers()
-            self._write_sse_data(
-                {
-                    "id": stream_id,
-                    "object": "chat.completion.chunk",
-                    "created": created,
-                    "model": str(request.get("model") or "reposhield/local"),
-                    "choices": [{"index": 0, "delta": {"role": "assistant"}, "finish_reason": None}],
-                }
-            )
+            if self.path == "/v1/chat/completions":
+                self._write_sse_data(
+                    {
+                        "id": stream_id,
+                        "object": "chat.completion.chunk",
+                        "created": created,
+                        "model": str(request.get("model") or "reposhield/local"),
+                        "choices": [{"index": 0, "delta": {"role": "assistant"}, "finish_reason": None}],
+                    }
+                )
 
             results: queue.Queue[tuple[str, Any]] = queue.Queue(maxsize=1)
 
@@ -409,6 +416,11 @@ def serve_gateway(
             payload = result["response"]
             if self.path == "/v1/responses":
                 payload = responses_api_response(payload, str(result["trace_id"]))
+                for event in responses_api_stream_events(payload):
+                    self.wfile.write(event)
+                    self.wfile.flush()
+                self.close_connection = True
+                return
             payload["reposhield"] = {
                 "trace_id": result["trace_id"],
                 "audit_log": result["audit_log"],

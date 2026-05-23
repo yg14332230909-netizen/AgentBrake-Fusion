@@ -65,6 +65,9 @@ def responses_api_response(chat_response: dict[str, Any], trace_id: str) -> dict
                 "call_id": call.get("id") or new_id("call"),
             }
         )
+    usage = chat_response.get("usage") if isinstance(chat_response.get("usage"), dict) else {}
+    input_tokens = int(usage.get("input_tokens") or usage.get("prompt_tokens") or 0)
+    output_tokens = int(usage.get("output_tokens") or usage.get("completion_tokens") or 0)
     return {
         "id": str(chat_response.get("id") or new_id("resp")),
         "object": "response",
@@ -72,8 +75,109 @@ def responses_api_response(chat_response: dict[str, Any], trace_id: str) -> dict
         "model": chat_response.get("model", "reposhield/local"),
         "output": output,
         "metadata": {"reposhield_trace_id": trace_id},
-        "usage": chat_response.get("usage", {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}),
+        "usage": {"input_tokens": input_tokens, "output_tokens": output_tokens, "total_tokens": input_tokens + output_tokens},
     }
+
+
+def responses_api_stream_events(response: dict[str, Any]) -> list[bytes]:
+    """Encode a minimal Responses API response as SSE events."""
+    response_id = str(response.get("id") or new_id("resp"))
+    created_at = response.get("created_at") or utc_now()
+    model = str(response.get("model") or "reposhield/local")
+    completed_response = {
+        **response,
+        "id": response_id,
+        "object": "response",
+        "created_at": created_at,
+        "model": model,
+        "status": "completed",
+    }
+    events: list[tuple[str, dict[str, Any]]] = [
+        (
+            "response.created",
+            {
+                "type": "response.created",
+                "response": {
+                    "id": response_id,
+                    "object": "response",
+                    "created_at": created_at,
+                    "model": model,
+                    "status": "in_progress",
+                    "output": [],
+                },
+            },
+        )
+    ]
+    for output_index, item in enumerate(response.get("output") or []):
+        item_id = str(item.get("id") or new_id("item"))
+        item = {**item, "id": item_id}
+        events.append(
+            (
+                "response.output_item.added",
+                {"type": "response.output_item.added", "output_index": output_index, "item": item},
+            )
+        )
+        if item.get("type") == "message":
+            for content_index, part in enumerate(item.get("content") or []):
+                text = str(part.get("text") or "")
+                content_part = {"type": "output_text", "text": ""}
+                events.append(
+                    (
+                        "response.content_part.added",
+                        {
+                            "type": "response.content_part.added",
+                            "item_id": item_id,
+                            "output_index": output_index,
+                            "content_index": content_index,
+                            "part": content_part,
+                        },
+                    )
+                )
+                for chunk in _content_chunks(text):
+                    events.append(
+                        (
+                            "response.output_text.delta",
+                            {
+                                "type": "response.output_text.delta",
+                                "item_id": item_id,
+                                "output_index": output_index,
+                                "content_index": content_index,
+                                "delta": chunk,
+                            },
+                        )
+                    )
+                events.append(
+                    (
+                        "response.output_text.done",
+                        {
+                            "type": "response.output_text.done",
+                            "item_id": item_id,
+                            "output_index": output_index,
+                            "content_index": content_index,
+                            "text": text,
+                        },
+                    )
+                )
+                events.append(
+                    (
+                        "response.content_part.done",
+                        {
+                            "type": "response.content_part.done",
+                            "item_id": item_id,
+                            "output_index": output_index,
+                            "content_index": content_index,
+                            "part": {"type": "output_text", "text": text},
+                        },
+                    )
+                )
+        events.append(
+            (
+                "response.output_item.done",
+                {"type": "response.output_item.done", "output_index": output_index, "item": item},
+            )
+        )
+    events.append(("response.completed", {"type": "response.completed", "response": completed_response}))
+    return [_sse(event, data) for event, data in events]
 
 
 def chat_completion_stream_events(response: dict[str, Any], *, include_role: bool = True) -> list[bytes]:
@@ -150,6 +254,10 @@ def chat_completion_stream_events(response: dict[str, Any], *, include_role: boo
         }
     )
     return [f"data: {json.dumps(event, ensure_ascii=False)}\n\n".encode("utf-8") for event in events] + [b"data: [DONE]\n\n"]
+
+
+def _sse(event: str, data: dict[str, Any]) -> bytes:
+    return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n".encode("utf-8")
 
 
 def _content_chunks(content: str, size: int = 256) -> list[str]:
