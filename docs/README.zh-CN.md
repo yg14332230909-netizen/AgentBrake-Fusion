@@ -14,11 +14,13 @@ RepoShield 是 coding agent 的执行前安全治理网关。它可以作为 Ope
    Gateway、exec-guard、tool call 解析和 OpenClaw / OpenHands / Aider 接入方式。
 5. [正式智能体接入简化指南](FORMAL_AGENT_INTEGRATION.zh-CN.md)  
    `reposhield connect / start / doctor / coverage`、Quick / Standard / Full 模式和稳定 run_id / conversation_id 要求。
-6. [Gateway 指南](GATEWAY_GUIDE.zh-CN.md)  
+6. [小白接入教程](BEGINNER_AGENT_ONBOARDING.zh-CN.md)  
+   从安装、connect、start、status、doctor 到 Studio 保护矩阵的一步步教程。
+7. [Gateway 指南](GATEWAY_GUIDE.zh-CN.md)  
    OpenAI-compatible Gateway、认证、上游转发、streaming 和 release mode。
-7. [Policy Pack / PolicyGraph 规则指南](POLICY_PACK_GUIDE.zh-CN.md)  
+8. [Policy Pack / PolicyGraph 规则指南](POLICY_PACK_GUIDE.zh-CN.md)  
    决策语义、runtime 模式、YAML 规则、`index_hints` 和验证方式。
-8. [项目状态与商用化评估](PROJECT_STATUS.zh-CN.md)  
+9. [项目状态与商用化评估](PROJECT_STATUS.zh-CN.md)  
    当前成熟度、已完成能力、剩余差距和路线图。
 
 ## 接入与扩展

@@ -18,6 +18,8 @@ reposhield connect --repo . --agent codex --mode standard
 reposhield connect --repo . --agent openclaw --mode full
 reposhield doctor --repo .
 reposhield coverage --repo .
+reposhield status --repo .
+reposhield stop --repo .
 ```
 
 - **Quick**：Gateway + `.reposhield/config.yaml`、`agent.env`、agent instructions。

@@ -31,9 +31,13 @@ reposhield connect --repo . --agent openclaw --mode full --force
 ```bash
 reposhield start --repo .
 reposhield start --repo . --gateway-only
+reposhield status --repo .
+reposhield stop --repo .
 ```
 
 `start` 会读取 `.reposhield/config.yaml`，后台启动 Gateway / Studio / Approval API，并输出服务 URL、进程 PID、日志路径、`run_id` 与 `conversation_id`。在 CI 或只想查看计划时，可以使用 `--print-only`。
+
+`status` 会读取 `.reposhield/run/*.pid.json` 和端口状态，显示服务是否仍在运行。`stop` 会停止由 `start` 记录的后台服务，并清理 pid 文件。
 
 ## 体检与覆盖矩阵
 
@@ -43,6 +47,16 @@ reposhield coverage --repo .
 ```
 
 `doctor` 检查配置、审计目录可写性、稳定会话身份、Gateway 配置、shim 目录与 PATH 状态。`coverage` 输出 Quick / Standard / Full 对应能力是否声明并可由本地文件系统验证。
+
+每个失败检查都会包含 `repair` 字段，例如：
+
+```json
+{
+  "name": "gateway_port_listening",
+  "ok": false,
+  "repair": "Start Gateway: reposhield start --repo . --gateway-only"
+}
+```
 
 ## 多轮 agent 稳定身份要求
 

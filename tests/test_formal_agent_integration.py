@@ -9,7 +9,7 @@ from reposhield.cli import main
 from reposhield.gateway import serve_gateway, simulate_gateway_request
 from reposhield.gateway.session_identity import resolve_session_identity
 from reposhield.integration import build_start_summary, connect_repo, run_doctor
-from reposhield.integration.start import launch_start_services
+from reposhield.integration.start import launch_start_services, status_services, stop_services
 from reposhield.integration.templates import load_config
 from reposhield.studio.server import serve_studio_pro
 
@@ -113,6 +113,34 @@ def test_start_launches_configured_services(tmp_path: Path, monkeypatch):
     assert any("approval-api-start" in command for command in launched_commands[2])
 
 
+def test_status_and_stop_use_pid_files(tmp_path: Path, monkeypatch):
+    connect_repo(tmp_path, agent="generic", mode="full")
+    launched_commands = []
+    killed = []
+
+    class FakeProcess:
+        pid = 4242
+
+    def fake_popen(command, **kwargs):
+        launched_commands.append(command)
+        return FakeProcess()
+
+    def fake_kill(pid, sig):
+        killed.append((pid, sig))
+
+    monkeypatch.setattr("subprocess.Popen", fake_popen)
+    monkeypatch.setattr("os.kill", fake_kill)
+    launch_start_services(tmp_path)
+
+    status = status_services(tmp_path)
+    stop = stop_services(tmp_path)
+
+    assert [item["name"] for item in status["services"]] == ["gateway", "studio", "approval_api"]
+    assert all(item["pid"] == 4242 for item in status["services"])
+    assert [item["name"] for item in stop["stopped"]] == ["gateway", "studio", "approval_api"]
+    assert len([item for item in killed if item[1] != 0]) == 3
+
+
 def test_agent_integration_docs_and_demo_package_exist():
     root = Path(__file__).resolve().parents[1]
     for name in ["custom-openai-compatible", "openclaw", "cline", "openhands", "aider", "codex-cli", "claude-code"]:
@@ -122,6 +150,23 @@ def test_agent_integration_docs_and_demo_package_exist():
     assert (demo / "start_reposhield.sh").exists()
     assert (demo / "demo_repo" / "package.json").exists()
     assert (demo / "expected_outputs" / "attack-secret-exfil.md").exists()
+
+
+def test_doctor_includes_repair_hints_for_missing_config(tmp_path: Path):
+    report = run_doctor(tmp_path)
+
+    assert not report.ok
+    assert "reposhield connect" in report.checks[0]["repair"]
+
+
+def test_status_and_stop_include_repair_when_not_connected(tmp_path: Path):
+    status = status_services(tmp_path)
+    stop = stop_services(tmp_path)
+
+    assert not status["ok"]
+    assert "reposhield connect" in status["repair"]
+    assert not stop["ok"]
+    assert "reposhield connect" in stop["repair"]
 
 
 def test_doctor_probes_live_gateway(tmp_path: Path):

@@ -39,7 +39,20 @@ def run_doctor(repo_root: str | Path, *, config_path: str | Path | None = None) 
     checks: list[dict[str, Any]] = []
     warnings: list[str] = []
     if not config_file.exists():
-        return DoctorReport(False, str(config_file), [{"name": "config", "ok": False, "detail": "missing config.yaml"}], {}, warnings)
+        return DoctorReport(
+            False,
+            str(config_file),
+            [
+                {
+                    "name": "config",
+                    "ok": False,
+                    "detail": "missing config.yaml",
+                    "repair": "Run: reposhield connect --repo . --agent custom-openai --mode quick",
+                }
+            ],
+            {},
+            warnings,
+        )
     config = load_config(config_file)
     _check(checks, "config", True, str(config_file))
     audit_path = Path(str(config.get("audit", {}).get("path", repo / ".reposhield" / "gateway_audit.jsonl")))
@@ -93,7 +106,31 @@ def run_doctor(repo_root: str | Path, *, config_path: str | Path | None = None) 
 
 
 def _check(checks: list[dict[str, Any]], name: str, ok: bool, detail: str) -> None:
-    checks.append({"name": name, "ok": bool(ok), "detail": detail})
+    item = {"name": name, "ok": bool(ok), "detail": detail}
+    repair = _repair_hint(name, ok, detail)
+    if repair:
+        item["repair"] = repair
+    checks.append(item)
+
+
+def _repair_hint(name: str, ok: bool, detail: str) -> str:
+    if ok:
+        return ""
+    hints = {
+        "config": "Run: reposhield connect --repo . --agent custom-openai --mode quick",
+        "audit_dir_writable": f"Create or fix permissions for: {detail}",
+        "session_state_writable": f"Create or fix permissions for: {detail}",
+        "stable_run_identity": "Regenerate config: reposhield connect --repo . --mode quick --force",
+        "shims_exist": "Regenerate shims: reposhield connect --repo . --mode standard --force",
+        "shims_on_path": 'Put shims first: export PATH="$(pwd)/.reposhield/shims:$PATH"',
+        "gateway_configured": "Regenerate config: reposhield connect --repo . --mode quick --force",
+        "gateway_port_listening": "Start Gateway: reposhield start --repo . --gateway-only",
+        "gateway_chat_completions": "Check logs in .reposhield/logs/gateway.err.log and verify Authorization uses Bearer reposhield-local.",
+        "policy_pack_exists": f"Fix --policy-pack path or remove it from config: {detail}",
+        "studio_port_listening": "Start Studio: reposhield start --repo .",
+        "studio_health": "Check logs in .reposhield/logs/studio.err.log and verify Studio bearer token.",
+    }
+    return hints.get(name, "Inspect this check and rerun: reposhield doctor --repo .")
 
 
 def _is_writable(path: Path) -> bool:
