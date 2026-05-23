@@ -74,6 +74,23 @@ PYTHONPATH=src python -m reposhield openclaw-quickstart \
 
 ## 方式二：exec-guard 接入 shell
 
+## 多轮 Agent 必须传入稳定身份
+
+如果 agent 会把一个任务拆成多轮模型请求，请务必在每轮 OpenAI-compatible request 中传入稳定的 `metadata.reposhield_run_id`，或至少传入稳定的 `metadata.conversation_id` / `metadata.thread_id` / `metadata.session_id`。RepoShield 会用它恢复跨请求历史摘要，例如 attempted / confirmed secret taint、package taint、CI taint 和 prior external sinks。
+
+推荐：
+
+```json
+{
+  "metadata": {
+    "reposhield_run_id": "run_login_fix_001",
+    "conversation_id": "conv_login_fix_001"
+  }
+}
+```
+
+不要只依赖每轮都会变化的 `request_id`。没有稳定身份时，Gateway 仍会兼容处理请求，但无法保证多轮历史自动合并到同一个 SessionState。
+
 如果 agent 会直接运行 shell 命令，把命令包进：
 
 ```bash

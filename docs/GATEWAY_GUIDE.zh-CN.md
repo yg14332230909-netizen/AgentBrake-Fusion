@@ -71,6 +71,25 @@ Gateway 支持 agent 侧：
 
 ## Policy 配置
 
+## 多轮 Agent 会话身份
+
+多轮 agent 必须在每轮请求中传入稳定的 `metadata.reposhield_run_id`，或至少传入稳定的 `metadata.conversation_id` / `metadata.thread_id` / `metadata.session_id`。RepoShield Gateway 会用这个身份恢复同一任务下的 PersistentSessionState；如果每轮请求都只带新的 `request_id`，历史摘要会被拆散，跨请求 secret taint、package taint 和 untrusted source evidence 可能无法串联。
+
+推荐请求片段：
+
+```json
+{
+  "model": "gpt-...",
+  "messages": [],
+  "metadata": {
+    "reposhield_run_id": "run_login_fix_001",
+    "conversation_id": "conv_login_fix_001"
+  }
+}
+```
+
+优先级为：`metadata.reposhield_run_id` > `metadata.run_id` > `X-RepoShield-Run-Id` > conversation/thread/session 派生 id > fallback generated id。
+
 `gateway-start` 和 `gateway-simulate` 支持 `--policy-config`，可用 JSON/YAML 覆盖决策：
 
 ```yaml
