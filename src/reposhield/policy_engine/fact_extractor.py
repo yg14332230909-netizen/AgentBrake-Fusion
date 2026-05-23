@@ -57,13 +57,25 @@ class FactExtractor:
         if graph:
             graph_refs = [graph.graph_id, action.action_id]
             has_dataflow = any(edge.relation in {"pipe", "redirect", "dataflow"} for edge in graph.edges)
+            has_memoryflow = any(edge.relation == "memoryflow" for edge in graph.edges)
+            has_pipe = any(edge.relation == "pipe" for edge in graph.edges)
+            has_redirect = any(edge.relation == "redirect" for edge in graph.edges)
             has_sequence = len(graph.nodes) > 1 or any(edge.relation in {"sequence", "controlflow"} for edge in graph.edges)
+            confidence_values = [node.confidence for node in graph.nodes] + [edge.confidence for edge in graph.edges]
             facts.extend(
                 [
                     PolicyFact.of("graph", "has_dataflow_edge", has_dataflow, evidence_refs=graph_refs, metadata={"edge_count": len(graph.edges)}),
+                    PolicyFact.of("graph", "has_memoryflow_edge", has_memoryflow, evidence_refs=graph_refs, metadata={"edge_count": len(graph.edges)}),
+                    PolicyFact.of("graph", "has_pipe_edge", has_pipe, evidence_refs=graph_refs, metadata={"edge_count": len(graph.edges)}),
+                    PolicyFact.of("graph", "has_redirect_edge", has_redirect, evidence_refs=graph_refs, metadata={"edge_count": len(graph.edges)}),
                     PolicyFact.of("graph", "has_sequence", has_sequence, evidence_refs=graph_refs, metadata={"node_count": len(graph.nodes)}),
                     PolicyFact.of("graph", "node_count", len(graph.nodes), evidence_refs=graph_refs),
+                    PolicyFact.of("graph", "edge_count", len(graph.edges), evidence_refs=graph_refs),
+                    PolicyFact.of("graph", "complete", graph.complete, evidence_refs=graph_refs),
+                    PolicyFact.of("graph", "confidence_min", min(confidence_values) if confidence_values else 1.0, evidence_refs=graph_refs, metadata={"parser": graph.metadata.get("parser")}),
                     PolicyFact.of("flow", "secret_to_external", _graph_secret_to_external(graph), evidence_refs=graph_refs),
+                    PolicyFact.of("flow", "secret_to_network_reachable", _graph_secret_to_external(graph), evidence_refs=graph_refs, metadata={"source": "action_graph"}),
+                    PolicyFact.of("trace", "enriched_graph", bool(graph.metadata.get("trace_enriched")), evidence_refs=graph_refs, metadata={"parser": graph.metadata.get("parser")}),
                 ]
             )
 
@@ -154,7 +166,9 @@ class FactExtractor:
                     PolicyFact.of("history", "package_taint", state.package_taint, evidence_refs=refs, metadata={"state_hash": state.state_hash}),
                     PolicyFact.of("history", "ci_taint", state.ci_taint, evidence_refs=refs, metadata={"state_hash": state.state_hash}),
                     PolicyFact.of("history", "approval_scope", bool(state.approval_scope), evidence_refs=refs, metadata={"approval_scope": state.approval_scope, "state_hash": state.state_hash}),
-                    PolicyFact.of("flow", "secret_to_network_reachable", state.secret_taint and action.semantic_action in NETWORK_ACTIONS, evidence_refs=refs),
+                    PolicyFact.of("history", "loaded_from_persistent", state.approval_scope.get("restore_source") in {"file", "audit"}, evidence_refs=refs, metadata={"restore_source": state.approval_scope.get("restore_source", "memory"), "state_hash": state.state_hash}),
+                    PolicyFact.of("history", "state_hash", state.state_hash, evidence_refs=refs, metadata={"restore_source": state.approval_scope.get("restore_source", "memory")}),
+                    PolicyFact.of("flow", "secret_to_network_reachable", state.secret_taint and action.semantic_action in NETWORK_ACTIONS, evidence_refs=refs, metadata={"source": "session_state"}),
                 ]
             )
             for sink in state.prior_external_sinks:
@@ -197,8 +211,22 @@ def _action_graph_from_metadata(value: object) -> ActionGraph | None:
 
 
 def _graph_secret_to_external(graph: ActionGraph) -> bool:
-    secret_nodes = {node.node_id for node in graph.nodes if node.semantic_action == "read_secret_file" or any("secret" in str(asset).lower() or ".env" in str(asset).lower() for asset in node.affected_assets)}
+    secret_nodes = {node.node_id for node in graph.nodes if node.semantic_action in {"read_secret_file", "read_secret_env"} or any("secret" in str(asset).lower() or ".env" in str(asset).lower() or str(asset).startswith("env:") for asset in node.affected_assets)}
     network_nodes = {node.node_id for node in graph.nodes if node.semantic_action == "send_network_request" or any(str(tag).startswith(("http", "attacker")) for tag in [node.target])}
     if not secret_nodes or not network_nodes:
         return False
-    return any(edge.src_node_id in secret_nodes and edge.dst_node_id in network_nodes for edge in graph.edges)
+    adjacency: dict[str, set[str]] = {}
+    for edge in graph.edges:
+        if edge.relation in {"pipe", "redirect", "dataflow", "memoryflow", "controlflow"}:
+            adjacency.setdefault(edge.src_node_id, set()).add(edge.dst_node_id)
+    frontier = list(secret_nodes)
+    seen = set(frontier)
+    while frontier:
+        node = frontier.pop(0)
+        if node in network_nodes:
+            return True
+        for nxt in adjacency.get(node, set()):
+            if nxt not in seen:
+                seen.add(nxt)
+                frontier.append(nxt)
+    return False

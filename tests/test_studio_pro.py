@@ -74,6 +74,43 @@ def test_studio_normalizer_builds_runs_and_action_detail(tmp_path: Path):
     assert any(edge["relation"] == "parent" for edge in graph["edges"])
 
 
+def test_studio_detail_uses_enriched_graph_and_restored_state(tmp_path: Path):
+    events = normalize_audit_events(
+        [
+            {
+                "event_id": "evt1",
+                "timestamp": "2026-01-01T00:00:00+00:00",
+                "session_id": "sess",
+                "event_type": "action_parsed",
+                "action_id": "act1",
+                "payload": {"action_id": "act1", "trace_id": "run1", "semantic_action": "send_network_request", "source_ids": []},
+            },
+            {
+                "event_id": "evt2",
+                "timestamp": "2026-01-01T00:00:01+00:00",
+                "session_id": "sess",
+                "event_type": "action_graph_enriched",
+                "action_id": "act1",
+                "payload": {"graph_id": "g1", "run_id": "run1", "nodes": [{"semantic_action": "send_network_request"}], "edges": []},
+            },
+            {
+                "event_id": "evt3",
+                "timestamp": "2026-01-01T00:00:02+00:00",
+                "session_id": "sess",
+                "event_type": "session_state_restore",
+                "action_id": "act1",
+                "payload": {"run_id": "run1", "restore_source": "file", "state": {"session_state_id": "s1", "secret_taint": True, "state_hash": "sha256:test"}},
+            },
+        ]
+    )
+
+    detail = build_action_detail(events, "act1")
+
+    assert detail is not None
+    assert detail.action_graph["graph_id"] == "g1"
+    assert detail.session_state["secret_taint"] is True
+
+
 def test_studio_builds_action_judgment_view_model(tmp_path: Path):
     repo = make_repo(tmp_path)
     audit_path = tmp_path / "gateway_audit.jsonl"

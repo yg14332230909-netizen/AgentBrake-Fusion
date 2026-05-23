@@ -75,16 +75,16 @@ def _default_invariants() -> list[RegisteredInvariant]:
             SemanticInvariantSpec(
                 "INV-EGRESS-001",
                 "secret_to_external_sink",
-                "(secret.event OR history.secret_taint) AND action.network_capability",
-                ["secret.event", "history.secret_taint", "action.network_capability"],
+                "flow.secret_to_network_reachable OR (secret.event OR history.secret_taint) AND action.network_capability",
+                ["flow.secret_to_network_reachable", "secret.event", "history.secret_taint", "action.network_capability"],
                 DecisionConstraints(execution_env="none", network_scope="deny", data_scope="no_secret", audit_scope="full"),
                 ["secret_egress_attempt"],
                 ["block", "no_egress"],
                 100,
                 "egress",
             ),
-            lambda f: (_secret_event(f) or _bool(f, "history", "secret_taint")) and (_bool(f, "action", "network_capability") or _bool(f, "sandbox", "network_attempts")),
-            lambda f: f.find("secret") + f.find("history", "secret_taint") + f.find("action", "network_capability") + f.find("sandbox", "network_attempts"),
+            lambda f: _bool(f, "flow", "secret_to_network_reachable") or ((_secret_event(f) or _bool(f, "history", "secret_taint")) and (_bool(f, "action", "network_capability") or _bool(f, "sandbox", "network_attempts"))),
+            lambda f: f.find("flow", "secret_to_network_reachable") + f.find("secret") + f.find("history", "secret_taint") + f.find("action", "network_capability") + f.find("sandbox", "network_attempts"),
         ),
         RegisteredInvariant(
             SemanticInvariantSpec(

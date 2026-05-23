@@ -41,6 +41,7 @@ class RepoShieldGateway:
         self.repo_root = Path(repo_root).resolve()
         self.audit = AuditLog(audit_path or self.repo_root / ".reposhield" / "gateway_audit.jsonl")
         self.policy_config = policy_config
+        self.session_state_path = self.repo_root / ".reposhield" / "session_state.jsonl"
         self.cp = self._new_request_control_plane()
         self.policy_runtime = PolicyRuntime(mode=policy_mode, role=policy_role, unsafe_allow_disabled=unsafe_allow_disabled_policy)  # type: ignore[arg-type]
         self.upstream = upstream or LocalHeuristicUpstream()
@@ -50,14 +51,17 @@ class RepoShieldGateway:
         self.approvals = ApprovalCenter()
         self.approval_store = ApprovalStore(approval_store_path or self.repo_root / ".reposhield" / "gateway_approvals.jsonl")
 
-    def _new_request_control_plane(self) -> RepoShieldControlPlane:
-        return RepoShieldControlPlane(self.repo_root, audit=self.audit, policy_config=self.policy_config)
+    def _new_request_control_plane(self, run_id: str | None = None) -> RepoShieldControlPlane:
+        return RepoShieldControlPlane(self.repo_root, audit=self.audit, policy_config=self.policy_config, session_state_path=self.session_state_path, run_id=run_id)
 
     def handle_chat_completion(self, request: dict[str, Any]) -> dict[str, Any]:
-        cp = self._new_request_control_plane()
+        metadata = request.get("metadata") if isinstance(request.get("metadata"), dict) else {}
+        run_id = str(metadata.get("run_id") or metadata.get("reposhield_run_id") or request.get("trace_id") or request.get("request_id") or new_id("gw_trace"))
+        request["trace_id"] = run_id
+        cp = self._new_request_control_plane(run_id)
         self.cp = cp
         lowerer = InstructionLowerer(cp.parser)
-        trace = GatewayTrace(trace_id=str(request.get("trace_id") or new_id("gw_trace")))
+        trace = GatewayTrace(trace_id=run_id)
         messages = extract_messages(request)
         turn_id = trace.new_turn("chat_completion", {"model": request.get("model"), "message_count": len(messages)})
         cp.audit.append("gateway_pre_call", {"trace_id": trace.trace_id, "turn_id": turn_id, "model": request.get("model"), "message_count": len(messages), "request_hash": sha256_json(request)}, actor="gateway")

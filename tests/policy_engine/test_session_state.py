@@ -31,6 +31,8 @@ def test_action_graph_event_is_written_without_breaking_action_event(tmp_path):
     events = cp.audit.read_events()
     assert any(event["event_type"] == "action_graph" and event["action_id"] == action.action_id for event in events)
     assert any(event["event_type"] == "action_parsed" and event["payload"].get("graph_id") == action.graph_id for event in events)
+    graph_event = next(event for event in events if event["event_type"] == "action_graph" and event["action_id"] == action.action_id)
+    assert graph_event["payload"]["run_id"] == cp.run_id
 
 
 def test_constraint_lattice_trace_event_is_written(tmp_path):

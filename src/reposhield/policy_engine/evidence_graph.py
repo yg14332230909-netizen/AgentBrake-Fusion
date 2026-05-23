@@ -88,6 +88,8 @@ def _causal_graph(fact_set: PolicyFactSet, hits: list[RuleHit], lattice_path: li
             "key": fact.key,
             "value": fact.value,
             "evidence_refs": fact.evidence_refs,
+            "confidence": fact.confidence,
+            "metadata": fact.metadata,
         }
         for fact in fact_set.facts
     ]
@@ -103,12 +105,55 @@ def _causal_graph(fact_set: PolicyFactSet, hits: list[RuleHit], lattice_path: li
     for fact in fact_set.facts:
         if fact.namespace == "graph":
             node_id = f"action_graph_{fact.fact_id}"
-            action_graph_nodes.append({"id": node_id, "kind": "action_graph_node", "fact_id": fact.fact_id, "key": fact.key, "value": fact.value, "evidence_refs": fact.evidence_refs})
+            action_graph_nodes.append(
+                {
+                    "id": node_id,
+                    "kind": "action_graph_node",
+                    "fact_id": fact.fact_id,
+                    "key": fact.key,
+                    "value": fact.value,
+                    "evidence_refs": fact.evidence_refs,
+                    "confidence": fact.confidence,
+                    "parser": fact.metadata.get("parser"),
+                    "observed": fact.metadata.get("observed", False),
+                    "warnings": fact.metadata.get("warnings", []),
+                    "metadata": fact.metadata,
+                }
+            )
             edges.append({"from": fact.fact_id, "to": node_id, "relation": "summarizes"})
         elif fact.namespace == "history":
             node_id = f"history_{fact.fact_id}"
-            history_nodes.append({"id": node_id, "kind": "history_node", "fact_id": fact.fact_id, "key": fact.key, "value": fact.value, "evidence_refs": fact.evidence_refs})
+            history_nodes.append(
+                {
+                    "id": node_id,
+                    "kind": "history_node",
+                    "fact_id": fact.fact_id,
+                    "key": fact.key,
+                    "value": fact.value,
+                    "evidence_refs": fact.evidence_refs,
+                    "confidence": fact.confidence,
+                    "state_hash": fact.metadata.get("state_hash"),
+                    "restore_source": fact.metadata.get("restore_source"),
+                    "metadata": fact.metadata,
+                }
+            )
             edges.append({"from": node_id, "to": fact.fact_id, "relation": "provides_fact"})
+        elif fact.namespace == "trace" and fact.key == "enriched_graph":
+            node_id = f"action_graph_trace_{fact.fact_id}"
+            action_graph_nodes.append(
+                {
+                    "id": node_id,
+                    "kind": "trace_enrichment_node",
+                    "fact_id": fact.fact_id,
+                    "key": fact.key,
+                    "value": fact.value,
+                    "evidence_refs": fact.evidence_refs,
+                    "confidence": fact.confidence,
+                    "observed": True,
+                    "metadata": fact.metadata,
+                }
+            )
+            edges.append({"from": node_id, "to": fact.fact_id, "relation": "observed_trace"})
     for idx, posting in enumerate((retrieval_trace or {}).get("postings", []) or []):
         node_id = f"retrieval_{idx}"
         retrieval_nodes.append({"id": node_id, "kind": "posting", **posting})

@@ -20,7 +20,7 @@ from .policy import PolicyEngine
 from .policy_config import ConfigurablePolicyOverrides
 from .sandbox import SandboxRunner
 from .sentry import SecretSentry
-from .session_state import SessionStateStore, session_state_payload
+from .session_state import PersistentSessionStateStore, SessionStateStore, session_state_payload
 
 
 class RepoShieldControlPlane:
@@ -33,9 +33,13 @@ class RepoShieldControlPlane:
         env: dict[str, str] | None = None,
         policy_config: str | Path | None = None,
         audit: AuditLog | None = None,
+        session_state_path: str | Path | None = None,
+        session_state_store: SessionStateStore | None = None,
+        run_id: str | None = None,
     ):
         self.repo_root = Path(repo_root).resolve()
         self.audit = audit or AuditLog(audit_path or (self.repo_root / ".reposhield" / "audit.jsonl"))
+        self.run_id = run_id or self.audit.session_id
         self.provenance = ContextProvenance()
         self.parser = ActionParser()
         self.asset_scanner = AssetScanner(self.repo_root, env=env)
@@ -47,7 +51,12 @@ class RepoShieldControlPlane:
         self.sentry = SecretSentry(self.asset_graph)
         self.mcp_proxy = MCPProxy(self.provenance)
         self.memory = MemoryStore(self.repo_root / ".reposhield" / "memory.json")
-        self.session_states = SessionStateStore()
+        if session_state_store is not None:
+            self.session_states = session_state_store
+        elif session_state_path is not None:
+            self.session_states = PersistentSessionStateStore(session_state_path, audit_log=self.audit)
+        else:
+            self.session_states = SessionStateStore()
         self.contract_builder = TaskContractBuilder()
         self.contract: TaskContract | None = None
         self.audit.append("asset_scan", asdict(self.asset_graph), actor="asset_scanner")
@@ -97,12 +106,8 @@ class RepoShieldControlPlane:
         assert self.contract is not None
         for sid in action.source_ids:
             self.provenance.influence(sid, action.action_id)
-        if feature_enabled("REPOSHIELD_ENABLE_ACTION_GRAPH", default=True):
-            graph = ensure_action_graph(action, run_id=self.audit.session_id)
-            self.audit.append("action_graph", asdict(graph), task_id=self.contract.task_id, actor="action_graph", source_ids=action.source_ids, action_id=action.action_id)
-        state = self.session_states.load(self.audit.session_id, self.contract.task_id) if feature_enabled("REPOSHIELD_ENABLE_SESSION_STATE", default=True) else None
+        state = self.session_states.load(self.run_id, self.contract.task_id) if feature_enabled("REPOSHIELD_ENABLE_SESSION_STATE", default=True) else None
         action.metadata["source_has_untrusted"] = self.provenance.graph.has_untrusted(action.source_ids)
-        self.audit.append("action_parsed", asdict(action), task_id=self.contract.task_id, actor="action_parser", source_ids=action.source_ids, action_id=action.action_id)
 
         secret_event = self.sentry.observe_action(action)
         if secret_event:
@@ -111,6 +116,10 @@ class RepoShieldControlPlane:
         package_event = self.package_guard.analyze(action)
         if package_event:
             self.audit.append("package_event", asdict(package_event), task_id=self.contract.task_id, actor="package_guard", action_id=action.action_id)
+        if feature_enabled("REPOSHIELD_ENABLE_ACTION_GRAPH", default=True):
+            graph = ensure_action_graph(action, run_id=self.run_id, repo_root=self.repo_root, package_event=package_event, session_state=state)
+            self.audit.append("action_graph", asdict(graph), task_id=self.contract.task_id, actor="action_graph", source_ids=action.source_ids, action_id=action.action_id)
+        self.audit.append("action_parsed", asdict(action), task_id=self.contract.task_id, actor="action_parser", source_ids=action.source_ids, action_id=action.action_id)
 
         mcp_invocation = None
         if action.semantic_action in {"invoke_mcp_tool", "invoke_destructive_mcp_tool"}:
@@ -138,10 +147,13 @@ class RepoShieldControlPlane:
         if run_preflight and preflight_plan and preflight_plan.required:
             trace = self.sandbox.preflight(action, decision=decision, package_event=package_event, profile=preflight_plan.profile, evidence_mode=preflight_plan.evidence_mode)
             self.audit.append("exec_trace", asdict(trace), task_id=self.contract.task_id, actor="sandbox", action_id=action.action_id)
+            if feature_enabled("REPOSHIELD_ENABLE_ACTION_GRAPH", default=True):
+                enriched_graph = ensure_action_graph(action, run_id=self.run_id, repo_root=self.repo_root, exec_trace=trace, package_event=package_event, session_state=state)
+                self.audit.append("action_graph_enriched", asdict(enriched_graph), task_id=self.contract.task_id, actor="action_graph", source_ids=action.source_ids, action_id=action.action_id)
             decision = self.policy.decide(self.contract, action, self.asset_graph, self.provenance.graph, package_event=package_event, secret_event=secret_event, exec_trace=trace, session_state=state)
 
         if state is not None:
-            updated = self.session_states.update(action, decision, trace, secret_event, run_id=self.audit.session_id, task_id=self.contract.task_id)
+            updated = self.session_states.update(action, decision, trace, secret_event, run_id=self.run_id, task_id=self.contract.task_id)
             self.audit.append("session_state_update", session_state_payload(updated), task_id=self.contract.task_id, actor="session_state", source_ids=action.source_ids, action_id=action.action_id, decision_id=decision.decision_id)
 
         policy_fact_events = self.policy.consume_fact_events() if hasattr(self.policy, "consume_fact_events") else []

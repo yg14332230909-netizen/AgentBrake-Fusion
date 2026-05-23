@@ -16,7 +16,10 @@ PHASES = {
     "instruction_ir": "instruction",
     "action_parsed": "action",
     "action_graph": "action",
+    "action_graph_enriched": "action",
     "session_state_update": "policy",
+    "session_state_restore": "policy",
+    "session_state_persisted": "policy",
     "constraint_lattice_trace": "policy",
     "secret_event": "evidence",
     "package_event": "evidence",
@@ -135,10 +138,11 @@ def build_action_detail(events: list[StudioEvent], action_id: str) -> ActionDeta
             source_ids.update(str(s) for s in event.payload.get("source_ids", []) or [])
             if isinstance(event.payload.get("action_graph"), dict):
                 detail.action_graph = dict(event.payload["action_graph"])
-        elif event.type == "action_graph":
+        elif event.type in {"action_graph", "action_graph_enriched"}:
             detail.action_graph = dict(event.payload)
-        elif event.type == "session_state_update":
-            detail.session_state = dict(event.payload)
+        elif event.type in {"session_state_update", "session_state_restore", "session_state_persisted"}:
+            payload = dict(event.payload)
+            detail.session_state = dict(payload.get("state") or payload)
         elif event.type == "policy_decision":
             detail.decision = dict(event.payload)
         elif event.type == "policy_runtime":

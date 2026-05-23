@@ -221,6 +221,8 @@ class ActionEdge:
     dst_node_id: str
     relation: Literal["pipe", "sequence", "redirect", "dataflow", "controlflow", "memoryflow"]
     evidence_refs: list[str] = field(default_factory=list)
+    confidence: float = 1.0
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(slots=True)

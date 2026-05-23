@@ -32,6 +32,7 @@ class AuditEventType(StrEnum):
     GATEWAY_RESPONSE = "gateway_response"
     ACTION_GRAPH = "action_graph"
     SESSION_STATE_UPDATE = "session_state_update"
+    SESSION_STATE_RESTORE = "session_state_restore"
     CONSTRAINT_LATTICE_TRACE = "constraint_lattice_trace"
 
 

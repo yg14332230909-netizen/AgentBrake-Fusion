@@ -59,9 +59,18 @@ def render_suite_html(report_json: str | Path, output_path: str | Path) -> Path:
             "</tr>"
         )
     metrics = report.get("metrics", {})
+    metric_cards = "".join(
+        "<div class='metric'><strong>"
+        + html.escape(str(key))
+        + "</strong><span>"
+        + html.escape(str(value))
+        + "</span></div>"
+        for key, value in metrics.items()
+    )
     doc = f"""<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>RepoShield Bench Suite</title>
-<style>body{{font-family:system-ui;margin:32px}}table{{border-collapse:collapse;width:100%}}th,td{{border:1px solid #d0d7de;padding:8px}}th{{background:#f6f8fa}}.card{{border:1px solid #d0d7de;border-radius:10px;padding:16px;margin:16px 0}}</style>
+<style>body{{font-family:system-ui;margin:32px}}table{{border-collapse:collapse;width:100%}}th,td{{border:1px solid #d0d7de;padding:8px}}th{{background:#f6f8fa}}.card{{border:1px solid #d0d7de;border-radius:10px;padding:16px;margin:16px 0}}.metrics{{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:16px 0}}.metric{{border:1px solid #d0d7de;border-radius:8px;padding:12px;background:#f6f8fa}}.metric strong{{display:block;font-size:13px;color:#57606a}}.metric span{{font-size:20px;font-weight:700}}</style>
 </head><body><h1>RepoShield CodeAgent-SecBench 报告</h1><div class="card"><pre>{html.escape(json.dumps(metrics, ensure_ascii=False, indent=2))}</pre></div><table><thead><tr><th>sample</th><th>utility</th><th>security</th><th>evidence</th><th>danger requested</th><th>danger executed</th></tr></thead><tbody>{''.join(rows)}</tbody></table></body></html>"""
+    doc = doc.replace('<div class="card"><pre>', f'<div class="metrics">{metric_cards}</div><div class="card"><pre>', 1)
     output.write_text(doc, encoding="utf-8")
     return output
 

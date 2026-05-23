@@ -1,0 +1,86 @@
+"""Python snippet parser for common secret-to-network patterns."""
+from __future__ import annotations
+
+import ast
+import re
+
+from ..models import ActionEdge, new_id
+from .base import GraphBuildContext, GraphFragment
+from .fallback_heuristic import FallbackHeuristicParser, _node
+
+
+class PythonSnippetParser:
+    name = "python_snippet_parser"
+
+    def can_parse(self, ctx: GraphBuildContext) -> bool:
+        return bool(_extract_python_code(ctx.action.raw_action))
+
+    def parse(self, ctx: GraphBuildContext) -> GraphFragment:
+        code = _extract_python_code(ctx.action.raw_action)
+        if not code:
+            return FallbackHeuristicParser().parse(ctx)
+        try:
+            tree = ast.parse(code)
+        except SyntaxError:
+            return FallbackHeuristicParser().parse(ctx)
+        reads: list[str] = []
+        sinks: list[str] = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                name = _call_name(node.func)
+                if name in {"open", "pathlib.path.read_text"} or name.endswith(".read_text"):
+                    arg = _first_string_arg(node)
+                    if arg:
+                        reads.append(arg)
+                if name in {"os.getenv"} or name.endswith(".environ.get"):
+                    arg = _first_string_arg(node)
+                    if arg:
+                        reads.append(f"env:{arg}")
+                if any(name.endswith(suffix) for suffix in ("requests.get", "requests.post", "urllib.request.urlopen", "socket.create_connection")):
+                    host = _host_from_call(node)
+                    if host:
+                        sinks.append(host)
+                if name in {"subprocess.run", "subprocess.call", "os.system"}:
+                    text = ast.unparse(node) if hasattr(ast, "unparse") else ""
+                    if "curl" in text or "wget" in text:
+                        sinks.extend(re.findall(r"https?://([^/\\s'\\\"]+)", text))
+        nodes = []
+        edges = []
+        for idx, path in enumerate(reads or ([] if sinks else [ctx.action.raw_action])):
+            nodes.append(_node(ctx.action, new_id("anode"), "read_secret_file" if (".env" in path or path.startswith("env:")) else "read_file", path, path, idx, self.name))
+        for sink in sinks:
+            nodes.append(_node(ctx.action, new_id("anode"), "send_network_request", sink, sink, len(nodes), self.name))
+        if not nodes:
+            return FallbackHeuristicParser().parse(ctx)
+        secret_nodes = [node for node in nodes if node.semantic_action == "read_secret_file"]
+        network_nodes = [node for node in nodes if node.semantic_action == "send_network_request"]
+        for src in secret_nodes:
+            for dst in network_nodes:
+                edges.append(ActionEdge(new_id("aedge"), src.node_id, dst.node_id, "dataflow", evidence_refs=[ctx.action.action_id], confidence=0.85, metadata={"parser": self.name}))
+        return GraphFragment(nodes, edges, 0.85, True, self.name)
+
+
+def _extract_python_code(raw: str) -> str:
+    m = re.search(r"\bpython(?:3)?\s+-c\s+(['\"])(.*?)\1", raw, re.I | re.S)
+    return m.group(2) if m else ""
+
+
+def _call_name(func: ast.AST) -> str:
+    if isinstance(func, ast.Name):
+        return func.id
+    if isinstance(func, ast.Attribute):
+        parent = _call_name(func.value)
+        return f"{parent}.{func.attr}" if parent else func.attr
+    return ""
+
+
+def _first_string_arg(node: ast.Call) -> str:
+    if node.args and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str):
+        return node.args[0].value
+    return ""
+
+
+def _host_from_call(node: ast.Call) -> str:
+    text = _first_string_arg(node)
+    m = re.search(r"https?://([^/\s'\"]+)", text)
+    return m.group(1) if m else text
