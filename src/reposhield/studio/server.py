@@ -23,6 +23,8 @@ from .evidence_exporter import export_evidence
 from .redaction import redact_value
 from .scenario_runner import list_scenarios, run_scenario
 
+MAX_STUDIO_BODY_BYTES = 1024 * 1024
+
 
 def serve_studio_pro(
     audit_path: str | Path,
@@ -120,63 +122,67 @@ def serve_studio_pro(
             self._json({"error": "not found"}, status=404)
 
         def do_POST(self) -> None:  # noqa: N802
-            parsed = urlparse(self.path)
-            path = parsed.path
-            if not self._authorized(required_key):
-                return
-            if path.startswith("/api/scenarios/") and path.endswith("/run"):
-                scenario_id = unquote(path.split("/")[3])
-                body = self._read_json()
-                result = run_scenario(
-                    scenario_id,
-                    repo_root=body.get("repo") or repo,
-                    audit_path=audit,
-                    workdir=body.get("workdir"),
-                    policy_mode=str(body.get("policy_mode") or "enforce"),
-                )
-                index.refresh()
-                self._json(redact_value(result))
-                return
-            if path == "/api/admin/clear-records":
-                if not demo_mode:
-                    self._json({"error": "clear_records_only_available_in_demo_mode"}, status=403)
+            try:
+                parsed = urlparse(self.path)
+                path = parsed.path
+                if not self._authorized(required_key):
                     return
-                body = self._read_json()
-                result = _clear_records(audit, Path(approvals_path), repo, backup=bool(body.get("backup", True)))
-                index.refresh()
-                self._json(result)
-                return
-            if path.startswith("/api/approvals/") and path.endswith("/grant"):
-                approval_id = unquote(path.split("/")[3])
-                req = _find_request(approvals, approval_id)
-                if not req:
-                    self._json({"error": "approval request not found"}, status=404)
+                if path.startswith("/api/scenarios/") and path.endswith("/run"):
+                    scenario_id = unquote(path.split("/")[3])
+                    body = self._read_json()
+                    result = run_scenario(
+                        scenario_id,
+                        repo_root=body.get("repo") or repo,
+                        audit_path=audit,
+                        workdir=body.get("workdir"),
+                        policy_mode=str(body.get("policy_mode") or "enforce"),
+                    )
+                    index.refresh()
+                    self._json(redact_value(result))
                     return
-                body = self._read_json()
-                expected_hash = str(body.get("action_hash") or "")
-                if expected_hash and expected_hash != req.action_hash:
-                    self._json({"error": "action_hash_mismatch"}, status=409)
+                if path == "/api/admin/clear-records":
+                    if not demo_mode:
+                        self._json({"error": "clear_records_only_available_in_demo_mode"}, status=403)
+                        return
+                    body = self._read_json()
+                    result = _clear_records(audit, Path(approvals_path), repo, backup=bool(body.get("backup", True)))
+                    index.refresh()
+                    self._json(result)
                     return
-                grant = ApprovalCenter().grant(
-                    req,
-                    constraints=list(body.get("constraints") or ["sandbox_only", "no_network"]),
-                    minutes=int(body.get("minutes") or 30),
-                    granted_by=str(body.get("granted_by") or "studio"),
-                )
-                approvals.append_grant(grant)
-                self._json({"grant": asdict(grant)})
-                return
-            if path.startswith("/api/approvals/") and path.endswith("/deny"):
-                approval_id = unquote(path.split("/")[3])
-                req = _find_request(approvals, approval_id)
-                if not req:
-                    self._json({"error": "approval request not found"}, status=404)
+                if path.startswith("/api/approvals/") and path.endswith("/grant"):
+                    approval_id = unquote(path.split("/")[3])
+                    req = _find_request(approvals, approval_id)
+                    if not req:
+                        self._json({"error": "approval request not found"}, status=404)
+                        return
+                    body = self._read_json()
+                    expected_hash = str(body.get("action_hash") or "")
+                    if expected_hash and expected_hash != req.action_hash:
+                        self._json({"error": "action_hash_mismatch"}, status=409)
+                        return
+                    grant = ApprovalCenter().grant(
+                        req,
+                        constraints=list(body.get("constraints") or ["sandbox_only", "no_network"]),
+                        minutes=int(body.get("minutes") or 30),
+                        granted_by=str(body.get("granted_by") or "studio"),
+                    )
+                    approvals.append_grant(grant)
+                    self._json({"grant": asdict(grant)})
                     return
-                body = self._read_json()
-                approvals.append_denial(req, denied_by=str(body.get("denied_by") or "studio"))
-                self._json({"approval_request_id": approval_id, "decision": "denied"})
-                return
-            self._json({"error": "not found"}, status=404)
+                if path.startswith("/api/approvals/") and path.endswith("/deny"):
+                    approval_id = unquote(path.split("/")[3])
+                    req = _find_request(approvals, approval_id)
+                    if not req:
+                        self._json({"error": "approval request not found"}, status=404)
+                        return
+                    body = self._read_json()
+                    approvals.append_denial(req, denied_by=str(body.get("denied_by") or "studio"))
+                    self._json({"approval_request_id": approval_id, "decision": "denied"})
+                    return
+                self._json({"error": "not found"}, status=404)
+            except ValueError as exc:
+                status = 413 if "too large" in str(exc) else 400
+                self._json({"error": str(exc)}, status=status)
 
         def _authorized(self, key: str | None, query: dict[str, list[str]] | None = None) -> bool:
             if not key:
@@ -204,7 +210,10 @@ def serve_studio_pro(
                 return
 
         def _read_json(self) -> dict[str, Any]:
-            body = self.rfile.read(int(self.headers.get("Content-Length", "0") or "0"))
+            content_length = int(self.headers.get("Content-Length", "0") or "0")
+            if content_length > MAX_STUDIO_BODY_BYTES:
+                raise ValueError("request body too large")
+            body = self.rfile.read(content_length)
             if not body:
                 return {}
             return json.loads(body.decode("utf-8"))

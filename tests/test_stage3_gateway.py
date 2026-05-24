@@ -427,6 +427,35 @@ def test_serve_gateway_rejects_missing_authorization(tmp_path: Path):
     assert any(e["event_type"] == "rejected_gateway_request" for e in events)
 
 
+def test_serve_gateway_rejects_oversized_request_body_before_reading(tmp_path: Path):
+    repo = make_repo(tmp_path)
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        port = sock.getsockname()[1]
+    thread = threading.Thread(
+        target=serve_gateway,
+        kwargs={"repo_root": repo, "host": "127.0.0.1", "port": port, "audit_path": tmp_path / "audit.jsonl"},
+        daemon=True,
+    )
+    thread.start()
+    time.sleep(0.25)
+
+    request = (
+        "POST /v1/chat/completions HTTP/1.1\r\n"
+        f"Host: 127.0.0.1:{port}\r\n"
+        "Authorization: Bearer reposhield-local\r\n"
+        "Content-Type: application/json\r\n"
+        "Content-Length: 3145728\r\n"
+        "Connection: close\r\n"
+        "\r\n"
+    ).encode("ascii")
+    with socket.create_connection(("127.0.0.1", port), timeout=5) as client:
+        client.sendall(request)
+        response = client.recv(512).decode("utf-8", errors="replace")
+
+    assert "413" in response
+
+
 def test_serve_gateway_returns_run_id_header(tmp_path: Path):
     repo = make_repo(tmp_path)
     with socket.socket() as sock:

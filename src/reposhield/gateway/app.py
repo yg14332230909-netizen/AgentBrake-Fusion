@@ -31,6 +31,8 @@ from .session_identity import resolve_session_identity
 from .trace_state import GatewayTrace
 from .upstream import LocalHeuristicUpstream, OpenAICompatibleUpstream
 
+MAX_GATEWAY_BODY_BYTES = 2 * 1024 * 1024
+
 
 class RepoShieldGateway:
     def __init__(
@@ -447,7 +449,14 @@ def serve_gateway(
                 self.wfile.write(b'{"error":"missing or invalid Authorization bearer token"}')
                 return
             try:
-                body = self.rfile.read(int(self.headers.get("Content-Length", "0") or "0"))
+                content_length = int(self.headers.get("Content-Length", "0") or "0")
+                if content_length > MAX_GATEWAY_BODY_BYTES:
+                    self.send_response(413)
+                    self.send_header("Content-Type", "application/json; charset=utf-8")
+                    self.end_headers()
+                    self.wfile.write(b'{"error":"request body too large"}')
+                    return
+                body = self.rfile.read(content_length)
                 request = json.loads(body.decode("utf-8") or "{}")
                 request["_headers"] = {key: value for key, value in self.headers.items()}
                 if request.get("stream"):

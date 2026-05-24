@@ -12,6 +12,8 @@ from typing import Any
 from .approvals import ApprovalCenter, ApprovalStore
 from .models import ApprovalRequest
 
+MAX_APPROVAL_BODY_BYTES = 1024 * 1024
+
 
 def approval_events_summary(store: ApprovalStore) -> dict[str, Any]:
     events = store.list_events()
@@ -48,35 +50,39 @@ def serve_approval_api(
             self._json(approval_events_summary(store))
 
         def do_POST(self) -> None:  # noqa: N802
-            if not self._authorized(required_key):
-                return
-            parts = [p for p in self.path.strip("/").split("/") if p]
-            if len(parts) not in {3, 4}:
-                self._json({"error": "expected /approvals/{id}/approve or /approvals/{id}/deny"}, status=404)
-                return
-            if parts[0] == "v1":
-                parts = parts[1:]
-            if len(parts) != 3 or parts[0] != "approvals" or parts[2] not in {"approve", "deny"}:
-                self._json({"error": "expected /approvals/{id}/approve or /approvals/{id}/deny"}, status=404)
-                return
-            approval_id, action = parts[1], parts[2]
-            request = _find_request(store, approval_id)
-            if not request:
-                self._json({"error": f"approval request not found: {approval_id}"}, status=404)
-                return
-            payload = self._read_json()
-            if action == "approve":
-                grant = ApprovalCenter().grant(
-                    request,
-                    constraints=list(payload.get("constraints") or ["sandbox_only", "no_network"]),
-                    minutes=int(payload.get("minutes") or 30),
-                    granted_by=str(payload.get("granted_by") or "approval_api"),
-                )
-                store.append_grant(grant)
-                self._json({"grant": asdict(grant)})
-                return
-            store.append_denial(request, denied_by=str(payload.get("denied_by") or "approval_api"))
-            self._json({"approval_request_id": approval_id, "decision": "denied"})
+            try:
+                if not self._authorized(required_key):
+                    return
+                parts = [p for p in self.path.strip("/").split("/") if p]
+                if len(parts) not in {3, 4}:
+                    self._json({"error": "expected /approvals/{id}/approve or /approvals/{id}/deny"}, status=404)
+                    return
+                if parts[0] == "v1":
+                    parts = parts[1:]
+                if len(parts) != 3 or parts[0] != "approvals" or parts[2] not in {"approve", "deny"}:
+                    self._json({"error": "expected /approvals/{id}/approve or /approvals/{id}/deny"}, status=404)
+                    return
+                approval_id, action = parts[1], parts[2]
+                request = _find_request(store, approval_id)
+                if not request:
+                    self._json({"error": f"approval request not found: {approval_id}"}, status=404)
+                    return
+                payload = self._read_json()
+                if action == "approve":
+                    grant = ApprovalCenter().grant(
+                        request,
+                        constraints=list(payload.get("constraints") or ["sandbox_only", "no_network"]),
+                        minutes=int(payload.get("minutes") or 30),
+                        granted_by=str(payload.get("granted_by") or "approval_api"),
+                    )
+                    store.append_grant(grant)
+                    self._json({"grant": asdict(grant)})
+                    return
+                store.append_denial(request, denied_by=str(payload.get("denied_by") or "approval_api"))
+                self._json({"approval_request_id": approval_id, "decision": "denied"})
+            except ValueError as exc:
+                status = 413 if "too large" in str(exc) else 400
+                self._json({"error": str(exc)}, status=status)
 
         def _authorized(self, key: str | None) -> bool:
             if key and self.headers.get("Authorization") != f"Bearer {key}":
@@ -85,7 +91,10 @@ def serve_approval_api(
             return True
 
         def _read_json(self) -> dict[str, Any]:
-            body = self.rfile.read(int(self.headers.get("Content-Length", "0") or "0"))
+            content_length = int(self.headers.get("Content-Length", "0") or "0")
+            if content_length > MAX_APPROVAL_BODY_BYTES:
+                raise ValueError("request body too large")
+            body = self.rfile.read(content_length)
             return json.loads(body.decode("utf-8") or "{}")
 
         def _json(self, payload: dict[str, Any], status: int = 200) -> None:

@@ -9,7 +9,7 @@ from typing import Any
 
 from .profiles import AgentProfile
 
-MANIFEST_NAME = "agent-config-backup.json"
+LEGACY_MANIFEST_NAME = "agent-config-backup.json"
 
 
 @dataclass(slots=True)
@@ -49,10 +49,16 @@ def apply_agent_config(repo: Path, config: dict[str, Any], profile: AgentProfile
 
 
 def restore_agent_config(repo: Path, profile: AgentProfile) -> AgentConfigChange:
-    manifest = _manifest_path(repo)
+    manifest = _manifest_path(repo, profile.agent)
     if not manifest.exists():
-        return AgentConfigChange(profile.agent, False, False, "", "", "no agent config backup manifest")
+        legacy = _legacy_manifest_path(repo)
+        if not legacy.exists():
+            return AgentConfigChange(profile.agent, False, False, "", "", "no agent config backup manifest")
+        manifest = legacy
     data = json.loads(manifest.read_text(encoding="utf-8"))
+    manifest_agent = str(data.get("agent") or "")
+    if manifest_agent and manifest_agent != profile.agent:
+        return AgentConfigChange(profile.agent, False, False, "", "", "no agent config backup manifest")
     target = Path(str(data.get("target") or ""))
     backup = Path(str(data.get("backup") or ""))
     if not target or not backup.exists():
@@ -84,7 +90,7 @@ def _write_snippet(repo: Path, config: dict[str, Any], profile: AgentProfile, *,
 
 
 def _write_manifest(repo: Path, profile: AgentProfile, target: Path, backup: Path, *, existed: bool) -> None:
-    path = _manifest_path(repo)
+    path = _manifest_path(repo, profile.agent)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps(
@@ -102,8 +108,12 @@ def _write_manifest(repo: Path, profile: AgentProfile, target: Path, backup: Pat
     )
 
 
-def _manifest_path(repo: Path) -> Path:
-    return repo / ".reposhield" / MANIFEST_NAME
+def _manifest_path(repo: Path, agent: str) -> Path:
+    return repo / ".reposhield" / "backups" / f"{agent}-agent-config-backup.json"
+
+
+def _legacy_manifest_path(repo: Path) -> Path:
+    return repo / ".reposhield" / LEGACY_MANIFEST_NAME
 
 
 def _render_codex_config(config: dict[str, Any], original: str) -> str:

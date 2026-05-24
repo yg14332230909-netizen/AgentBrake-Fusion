@@ -226,6 +226,19 @@ def run_real_agent_smoke_test(
     template = command or list(profile.real_agent_command)
     if not template:
         return {"ok": False, "agent": profile.agent, "available": False, "detail": "profile has no real_agent_command"}
+    gateway = config.get("gateway", {})
+    host = str(gateway.get("host") or "127.0.0.1")
+    port = int(gateway.get("port") or 0)
+    if not _port_open(host, port):
+        return {
+            "ok": False,
+            "agent": profile.agent,
+            "available": False,
+            "detail": f"RepoShield Gateway is not listening at {host}:{port}; run reposhield start --repo . --gateway-only first.",
+        }
+    configured = _real_agent_configured_for_gateway(config, profile)
+    if not configured["ok"]:
+        return {"ok": False, "agent": profile.agent, "available": False, **configured}
     executable = template[0]
     if shutil.which(executable) is None:
         return {"ok": False, "agent": profile.agent, "available": False, "detail": f"command not found: {executable}"}
@@ -267,6 +280,28 @@ def run_real_agent_smoke_test(
         "returncode": completed.returncode,
         "stdout_tail": completed.stdout[-800:],
         "stderr_tail": completed.stderr[-800:],
+    }
+
+
+def _real_agent_configured_for_gateway(config: dict[str, Any], profile: AgentProfile) -> dict[str, Any]:
+    if profile.agent != "codex":
+        return {"ok": True}
+    config_path = Path.home() / ".codex" / "config.toml"
+    if not config_path.exists():
+        return {"ok": False, "detail": f"Codex config not found: {config_path}"}
+    text = config_path.read_text(encoding="utf-8", errors="replace")
+    gateway_url = str(config.get("gateway", {}).get("base_url") or "")
+    markers = [
+        "# BEGIN RepoShield managed block",
+        'model_provider = "reposhield"',
+        "[model_providers.reposhield]",
+        gateway_url,
+    ]
+    if all(marker in text for marker in markers if marker):
+        return {"ok": True}
+    return {
+        "ok": False,
+        "detail": "Codex is not configured to use this RepoShield Gateway; run reposhield connect --repo . --agent codex --apply-agent-config first.",
     }
 
 

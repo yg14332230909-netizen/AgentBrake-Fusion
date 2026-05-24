@@ -110,6 +110,19 @@ def test_connect_can_apply_and_restore_agent_config_snippet(tmp_path: Path):
     assert not target.exists()
 
 
+def test_agent_config_restore_is_agent_scoped(tmp_path: Path):
+    result = connect_repo(tmp_path, agent="generic", mode="quick", apply_config=True)
+    target = Path(result.agent_config["target"])
+
+    wrong_agent = connect_repo(tmp_path, agent="cline", mode="quick", restore_config=True)
+    assert wrong_agent.agent_config and not wrong_agent.agent_config["restored"]
+    assert target.exists()
+
+    restored = connect_repo(tmp_path, agent="generic", mode="quick", restore_config=True)
+    assert restored.agent_config and restored.agent_config["restored"]
+    assert not target.exists()
+
+
 def test_start_launches_configured_services(tmp_path: Path, monkeypatch):
     connect_repo(tmp_path, agent="generic", mode="full")
     launched_commands = []
@@ -192,6 +205,15 @@ def test_real_agent_smoke_reports_unsupported_profile(tmp_path: Path):
     result = run_real_agent_smoke_test(config, profile_for_agent("generic"))
     assert not result["ok"]
     assert result["detail"] == "profile has no real_agent_command"
+
+
+def test_real_agent_smoke_refuses_when_gateway_is_not_running(tmp_path: Path):
+    connect_repo(tmp_path, agent="codex", mode="quick")
+    config = load_config(tmp_path / ".reposhield" / "config.yaml")
+    result = run_real_agent_smoke_test(config, profile_for_agent("codex"), command=["python", "-c", "print('OK')"], timeout=1)
+
+    assert not result["ok"]
+    assert "Gateway is not listening" in result["detail"]
 
 
 def test_status_and_stop_include_repair_when_not_connected(tmp_path: Path):
