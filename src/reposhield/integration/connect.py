@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from .agent_config import apply_agent_config, restore_agent_config
+from .doctor import run_smoke_test
 from .profiles import SHIM_COMMANDS, IntegrationProfile, make_profile
 from .session_bootstrap import default_conversation_id, default_run_id
 from .templates import (
@@ -34,6 +36,8 @@ class ConnectResult:
     written: list[str]
     skipped: list[str]
     dry_run: bool = False
+    smoke_test: dict[str, Any] | None = None
+    agent_config: dict[str, Any] | None = None
 
     @property
     def ok(self) -> bool:
@@ -49,6 +53,8 @@ class ConnectResult:
             "written": self.written,
             "skipped": self.skipped,
             "dry_run": self.dry_run,
+            "smoke_test": self.smoke_test,
+            "agent_config": self.agent_config,
         }
 
 
@@ -65,6 +71,9 @@ def connect_repo(
     approval_port: int = 8776,
     upstream_base_url: str | None = None,
     policy_pack: str | Path | None = None,
+    smoke_test: bool = False,
+    apply_config: bool = False,
+    restore_config: bool = False,
 ) -> ConnectResult:
     repo = Path(repo_root).resolve()
     if not repo.exists() or not repo.is_dir():
@@ -83,6 +92,17 @@ def connect_repo(
     base = repo / ".reposhield"
     config_path = base / "config.yaml"
     planned = generated_paths(profile)
+    if restore_config:
+        restored = restore_agent_config(repo, profile.agent_profile)
+        return ConnectResult(
+            str(repo),
+            profile.agent,
+            profile.mode,
+            str(config_path),
+            [],
+            [],
+            agent_config=restored.to_dict(),
+        )
     if dry_run:
         return ConnectResult(str(repo), profile.agent, profile.mode, str(config_path), [], planned, dry_run=True)
 
@@ -121,7 +141,18 @@ def connect_repo(
 
     for path in [base / "gateway_audit.jsonl", base / "gateway_approvals.jsonl", base / "session_state.jsonl"]:
         path.touch(exist_ok=True)
-    return ConnectResult(str(repo), profile.agent, profile.mode, str(config_path), written, skipped)
+    agent_config_result = apply_agent_config(repo, config, profile.agent_profile, force=force).to_dict() if apply_config else None
+    smoke_result = run_smoke_test(config, profile.agent_profile) if smoke_test else None
+    return ConnectResult(
+        str(repo),
+        profile.agent,
+        profile.mode,
+        str(config_path),
+        written,
+        skipped,
+        smoke_test=smoke_result,
+        agent_config=agent_config_result,
+    )
 
 
 def _build_config(
@@ -145,8 +176,18 @@ def _build_config(
         "agent": profile.agent,
         "agent_config": {
             "type": profile.agent,
+            "display_name": profile.agent_profile.display_name,
+            "protocol": profile.agent_profile.protocol,
+            "wire_api": profile.agent_profile.wire_api,
             "base_url": f"http://{gateway_host}:{gateway_port}/v1",
-            "api_key": "reposhield-local",
+            "api_key": profile.agent_profile.api_key_value,
+            "api_key_env": profile.agent_profile.api_key_env,
+            "requires_authorization": profile.agent_profile.requires_authorization,
+            "supports_base_url": profile.agent_profile.supports_base_url,
+            "supports_headers": profile.agent_profile.supports_headers,
+            "stable_identity_channels": list(profile.agent_profile.stable_identity_channels),
+            "config_files": list(profile.agent_profile.config_files),
+            "smoke_endpoint": profile.agent_profile.smoke_endpoint,
         },
         "mode": profile.mode,
         "gateway": {

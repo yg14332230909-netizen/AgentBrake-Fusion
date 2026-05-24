@@ -1,32 +1,60 @@
-# Codex CLI
+# Codex CLI 接入 RepoShield
 
-## 一、适用场景
+Codex CLI 的接入差异由 agent profile 描述，不需要为 Codex 修改 Gateway 核心代码。
 
-适用于支持 OpenAI-compatible endpoint 的 Codex CLI 或等价命令行 agent。
-
-## 二、一键接入命令
+## 一键生成
 
 ```bash
 reposhield connect --agent codex --repo . --mode standard
 reposhield start --repo .
+reposhield doctor --repo . --agent codex
 ```
 
-## 三、Agent 侧配置
+Codex profile 的关键声明：
 
-使用 `.reposhield/agent.env` 中生成的 Gateway、run id 和 conversation id。
+- `wire_api: responses`
+- Gateway endpoint: `/v1/responses`
+- API key env: `REPOSHIELD_GATEWAY_API_KEY`
+- 稳定 run id header: `X-RepoShield-Run-Id`
+- 多轮稳定身份仍建议同时保留 `metadata.reposhield_run_id` 和 `metadata.conversation_id`
 
-## 四、如何验证成功
+## 可选：让 RepoShield 写入 Codex 配置
 
-运行 `reposhield doctor --repo .`，确认 Gateway、AuditLog、SessionState 和 shims 状态。
+只有在你明确希望 RepoShield 修改本机 Codex 配置时才运行：
 
-## 五、保护覆盖范围
+```bash
+reposhield connect --agent codex --repo . --mode standard --apply-agent-config
+```
 
-Standard 模式适合本地开发试用；Full 模式适合演示和实验评测。
+该命令会创建备份清单。恢复：
 
-## 六、当前不能保护什么
+```bash
+reposhield connect --agent codex --repo . --restore-agent-config
+```
 
-未经过 Gateway 或 shims 的直接执行路径无法完整治理。
+## Smoke Test
 
-## 七、常见问题
+Gateway 已启动后可运行：
 
-如果 Gateway 返回 `X-RepoShield-Run-Id`，下一轮请求可以继续带回该值。
+```bash
+reposhield connect --agent codex --repo . --mode standard --smoke-test
+```
+
+或：
+
+```bash
+reposhield doctor --repo . --agent codex
+reposhield smoke-test --repo . --agent codex
+```
+
+doctor 会按 Codex profile 探测 `/v1/responses`，而不是默认探测 `/v1/chat/completions`。
+
+## 新增其他智能体时的边界
+
+如果更换智能体后发现需要改 Gateway，先不要直接为该智能体写特殊分支。应先检查：
+
+1. 该智能体实际使用 `chat` 还是 `responses`。
+2. 是否只是 API key、base URL、header 或 metadata 传递方式不同。
+3. 能否通过 `src/reposhield/integration/profiles.py` 增加 profile 解决。
+
+只有当它暴露出新的通用 OpenAI-compatible 协议兼容问题时，才应扩展 Gateway。

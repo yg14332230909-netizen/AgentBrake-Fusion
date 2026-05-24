@@ -8,7 +8,8 @@ from urllib.request import Request, urlopen
 from reposhield.cli import main
 from reposhield.gateway import serve_gateway, simulate_gateway_request
 from reposhield.gateway.session_identity import resolve_session_identity
-from reposhield.integration import build_start_summary, connect_repo, run_doctor
+from reposhield.integration import build_start_summary, connect_repo, run_doctor, run_real_agent_smoke_test
+from reposhield.integration.profiles import integration_matrix, profile_for_agent
 from reposhield.integration.start import launch_start_services, status_services, stop_services
 from reposhield.integration.templates import load_config
 from reposhield.studio.server import serve_studio_pro
@@ -24,6 +25,8 @@ def test_connect_quick_generates_config_env_and_instructions(tmp_path: Path):
     config = load_config(tmp_path / ".reposhield" / "config.yaml")
     assert config["mode"] == "quick"
     assert config["agent"] == "codex"
+    assert config["agent_config"]["wire_api"] == "responses"
+    assert config["agent_config"]["smoke_endpoint"] == "/v1/responses"
     assert config["session"]["run_id"].startswith("run_")
     assert not config["shims"]["enabled"]
     env_text = (tmp_path / ".reposhield" / "agent.env").read_text(encoding="utf-8")
@@ -91,6 +94,20 @@ def test_cli_connect_and_coverage(tmp_path: Path):
     assert main(["connect", "--repo", str(tmp_path), "--agent", "codex", "--mode", "standard"]) == 0
     assert main(["coverage", "--repo", str(tmp_path)]) == 0
     assert main(["start", "--repo", str(tmp_path), "--gateway-only", "--print-only"]) == 0
+    assert main(["profiles", "--agent", "codex"]) == 0
+    assert main(["integration-matrix"]) == 0
+
+
+def test_connect_can_apply_and_restore_agent_config_snippet(tmp_path: Path):
+    result = connect_repo(tmp_path, agent="generic", mode="quick", apply_config=True)
+    assert result.agent_config and result.agent_config["applied"]
+    target = Path(result.agent_config["target"])
+    assert target.exists()
+    assert "OPENAI_BASE_URL=" in target.read_text(encoding="utf-8")
+
+    restored = connect_repo(tmp_path, agent="generic", mode="quick", restore_config=True)
+    assert restored.agent_config and restored.agent_config["restored"]
+    assert not target.exists()
 
 
 def test_start_launches_configured_services(tmp_path: Path, monkeypatch):
@@ -157,6 +174,24 @@ def test_doctor_includes_repair_hints_for_missing_config(tmp_path: Path):
 
     assert not report.ok
     assert "reposhield connect" in report.checks[0]["repair"]
+    assert report.next_commands
+
+
+def test_profiles_load_from_external_yaml():
+    codex = profile_for_agent("codex")
+    assert codex.wire_api == "responses"
+    assert codex.config_apply == "native"
+    assert codex.real_agent_command == ("codex", "exec")
+    matrix = integration_matrix()
+    assert any(row["agent"] == "codex" and row["maturity"] == "native" for row in matrix)
+
+
+def test_real_agent_smoke_reports_unsupported_profile(tmp_path: Path):
+    connect_repo(tmp_path, agent="generic", mode="quick")
+    config = load_config(tmp_path / ".reposhield" / "config.yaml")
+    result = run_real_agent_smoke_test(config, profile_for_agent("generic"))
+    assert not result["ok"]
+    assert result["detail"] == "profile has no real_agent_command"
 
 
 def test_status_and_stop_include_repair_when_not_connected(tmp_path: Path):
@@ -187,7 +222,29 @@ def test_doctor_probes_live_gateway(tmp_path: Path):
 
     report = run_doctor(tmp_path)
 
-    assert any(item["name"] == "gateway_chat_completions" and item["ok"] for item in report.checks)
+    assert any(item["name"] == "gateway_chat_smoke" and item["ok"] for item in report.checks)
+
+
+def test_doctor_uses_agent_specific_responses_smoke(tmp_path: Path):
+    connect_repo(tmp_path, agent="codex", mode="quick")
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        port = sock.getsockname()[1]
+    config = load_config(tmp_path / ".reposhield" / "config.yaml")
+    config["gateway"]["port"] = port
+    (tmp_path / ".reposhield" / "config.yaml").write_text(json.dumps(config), encoding="utf-8")
+    thread = threading.Thread(
+        target=serve_gateway,
+        kwargs={"repo_root": tmp_path, "host": "127.0.0.1", "port": port, "audit_path": tmp_path / ".reposhield" / "gateway_audit.jsonl"},
+        daemon=True,
+    )
+    thread.start()
+    time.sleep(0.25)
+
+    report = run_doctor(tmp_path, agent="codex")
+
+    assert any(item["name"] == "gateway_responses_smoke" and item["ok"] for item in report.checks)
+    assert main(["smoke-test", "--repo", str(tmp_path), "--agent", "codex"]) == 0
 
 
 def test_studio_exposes_coverage_endpoint(tmp_path: Path):
