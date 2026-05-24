@@ -1,83 +1,64 @@
 # RepoShield 项目状态与商用化评估
 
-更新时间：2026-05-10
+更新时间：2026-05-24
 
 ## 总体判断
 
-RepoShield 当前是 **研究原型加强版 / 工程化 MVP 前期**。
+RepoShield 当前是 **研究级强化原型 / 早期工程 MVP**。
 
-它已经具备完整的安全治理主链路：Gateway、ActionIR、TaskContract、ContextGraph、SecretSentry、PackageGuard、MCP/Memory gate、Sandbox preflight、PolicyEngine、ApprovalCenter、AuditLog、Replay、Dashboard 和 Bench。P0 风险点已基本补完，P1 中大多数影响论文可信度和真实接入闭环的问题也已经有实现与测试。
+它已经具备完整的本地安全治理主链路：Gateway、ActionIR、TaskContract、ContextGraph、SecretSentry、PackageGuard、MCP/Memory gate、Sandbox preflight、PolicyGraph / RuleIndex、ApprovalCenter、AuditLog、Replay、Studio 和 Bench。
 
-但它还不是生产级商业安全产品。商用化仍需要生产级隔离、真实供应链情报、真实 agent trace 兼容、策略/审批产品化和更完整的 Studio。
+它还不是生产级商业安全产品。商用化仍需要生产级隔离、真实供应链情报、真实 agent trace 兼容、策略/审批产品化、团队权限、长期审计存储和生产级 Studio。
 
-## 成熟度估计
+## 统一成熟度表述
 
 | 使用场景 | 当前成熟度 | 说明 |
 | --- | --- | --- |
-| 论文 demo / 项目展示 | 85% - 90% | 主链路完整，风险点有测试，适合演示和答辩 |
-| 内部实验平台 | 75% - 85% | bench、replay、audit、baseline/ablation 已可用 |
-| 小团队本地试用 | 55% - 65% | 可接 Gateway / exec-guard，但需要人工配置和安全边界说明 |
-| 商用化安全产品 | 30% - 40% | 缺生产级 sandbox、UI/API、租户隔离、策略管理和真实情报 |
+| 论文 demo / 项目展示 | 成熟 | 主链路完整，风险点有测试，适合演示和答辩 |
+| 内部实验平台 | 可用 | bench、replay、audit、baseline/ablation、Studio Pro 本地实验链路可用 |
+| 小团队本地试用 | 可试用 | 可接 Gateway / exec-guard / agent profile，但需要人工配置和安全边界说明 |
+| 商业安全产品 | 未完成 | 缺生产级 sandbox、真实情报、团队权限、多租户、长期审计和生产部署能力 |
 
-## 当前验证状态
+不再使用互相冲突的百分比成熟度。对外建议使用上表的文字分级。
+
+## 当前验证基线
 
 ```text
-python -m pytest --basetemp=.pytest_tmp -q   -> 77 passed
-python -m compileall -q src tests            -> passed
-ruff check src tests                         -> passed
+pytest --collect-only -q                    -> 202 collected
+python -m pytest -q --basetemp=.pytest_tmp_final_all -> passed
+python -m ruff check src tests              -> passed
+python -m ruff format --check src tests web/studio/src -> passed
+cd web/studio && npm run build              -> passed
 ```
 
-## P0 状态
+Bench 样本数口径：
 
-P0 可以视为基本完成。
+| 套件 | 默认生成数量 | 说明 |
+| --- | --- | --- |
+| Stage2 bench | 40 | 由 `generate-stage2-samples --count 40` 生成 |
+| Stage3 Gateway bench | 80 | 由 `generate-stage3-samples --count 80` 生成 |
 
-已完成内容：
+## Studio 完成度
 
-- 每个 Gateway 请求隔离 `TaskContract` / `ContextGraph` / `SecretSentry`
-- Gateway HTTP bearer token 认证
-- AuditLog append/read 线程安全
-- Gateway-only 模式不释放 `allow_in_sandbox` tool call
-- block/sandbox message 做 secret redaction
-- `allow_in_sandbox` 语义全路径统一
-- GenericCLIAdapter 不再默认执行 pre-governance 外部 command
-- compound command lowering 与 fail-closed
-- 文件路径 canonicalize、repo escape、symlink escape、hidden secret 检查
-- ConfigurablePolicyOverrides 防止高危决策被 unsafe downgrade
-- Approval hash 排除 volatile `action_id`
+| 形态 | 当前状态 | 未完成项 |
+| --- | --- | --- |
+| Studio Lite 静态报告 | 可用 | 不提供实时交互 |
+| Studio Pro 本地实时仪表盘 | 本地 demo / 实验可用 | 不等同生产控制台 |
+| 生产级 Studio | 未完成 | 团队权限、长期存储、跨项目搜索、多租户视图、部署运维、审计查询 |
 
-## P1 状态
+Studio Pro 当前已覆盖：
 
-P1 当前达到 **工程研究版基本完成**。
-
-已经完成或接近完成：
-
-- Gateway 使用 `guard_action_ir()`，不再二次 raw parse
-- Gateway confirmation 接入 `ApprovalCenter / ApprovalStore`
-- `/v1/responses` 最小 Responses API shape
-- streaming tool calls indexed chunk
-- upstream SSE 逐行读取、大小和事件数限制
-- Gateway 错误响应脱敏
-- `SubprocessOverlayBackend` 去掉 `shell=True`
-- sandbox profile enforcement matrix
-- PolicyDecision 增加 `matched_rules / evidence_refs / policy_version / rule_trace`
-- disabled policy mode 要求显式 unsafe flag
-- PackageGuard manager parser、registry、lockfile、本地 metadata/provenance oracle
-- MCPProxy gate 影响 PolicyEngine 决策
-- MemoryStore tainted memory 不能授权高风险动作
-- SecretSentry 轻量 file/stdout/stderr taint
-- Audit event schema version 和基础校验
-- Replay policy evidence 引用校验
-- Dashboard evidence chains
-- Bench baseline/ablation report shape
-
-仍然属于生产化待补：
-
-- 真实强隔离 sandbox
-- 真实 npm/PyPI metadata 和 tarball inspection
-- Sigstore / provenance 在线验证
-- 完整交互式 Studio
-- 多用户/多租户权限模型
-- 更大规模真实 agent trace benchmark
+- 运行列表和实时事件流
+- 攻击演示
+- Trace Graph
+- 策略判断视图
+- Policy Debugger
+- Approval Center
+- Sandbox Evidence
+- Bench Report
+- Coverage Matrix / 保护矩阵
+- 记录清空与可选备份
+- redacted evidence bundle export
 
 ## 已实现安全闭环
 
@@ -88,7 +69,7 @@ request
   -> per-request control plane
   -> build TaskContract
   -> ingest external contexts
-  -> upstream model
+  -> upstream model or local heuristic
   -> InstructionIR
   -> ActionIR
   -> guard_action_ir()
@@ -97,7 +78,7 @@ request
   -> audit / approval / response
 ```
 
-Gateway-only 模式下，只有真正 host-safe 的 `allow` 才可能释放给 agent。`allow_in_sandbox` 会被转换成 sandbox-only assistant message，避免裸 agent 直接在宿主机执行。
+Gateway-only 模式下，只有真正 host-safe 的 `allow` 才可释放给 agent。`allow_in_sandbox` 会转换成 sandbox-only assistant message，避免 agent 直接在宿主机执行。
 
 ### Tool execution 语义
 
@@ -108,7 +89,7 @@ Gateway-only 模式下，只有真正 host-safe 的 `allow` 才可能释放给 a
 | `sandbox_then_approval` | 不执行，等待审批 |
 | `block` / `quarantine` | 不执行 |
 
-### 审计与 replay
+### Audit 与 Replay
 
 AuditLog 使用 hash-chain，事件有 `schema_version`。Replay 不只检查文件存在和 hash-chain，还会检查 policy decision 是否引用了存在的 action/package/exec trace evidence。
 
@@ -116,15 +97,9 @@ AuditLog 使用 hash-chain，事件有 `schema_version`。Replay 不只检查文
 
 ### 1. Sandbox
 
-当前：
+当前具备 dry-run evidence、overlay test execution、profile enforcement matrix 和显式 `isolation_level` / `production_ready` 标记。
 
-- dry-run evidence
-- overlay test execution
-- shell=False for safe tests
-- profile enforcement matrix
-- 显式 `isolation_level` / `production_ready`
-
-商用需要：
+商用仍需要：
 
 - containerd / Docker / Podman backend
 - Linux user/mount/network namespace
@@ -135,14 +110,9 @@ AuditLog 使用 hash-chain，事件有 `schema_version`。Replay 不只检查文
 
 ### 2. 供应链情报
 
-当前：
+当前具备 command parser、registry 检查、lockfile evidence 和本地 `.reposhield/package_metadata.json` oracle。
 
-- command parser
-- registry 检查
-- lockfile evidence
-- 本地 `.reposhield/package_metadata.json` oracle
-
-商用需要：
+商用仍需要：
 
 - npm/PyPI live metadata
 - package tarball inspection
@@ -153,78 +123,39 @@ AuditLog 使用 hash-chain，事件有 `schema_version`。Replay 不只检查文
 
 ### 3. Agent 兼容
 
-当前：
+当前具备 OpenAI / Anthropic / Cline / OpenHands / Aider parser mapping、transcript strict mode、Gateway-compatible flow、YAML agent profile、doctor、smoke-test 和 integration-matrix。
 
-- OpenAI / Anthropic / Cline / OpenHands / Aider parser mapping
-- transcript strict mode
-- Gateway-compatible flow
+商用仍需要：
 
-商用需要：
-
-- 真实 Codex/Cline/OpenHands/Aider trace corpus
+- 更大规模真实 Codex / Cline / OpenHands / Aider trace corpus
 - schema drift regression tests
-- 每个 agent 的安装/配置向导
-- 长期兼容性 CI
+- 每个 agent 的原生配置向导
+- 长期兼容 CI
 
-### 4. 策略和审批
+### 4. 策略与审批
 
-当前：
+当前具备 PolicyGraph / RuleIndex、ConfigurablePolicyOverrides、ApprovalCenter / ApprovalStore、Approval API。
 
-- PolicyEngine hard-coded rules
-- ConfigurablePolicyOverrides
-- ApprovalCenter / ApprovalStore
-
-商用需要：
+商用仍需要：
 
 - 稳定策略语言
 - 策略签名和版本迁移
 - RBAC / admin approval
-- Web approval UI
+- Web approval UI 的团队流程
 - API key rotation 和 audit export
 
 ### 5. Studio / Dashboard
 
-当前：
+当前 Studio Pro 本地实验可用，但不是生产控制台。
 
-- 本地 HTML dashboard
-- blocked actions
-- approval events
-- evidence chains
+商用仍需要：
 
-商用需要：
-
-- trace/source/action 过滤
-- diff 展示
-- approval 操作
-- policy rule debug
-- 多用户审计检索
-
-## 下一阶段路线图
-
-### R1：可给小团队试用
-
-- 打包 Gateway + exec-guard 安装流程
-- 增加配置向导
-- 增加真实 agent trace replay
-- 增加 dashboard 搜索和过滤
-- 完善文档示例和故障排查
-
-### R2：企业 PoC
-
-- container sandbox backend
-- package metadata proxy
-- approval HTTP API
-- 策略文件签名
-- CI 集成和结果导出
-
-### R3：商用产品
-
-- 多租户控制台
-- RBAC / SSO
-- 长期 audit retention
-- policy marketplace / templates
-- SLA 级服务部署
-- agent compatibility test matrix
+- team workspace
+- 长期审计存储
+- 跨项目搜索
+- 多租户视图
+- 权限模型
+- 运维部署与数据保留策略
 
 ## 对外表述建议
 
@@ -239,11 +170,11 @@ AuditLog 使用 hash-chain，事件有 `schema_version`。Replay 不只检查文
 - complete supply-chain intelligence
 - complete support for all coding agents
 
-当前最准确的定位是：
+当前最准确的定位：
 
 ```text
 论文/演示：成熟
 内部实验：可用
-小团队试用：可尝试
-商业产品：还需工程化
+小团队试用：可试用
+商业产品：未完成
 ```

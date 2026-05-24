@@ -5,6 +5,16 @@ Studio 有两种形态：
 - `reposhield studio`：生成静态 HTML 报告，适合离线归档、论文材料和演示包。
 - `reposhield studio-server`：启动交互式 Studio Pro，本地实时观察真实 agent / Gateway 请求。
 
+## 完成度口径
+
+| 形态 | 当前状态 | 未完成项 |
+| --- | --- | --- |
+| Studio Lite 静态报告 | 可用 | 不提供实时交互 |
+| Studio Pro 本地实时仪表盘 | 本地 demo / 实验可用 | 不等同生产控制台 |
+| 生产级 Studio | 未完成 | 团队权限、长期存储、跨项目搜索、多租户视图、部署运维、审计查询 |
+
+这份文档中的“可用”均指本地 demo / 实验语境，不代表生产级完成。
+
 ## 启动 Studio Pro
 
 ```bash
@@ -29,7 +39,7 @@ Studio Pro 会订阅全局 SSE：
 /api/events/stream
 ```
 
-真实 OpenClaw、OpenHands、Aider 或其他 OpenAI-compatible agent 经过 RepoShield Gateway 产生新事件时，前端会自动更新运行列表、时间线和当前运行视图。页面顶部会显示同步状态，同时保留短间隔轮询作为兜底。
+真实 Codex / OpenClaw / OpenHands / Aider 或其他 OpenAI-compatible agent 经过 RepoShield Gateway 产生新事件时，前端会自动更新运行列表、时间线和当前运行视图。页面会显示同步状态，并保留短间隔轮询作为兜底。
 
 ## 页面分区
 
@@ -37,17 +47,18 @@ Studio Pro 会订阅全局 SSE：
 | --- | --- |
 | 本次运行 | 当前请求的运行列表、时间线、动作和决策流 |
 | 攻击演示 | 内置 normal / attack 场景，适合快速产生可展示数据 |
-| 证据图谱 | 展示 source -> instruction -> action -> decision -> evidence 的路径 |
-| 策略判断 | 展示 Evidence -> Facts -> RuleIndex -> Rules -> Lattice -> Decision 的完整链路 |
+| 证据图谱 | 展示 source -> instruction -> action -> decision -> evidence 路径 |
+| 策略判断 | 展示 Evidence -> Facts -> RuleIndex -> Rules -> Lattice -> Decision 链路 |
 | 策略调试 | 运行级 Policy Debugger，用于定位误报、漏报和规则缺口 |
 | 审批中心 | 对需要人工确认的动作进行 grant / deny |
 | 沙箱证据 | 展示进程、网络、文件差异和脱敏执行证据 |
+| 保护矩阵 | 展示 Quick / Standard / Full 能力覆盖状态 |
 | 评测报告 | 展示 Gateway bench 指标和失败样本 |
 | 动作详情 | 点击动作后查看 ActionIR、策略解释、证据引用和原始 trace |
 
 ## 策略判断里看什么
 
-这一页是展示项目核心创新点的重点：
+这一页展示项目核心算法“多源证据综合判断算法（R-MPF）”的可解释链路：
 
 ```text
 Evidence -> Facts -> RuleIndex -> PolicyGraph -> Decision

@@ -122,26 +122,27 @@ generation internal model:
 
 ## Current Status
 
-RepoShield is currently a **strengthened research prototype / early engineering MVP**.
+RepoShield is currently a **research-grade strengthened prototype / early engineering MVP**.
 
 It is suitable for papers, demos, internal experiments, gateway interception studies, and limited local trials. It is not yet a production-ready commercial security product.
 
-Approximate maturity:
+Unified maturity wording:
 
 | Scenario | Current readiness |
 | --- | --- |
-| Paper demo / project showcase | 85% - 90% |
-| Internal research platform | 75% - 85% |
-| Small-team local trial | 55% - 65% |
-| Commercial security product | 30% - 40% |
+| Paper demo / project showcase | Mature for demos |
+| Internal research platform | Usable |
+| Small-team local trial | Trial-ready with manual setup and explicit safety boundaries |
+| Commercial security product | Not complete; still needs production sandboxing, real intelligence, multi-tenancy, and long-term audit operations |
 
 Latest local verification:
 
 ```text
-pytest -q --basetemp=.pytest_tmp_run         -> 136 passed
-python -m compileall -q src tests            -> passed
-ruff check src tests                         -> passed
-cd web/studio && npm run build               -> passed
+pytest --collect-only -q                    -> 202 collected
+python -m pytest -q --basetemp=.pytest_tmp_final_all -> passed
+python -m ruff check src tests              -> passed
+python -m ruff format --check src tests web/studio/src -> passed
+cd web/studio && npm run build              -> passed
 ```
 
 ## Reproducible Verification
@@ -190,6 +191,14 @@ RepoShield Studio Pro is an interactive local dashboard for observing coding-age
 runs behind RepoShield Gateway. It visualizes source provenance, InstructionIR,
 ActionIR, policy decisions, approval state, evidence graphs, benchmark summaries,
 and attack scenarios in real time.
+
+Studio completion status:
+
+| Form | Current status |
+| --- | --- |
+| Studio Lite static report | Usable for offline archive and demos |
+| Studio Pro local realtime dashboard | Usable for local demos and experiments |
+| Production Studio | Not complete; still needs team permissions, long-term storage, cross-project search, multi-tenant views, and deployment operations |
 
 Studio Pro includes:
 
