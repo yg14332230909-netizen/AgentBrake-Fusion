@@ -14,6 +14,7 @@ from typing import Any
 from ..approvals import ApprovalCenter, ApprovalStore
 from ..audit import AuditLog
 from ..control_plane import RepoShieldControlPlane
+from ..eval.fast_mode import load_eval_fast_mode_config
 from ..instruction_ir import InstructionBuilder, InstructionLowerer
 from ..instruction_ir import to_dict as instruction_to_dict
 from ..models import new_id, sha256_json
@@ -49,9 +50,15 @@ class RepoShieldGateway:
         unsafe_allow_disabled_policy: bool = False,
     ) -> None:
         self.repo_root = Path(repo_root).resolve()
-        self.audit = AuditLog(audit_path or self.repo_root / ".reposhield" / "gateway_audit.jsonl")
+        self.fast_mode = load_eval_fast_mode_config()
+        self.audit = AuditLog(audit_path or self.repo_root / ".reposhield" / "gateway_audit.jsonl", buffered=self.fast_mode.audit_buffered)
         self.policy_config = policy_config
         self.session_state_path = self.repo_root / ".reposhield" / "session_state.jsonl"
+        self.session_state_store = None
+        if self.fast_mode.session_cache:
+            from ..session_state import PersistentSessionStateStore
+
+            self.session_state_store = PersistentSessionStateStore(self.session_state_path, audit_log=self.audit)
         self.cp = self._new_request_control_plane()
         self.policy_runtime = PolicyRuntime(mode=policy_mode, role=policy_role, unsafe_allow_disabled=unsafe_allow_disabled_policy)  # type: ignore[arg-type]
         self.upstream = upstream or LocalHeuristicUpstream()
@@ -63,7 +70,13 @@ class RepoShieldGateway:
 
     def _new_request_control_plane(self, run_id: str | None = None) -> RepoShieldControlPlane:
         return RepoShieldControlPlane(
-            self.repo_root, audit=self.audit, policy_config=self.policy_config, session_state_path=self.session_state_path, run_id=run_id
+            self.repo_root,
+            audit=self.audit,
+            policy_config=self.policy_config,
+            session_state_path=self.session_state_path,
+            session_state_store=self.session_state_store,
+            run_id=run_id,
+            fast_mode=self.fast_mode,
         )
 
     def handle_chat_completion(self, request: dict[str, Any]) -> dict[str, Any]:

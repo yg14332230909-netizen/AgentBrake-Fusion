@@ -138,3 +138,12 @@ reposhield coverage --repo .
 ```
 
 覆盖矩阵用于确认 Quick / Standard / Full 对应能力是否已声明并能由本地文件系统验证。
+
+## AgentDojo 接入说明
+
+对 AgentDojo 这类外部 benchmark，建议走两层接入：
+
+1. 网关侧启用 `REPOSHIELD_EVAL_FAST_MODE=1`，压缩 `EvidenceGraph`、审计刷新和 preflight。
+2. 工具执行前使用 `RepoShieldToolGate`，把工具分类映射为 `agentdojo.*` facts，再交给 `PolicyEngine`。
+
+这样可以把 Gateway-only 的测量结果和真正的工具前拦截结果分开，避免把“看见 tool call”误当成“已经完成工具治理”。

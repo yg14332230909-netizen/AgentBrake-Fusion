@@ -259,6 +259,7 @@ class PolicyEngine:
         if self.mode not in VALID_MODES:
             self.mode = "policygraph-enforce"
         self.policygraph = PolicyGraphEngine()
+        self.trace_mode = os.environ.get("REPOSHIELD_POLICY_TRACE_MODE", "full")
         self._eval_events: list[dict[str, Any]] = []
         self._fact_events: list[dict[str, Any]] = []
 
@@ -289,7 +290,7 @@ class PolicyEngine:
             session_state,
         )
         graph_decision, trace = self.policygraph.decide(ctx, mode=self.mode)
-        event = trace.to_dict()
+        event = _summary_trace(trace.to_dict()) if self.trace_mode == "summary" else trace.to_dict()
         self._eval_events.append(event)
         self._fact_events.append(
             {
@@ -350,6 +351,7 @@ def _fact_summary(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
         "history",
         "constraint",
         "exec",
+        "agentdojo",
     }
     out = []
     for node in nodes:
@@ -366,3 +368,42 @@ def _last_constraints(lattice_path: list[dict[str, Any]]) -> dict[str, Any]:
         if isinstance(constraints, dict):
             return constraints
     return {}
+
+
+def _summary_trace(event: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "policy_eval_trace_id": event.get("policy_eval_trace_id"),
+        "action_id": event.get("action_id"),
+        "engine_mode": event.get("engine_mode"),
+        "policy_version": event.get("policy_version"),
+        "fact_set_id": event.get("fact_set_id"),
+        "fact_hash": event.get("fact_hash"),
+        "final_decision": event.get("final_decision"),
+        "invariant_hits": event.get("invariant_hits", []),
+        "rule_hit_count": len(event.get("rule_hits", []) or []),
+        "rule_hits": [
+            {
+                "rule_id": hit.get("rule_id"),
+                "decision": hit.get("decision"),
+                "reason_codes": hit.get("reason_codes", []),
+                "invariant": hit.get("invariant", False),
+            }
+            for hit in (event.get("rule_hits", []) or [])[:20]
+        ],
+        "fact_count": len(event.get("fact_nodes", []) or []),
+        "namespace_counts": _fact_namespace_counts(event.get("fact_nodes", []) or []),
+        "decision_lattice_path": event.get("decision_lattice_path", []),
+        "retrieval_trace": _summary_retrieval(event.get("retrieval_trace", {}) or {}),
+        "created_at": event.get("created_at"),
+    }
+
+
+def _summary_retrieval(trace: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "total_rules": trace.get("total_rules"),
+        "candidate_rules": trace.get("candidate_rules"),
+        "candidate_reduction_ratio": trace.get("candidate_reduction_ratio"),
+        "posting_count": len(trace.get("postings", []) or []),
+        "composite_hit_count": len(trace.get("composite_hits", []) or []),
+        "pruned_rules": trace.get("pruned_rules"),
+    }

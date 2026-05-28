@@ -42,3 +42,20 @@ def test_attempted_history_secret_taint_with_network_is_governed_not_confirmed_e
     hits = InvariantEngine().evaluate(facts)
 
     assert {hit.rule_id for hit in hits} == {"INV-EGRESS-001B"}
+
+
+def test_agentdojo_invariants_fire_for_untrusted_sensitive_message():
+    facts = PolicyFactSet(
+        [
+            PolicyFact.of("agentdojo", "suite", "slack", evidence_refs=["act1"]),
+            PolicyFact.of("agentdojo", "message_send", True, evidence_refs=["act1"]),
+            PolicyFact.of("agentdojo", "tool_args_sensitive", True, evidence_refs=["act1"]),
+            PolicyFact.of("agentdojo", "state_mutation", True, evidence_refs=["act1"]),
+            PolicyFact.of("source", "has_untrusted", True, evidence_refs=["src1"]),
+            PolicyFact.of("agentdojo", "tool_call_boundary", True, evidence_refs=["act1"]),
+        ]
+    )
+
+    hits = InvariantEngine().evaluate(facts)
+
+    assert {hit.rule_id for hit in hits} >= {"ADJ-MSG-001", "ADJ-STATE-001"}

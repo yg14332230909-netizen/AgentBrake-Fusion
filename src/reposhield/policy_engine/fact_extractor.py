@@ -6,6 +6,7 @@ from dataclasses import asdict
 from datetime import datetime, timezone
 
 from ..contract import IntentMatcher
+from ..eval.agentdojo.fact_adapter import agentdojo_facts_from_action
 from ..models import ActionGraph
 from .context import PolicyEvalContext
 from .facts import PolicyFact, PolicyFactSet
@@ -42,6 +43,9 @@ class FactExtractor:
         asset_index = AssetIndex(ctx.asset_graph)
         intent = self.matcher.match(ctx.contract, action)
         source_summary = source_index.facts_for(action.source_ids)
+        if action.metadata.get("source_has_untrusted"):
+            source_summary["has_untrusted"] = True
+            source_summary["trust_floor"] = "untrusted"
 
         facts.extend(
             [
@@ -66,6 +70,7 @@ class FactExtractor:
         )
         for tag in action.risk_tags:
             facts.append(PolicyFact.of("action", "risk_tag", tag, evidence_refs=[action.action_id]))
+        facts.extend(agentdojo_facts_from_action(action))
 
         graph = _action_graph_from_metadata(action.metadata.get("action_graph"))
         if graph:

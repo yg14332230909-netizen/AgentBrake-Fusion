@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import threading
 from dataclasses import asdict
@@ -39,11 +40,14 @@ class AuditEventType(StrEnum):
 
 
 class AuditLog:
-    def __init__(self, log_path: str | Path, session_id: str | None = None):
+    def __init__(self, log_path: str | Path, session_id: str | None = None, *, buffered: bool | None = None):
         self.log_path = Path(log_path)
         self.log_path.parent.mkdir(parents=True, exist_ok=True)
         self.session_id = session_id or new_id("sess")
         self._lock = threading.RLock()
+        self.buffered = (os.getenv("REPOSHIELD_AUDIT_BUFFERED", "").lower() in {"1", "true", "yes", "on"}) if buffered is None else buffered
+        self._buffer: list[str] = []
+        self._buffer_limit = max(1, int(os.getenv("REPOSHIELD_AUDIT_BUFFER_LIMIT", "20")))
         self._head = self._read_head()
 
     @property
@@ -80,12 +84,27 @@ class AuditLog:
             self._validate_event(event_without_hash)
             event_hash = sha256_json(event_without_hash)
             event = AuditEvent(event_hash=event_hash, **event_without_hash)
-            with self.log_path.open("a", encoding="utf-8") as f:
-                f.write(stable_json(asdict(event)) + "\n")
+            line = stable_json(asdict(event)) + "\n"
+            if self.buffered:
+                self._buffer.append(line)
+                if len(self._buffer) >= self._buffer_limit:
+                    self.flush()
+            else:
+                with self.log_path.open("a", encoding="utf-8") as f:
+                    f.write(line)
             self._head = event_hash
             return event
 
+    def flush(self) -> None:
+        with self._lock:
+            if not self._buffer:
+                return
+            with self.log_path.open("a", encoding="utf-8") as f:
+                f.writelines(self._buffer)
+            self._buffer = []
+
     def verify(self) -> tuple[bool, list[str]]:
+        self.flush()
         errors: list[str] = []
         prev = "GENESIS"
         for i, event in enumerate(self.read_events(), start=1):
@@ -101,6 +120,7 @@ class AuditLog:
         return not errors, errors
 
     def read_events(self) -> list[dict[str, Any]]:
+        self.flush()
         if not self.log_path.exists():
             return []
         with self._lock:

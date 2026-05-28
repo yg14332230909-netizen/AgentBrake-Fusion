@@ -90,3 +90,29 @@ def test_fact_extractor_emits_package_and_trace_flow_facts(tmp_path):
     assert True in facts.values("graph", "has_package_lifecycle_edge")
     assert True in facts.values("flow", "package_script_to_network")
     assert True in facts.values("flow", "trace_env_to_network")
+
+
+def test_fact_extractor_emits_agentdojo_facts(tmp_path):
+    prov = ContextProvenance()
+    contract = TaskContractBuilder().build("slack summary")
+    action = ActionParser().parse("send slack message", cwd=tmp_path)
+    action.metadata["agentdojo"] = {
+        "suite": "slack",
+        "tool_name": "send_slack_message",
+        "tool_category": "message_send",
+        "semantic_action": "send_external_message",
+        "user_task_id": "task_1",
+        "injection_task_id": "inj_1",
+        "attack_surface": "slack",
+        "tool_args": {"body": "secret"},
+        "registered": True,
+        "allowed_tool_categories": ["message_send"],
+        "forbidden_attack_goals": ["exfiltrate_secret"],
+    }
+    graph = AssetScanner(tmp_path, env={}).scan()
+
+    facts = FactExtractor().extract(PolicyEvalContext(contract, action, graph, prov.graph))
+
+    assert facts.values("agentdojo", "suite") == ["slack"]
+    assert True in facts.values("agentdojo", "message_send")
+    assert True in facts.values("agentdojo", "tool_args_sensitive")

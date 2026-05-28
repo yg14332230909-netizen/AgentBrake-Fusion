@@ -12,6 +12,7 @@ from .asset import AssetScanner
 from .audit import AuditLog
 from .context import ContextProvenance
 from .contract import TaskContractBuilder
+from .eval.fast_mode import EvalFastModeConfig, load_eval_fast_mode_config
 from .feature_flags import feature_enabled
 from .mcp_proxy import MCPProxy
 from .memory import MemoryStore
@@ -22,6 +23,7 @@ from .policy_config import ConfigurablePolicyOverrides
 from .sandbox import SandboxRunner
 from .sentry import SecretSentry
 from .session_state import PersistentSessionStateStore, SessionStateStore, session_state_payload
+from .telemetry.profiler import EvalProfiler
 
 
 class RepoShieldControlPlane:
@@ -37,15 +39,20 @@ class RepoShieldControlPlane:
         session_state_path: str | Path | None = None,
         session_state_store: SessionStateStore | None = None,
         run_id: str | None = None,
+        fast_mode: EvalFastModeConfig | None = None,
     ):
         self.repo_root = Path(repo_root).resolve()
-        self.audit = audit or AuditLog(audit_path or (self.repo_root / ".reposhield" / "audit.jsonl"))
+        self.fast_mode = fast_mode or load_eval_fast_mode_config()
+        self.audit = audit or AuditLog(
+            audit_path or (self.repo_root / ".reposhield" / "audit.jsonl"), buffered=self.fast_mode.audit_buffered
+        )
         self.run_id = run_id or self.audit.session_id
         self.provenance = ContextProvenance()
         self.parser = ActionParser()
         self.asset_scanner = AssetScanner(self.repo_root, env=env)
         self.asset_graph: RepoAssetGraph = self.asset_scanner.scan()
         self.policy = PolicyEngine()
+        self.policy.trace_mode = self.fast_mode.policy_trace_mode
         self.policy_overrides = ConfigurablePolicyOverrides.from_file(policy_config)
         self.package_guard = PackageGuard(self.repo_root)
         self.sandbox = SandboxRunner(self.repo_root)
@@ -106,33 +113,47 @@ class RepoShieldControlPlane:
         run_preflight: bool = True,
     ) -> tuple[ActionIR, PolicyDecision]:
         """Govern an already-lowered ActionIR without reparsing raw tool input."""
+        profiler = EvalProfiler()
         if self.contract is None:
             self.build_contract("general code maintenance task")
         assert self.contract is not None
         for sid in action.source_ids:
             self.provenance.influence(sid, action.action_id)
-        state = (
-            self.session_states.load(self.run_id, self.contract.task_id)
-            if feature_enabled("REPOSHIELD_ENABLE_SESSION_STATE", default=True)
-            else None
+        with profiler.span("session.restore_ms"):
+            state = (
+                self.session_states.load(self.run_id, self.contract.task_id)
+                if feature_enabled("REPOSHIELD_ENABLE_SESSION_STATE", default=True)
+                else None
+            )
+        action.metadata["source_has_untrusted"] = bool(
+            action.metadata.get("source_has_untrusted") or self.provenance.graph.has_untrusted(action.source_ids)
         )
-        action.metadata["source_has_untrusted"] = self.provenance.graph.has_untrusted(action.source_ids)
 
-        secret_event = self.sentry.observe_action(action)
+        with profiler.span("context.extract_ms"):
+            secret_event = self.sentry.observe_action(action)
         if secret_event:
             self.audit.append(
                 "secret_event", asdict(secret_event), task_id=self.contract.task_id, actor="secret_sentry", action_id=action.action_id
             )
 
-        package_event = self.package_guard.analyze(action)
+        with profiler.span("policy.fact_extract_ms"):
+            package_event = self.package_guard.analyze(action)
         if package_event:
             self.audit.append(
                 "package_event", asdict(package_event), task_id=self.contract.task_id, actor="package_guard", action_id=action.action_id
             )
-        if feature_enabled("REPOSHIELD_ENABLE_ACTION_GRAPH", default=True):
-            graph = ensure_action_graph(
-                action, run_id=self.run_id, repo_root=self.repo_root, package_event=package_event, session_state=state
-            )
+        build_action_graph = feature_enabled("REPOSHIELD_ENABLE_ACTION_GRAPH", default=True) and (
+            not self.fast_mode.enabled
+            or self.fast_mode.evidence_graph_mode == "full"
+            or action.risk in {"high", "critical"}
+            or action.side_effect
+        )
+        if build_action_graph:
+            with profiler.span("action_graph.build_ms"):
+                graph = ensure_action_graph(
+                    action, run_id=self.run_id, repo_root=self.repo_root, package_event=package_event, session_state=state
+                )
+                action.metadata["action_graph"] = asdict(graph)
             self.audit.append(
                 "action_graph",
                 asdict(graph),
@@ -201,16 +222,19 @@ class RepoShieldControlPlane:
 
         # First decision: may already hard-block before sandbox. Preflight can enrich evidence for high-risk actions.
         trace = None
-        decision = self.policy.decide(
-            self.contract,
-            action,
-            self.asset_graph,
-            self.provenance.graph,
-            package_event=package_event,
-            secret_event=secret_event,
-            session_state=state,
-        )
+        with profiler.span("policy.total_ms"):
+            decision = self.policy.decide(
+                self.contract,
+                action,
+                self.asset_graph,
+                self.provenance.graph,
+                package_event=package_event,
+                secret_event=secret_event,
+                session_state=state,
+            )
         preflight_plan = self.policy.plan_preflight(decision) if hasattr(self.policy, "plan_preflight") else None
+        if self.fast_mode.disable_preflight and action.metadata.get("agentdojo") is None:
+            run_preflight = False
         if run_preflight and preflight_plan and preflight_plan.required:
             trace = self.sandbox.preflight(
                 action,
@@ -232,19 +256,21 @@ class RepoShieldControlPlane:
                     source_ids=action.source_ids,
                     action_id=action.action_id,
                 )
-            decision = self.policy.decide(
-                self.contract,
-                action,
-                self.asset_graph,
-                self.provenance.graph,
-                package_event=package_event,
-                secret_event=secret_event,
-                exec_trace=trace,
-                session_state=state,
-            )
+            with profiler.span("policy.total_ms"):
+                decision = self.policy.decide(
+                    self.contract,
+                    action,
+                    self.asset_graph,
+                    self.provenance.graph,
+                    package_event=package_event,
+                    secret_event=secret_event,
+                    exec_trace=trace,
+                    session_state=state,
+                )
 
         if state is not None:
-            updated = self.session_states.update(action, decision, trace, secret_event, run_id=self.run_id, task_id=self.contract.task_id)
+            with profiler.span("session.persist_ms"):
+                updated = self.session_states.update(action, decision, trace, secret_event, run_id=self.run_id, task_id=self.contract.task_id)
             self.audit.append(
                 "session_state_update",
                 session_state_payload(updated),
@@ -308,6 +334,21 @@ class RepoShieldControlPlane:
             action_id=action.action_id,
             decision_id=decision.decision_id,
         )
+        profiler.add(
+            "gateway.total_ms",
+            sum(value for key, value in profiler.timings.items() if key != "gateway.total_ms"),
+        )
+        self.audit.append(
+            "performance_trace",
+            profiler.as_event(),
+            task_id=self.contract.task_id,
+            actor="telemetry",
+            source_ids=action.source_ids,
+            action_id=action.action_id,
+            decision_id=decision.decision_id,
+        )
+        if self.fast_mode.audit_buffered:
+            self.audit.flush()
         return action, decision
 
     def _apply_memory_authorization_gate(self, action: ActionIR) -> None:

@@ -135,3 +135,15 @@ ActionIR + Evidence
 4. [PolicyGraph / RuleIndex 多源证据引擎](docs/POLICYGRAPH_RULEINDEX.zh-CN.md)
 5. [Studio 指南](docs/STUDIO_GUIDE.zh-CN.md)
 6. [项目状态与商用化评估](docs/PROJECT_STATUS.zh-CN.md)
+
+## AgentDojo / Eval Fast Mode
+
+本版本新增了面向 AgentDojo 评测的轻量模式与工具门禁：
+
+- `REPOSHIELD_EVAL_FAST_MODE=1`
+- `REPOSHIELD_DISABLE_PREFLIGHT=1`
+- `REPOSHIELD_POLICY_TRACE_MODE=summary`
+- `REPOSHIELD_EVIDENCE_GRAPH_MODE=summary`
+- `RepoShieldToolGate` 会在工具调用前把 AgentDojo 工具映射成 `agentdojo.*` facts，并写入 `agentdojo_tool_gate_decision`
+
+该模式只压缩审计与证据细节，不改变最终 allow / block 语义。

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
@@ -50,6 +51,36 @@ class PolicyEvaluationTrace:
         skipped_rules_summary: dict[str, Any] | None = None,
     ) -> "PolicyEvaluationTrace":
         retrieval_trace = (skipped_rules_summary or {}).get("retrieval_trace", {}) if isinstance(skipped_rules_summary, dict) else {}
+        if os.getenv("REPOSHIELD_EVIDENCE_GRAPH_MODE", "full") == "summary" and final_decision not in {"block", "quarantine"}:
+            retrieval_summary = _summary_retrieval_trace(retrieval_trace)
+            return cls(
+                policy_eval_trace_id=new_id("peval"),
+                action_id=action_id,
+                engine_mode=engine_mode,
+                policy_version=policy_version,
+                fact_set_id=fact_set.fact_set_id,
+                fact_hash=fact_set.content_hash,
+                final_decision=final_decision,
+                invariant_hits=[h.rule_id for h in hits if h.invariant],
+                rule_hits=[asdict(h) for h in hits],
+                fact_nodes=[
+                    {
+                        "id": fact.fact_id,
+                        "fact_id": fact.fact_id,
+                        "namespace": fact.namespace,
+                        "key": fact.key,
+                        "value": fact.value,
+                        "evidence_refs": fact.evidence_refs,
+                        "confidence": fact.confidence,
+                        "metadata": fact.metadata,
+                    }
+                    for fact in fact_set.facts
+                    if fact.namespace in {"action", "source", "contract", "agentdojo"}
+                ][:80],
+                decision_lattice_path=lattice_path,
+                skipped_rules_summary=skipped_rules_summary or {},
+                retrieval_trace=retrieval_summary,
+            )
         graph = _causal_graph(fact_set, hits, lattice_path, retrieval_trace)
         return cls(
             policy_eval_trace_id=new_id("peval"),
@@ -229,4 +260,15 @@ def _causal_graph(
         "constraint_nodes": constraint_nodes,
         "invariant_nodes": invariant_nodes,
         "edges": edges,
+    }
+
+
+def _summary_retrieval_trace(trace: dict[str, Any] | None) -> dict[str, Any]:
+    trace = trace or {}
+    return {
+        "total_rules": trace.get("total_rules"),
+        "candidate_rules": trace.get("candidate_rules"),
+        "candidate_reduction_ratio": trace.get("candidate_reduction_ratio"),
+        "posting_count": len(trace.get("postings", []) or []),
+        "composite_hit_count": len(trace.get("composite_hits", []) or []),
     }

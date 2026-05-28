@@ -40,7 +40,9 @@ class SemanticInvariantRegistry:
     version = "semantic-invariants-v1"
 
     def __init__(self) -> None:
-        self._items = _default_invariants()
+        from .agentdojo_invariants import agentdojo_invariants
+
+        self._items = [*_default_invariants(), *agentdojo_invariants()]
 
     def evaluate(self, facts: PolicyFactSet) -> list[RuleHit]:
         hits: list[RuleHit] = []

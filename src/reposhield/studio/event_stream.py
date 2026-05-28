@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import threading
 import time
 from pathlib import Path
@@ -20,6 +21,11 @@ class StudioEventIndex:
         self._events: list[StudioEvent] = []
 
     def refresh(self) -> None:
+        if os.getenv("REPOSHIELD_DISABLE_STUDIO_EVENTS", "").lower() in {"1", "true", "yes", "on"}:
+            with self._lock:
+                self._raw_count = 0
+                self._events = []
+            return
         raw = read_jsonl(self.audit_path)
         if len(raw) == self._raw_count:
             return
