@@ -58,4 +58,4 @@ def test_agentdojo_invariants_fire_for_untrusted_sensitive_message():
 
     hits = InvariantEngine().evaluate(facts)
 
-    assert {hit.rule_id for hit in hits} >= {"ADJ-MSG-001", "ADJ-STATE-001"}
+    assert {hit.rule_id for hit in hits} >= {"ADJ-MSG-001", "ADJ-WORKSPACE-DEL-001"}

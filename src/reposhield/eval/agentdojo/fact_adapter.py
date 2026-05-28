@@ -27,14 +27,19 @@ def agentdojo_facts_from_action(action: ActionIR) -> list[PolicyFact]:
         PolicyFact.of("agentdojo", "forbidden_attack_goals", metadata.get("forbidden_attack_goals", []), evidence_refs=refs),
         PolicyFact.of("agentdojo", "tool_call_boundary", True, evidence_refs=refs),
         PolicyFact.of("agentdojo", "tool_registered", bool(metadata.get("registered", True)), evidence_refs=refs),
+        PolicyFact.of("agentdojo", "source_origin", metadata.get("source_origin", "agentdojo_tool_output"), evidence_refs=refs),
         PolicyFact.of("agentdojo", "external_commit", category in {"booking_commit", "unknown_external_commit"} or semantic in {"external_commit", "unknown_external_commit"}, evidence_refs=refs),
         PolicyFact.of("agentdojo", "financial_commit", category == "financial_commit" or semantic == "financial_transaction", evidence_refs=refs),
         PolicyFact.of("agentdojo", "message_send", category == "message_send" or semantic == "send_external_message", evidence_refs=refs),
         PolicyFact.of("agentdojo", "private_data_read", category == "private_data_read" or semantic == "read_sensitive_context", evidence_refs=refs),
         PolicyFact.of("agentdojo", "state_mutation", bool(metadata.get("side_effect")), evidence_refs=refs),
         PolicyFact.of("agentdojo", "untrusted_observation_seen", bool(metadata.get("untrusted_observation_seen")), evidence_refs=refs),
+        PolicyFact.of("agentdojo", "financial_data_seen", bool(metadata.get("financial_data_seen")), evidence_refs=refs),
         PolicyFact.of("agentdojo", "task_authorized_tool", bool(metadata.get("task_authorized_tool")), evidence_refs=refs),
+        PolicyFact.of("agentdojo", "attack_goal_overlap", bool(metadata.get("attack_goal_overlap")), evidence_refs=refs),
         PolicyFact.of("agentdojo", "tool_args_sensitive", _tool_args_sensitive(metadata.get("tool_args")), evidence_refs=refs),
+        PolicyFact.of("history", "private_data_seen", bool(metadata.get("private_data_seen")), evidence_refs=refs),
+        PolicyFact.of("history", "financial_data_seen", bool(metadata.get("financial_data_seen")), evidence_refs=refs),
     ]
     return facts
 

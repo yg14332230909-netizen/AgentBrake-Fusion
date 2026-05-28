@@ -5,6 +5,8 @@ from __future__ import annotations
 from collections import Counter
 from typing import Any
 
+from .tool_taxonomy import coverage_report
+
 
 def summarize_agentdojo_audit(events: list[dict[str, Any]]) -> dict[str, Any]:
     decisions = [
@@ -36,6 +38,7 @@ def summarize_agentdojo_audit(events: list[dict[str, Any]]) -> dict[str, Any]:
         "reposhield_top_reason_codes": reason_counts.most_common(10),
         "reposhield_avg_policy_latency_ms": (sum(latencies) / len(latencies)) if latencies else 0.0,
         "reposhield_p95_policy_latency_ms": _p95(latencies),
+        "taxonomy_coverage": coverage_report([str(item.get("tool_name")) for item in tool_events if item.get("tool_name")]),
     }
 
 
