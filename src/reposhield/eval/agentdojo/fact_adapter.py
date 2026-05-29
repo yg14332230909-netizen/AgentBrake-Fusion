@@ -52,6 +52,8 @@ def agentdojo_facts_from_action(action: ActionIR) -> list[PolicyFact]:
         PolicyFact.of("agentdojo", "read_public_travel_data", bool(metadata.get("read_public_travel_data")), evidence_refs=refs),
         PolicyFact.of("agentdojo", "read_untrusted_data", bool(metadata.get("read_untrusted_data")), evidence_refs=refs),
         PolicyFact.of("agentdojo", "external_message_send", external_message_send, evidence_refs=refs),
+        PolicyFact.of("agentdojo", "message_send", external_message_send or category == "message_send", evidence_refs=refs),
+        PolicyFact.of("agentdojo", "external_commit", external_message_send or bool(metadata.get("external_commit")), evidence_refs=refs),
         PolicyFact.of("agentdojo", "financial_commit", financial_commit, evidence_refs=refs),
         PolicyFact.of("agentdojo", "booking_commit", booking_commit, evidence_refs=refs),
         PolicyFact.of("agentdojo", "workspace_mutation", workspace_mutation, evidence_refs=refs),
