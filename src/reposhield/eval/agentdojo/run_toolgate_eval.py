@@ -35,6 +35,8 @@ from .pipeline_wrapper import RepoShieldAgentDojoContext, build_reposhield_agent
 from .result_exporter import summarize_agentdojo_audit
 from .state_tracker import AgentDojoStateTracker
 from .tool_taxonomy import classify_agentdojo_tool
+from ..agentdojo_firewall.runtime_wrapper import build_agentdojo_firewall_pipeline
+from ..agentdojo_firewall.tool_firewall import summarize_agentdojo_firewall_audit
 
 
 TRANSIENT_STATUS_CODES = {408, 409, 429, 500, 502, 503, 504}
@@ -304,6 +306,8 @@ def build_pipeline(
     system_message: str,
     max_iters: int,
 ) -> AgentPipeline:
+    if defense == "agentdojo_firewall":
+        return build_agentdojo_firewall_pipeline(llm, system_message=system_message, max_iters=max_iters)
     if defense == "reposhield_toolgate":
         assert control_plane is not None
         return build_reposhield_agentdojo_pipeline(llm, control_plane, system_message=system_message, max_iters=max_iters)
@@ -512,6 +516,8 @@ def run_suite(
     if control_plane is not None:
         run_summary["reposhield_audit_summary"] = summarize_agentdojo_audit(control_plane.audit.read_events())
         run_summary["reposhield_audit_latency"] = control_plane.audit.latency_stats()
+    if defense == "agentdojo_firewall" and hasattr(pipeline, "firewall"):
+        run_summary["agentdojo_firewall_audit_summary"] = summarize_agentdojo_firewall_audit(getattr(pipeline.firewall, "audit_events", []))
     default_name = run_name or f"{suite_name}_{defense}_{attack_obj.name if attack_obj else 'none'}"
     if report_dir:
         report_dir.mkdir(parents=True, exist_ok=True)
