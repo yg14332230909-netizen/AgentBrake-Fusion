@@ -72,6 +72,11 @@ class OpenAICompatibleUpstream:
         payload.pop("task", None)
         payload.pop("trace_id", None)
         payload.pop("mock_assistant", None)
+        payload.pop("_headers", None)
+        payload.pop("unsafe_allow_disabled_policy", None)
+        payload.pop("mcp_manifests", None)
+        payload.pop("agent_config", None)
+        payload.pop("reposhield", None)
         payload["stream"] = False
 
         if "messages" not in payload and "input" in payload:

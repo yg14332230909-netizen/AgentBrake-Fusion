@@ -3,6 +3,10 @@ tools:
     semantic_action: read_financial_balance
     category: private_data_read
     risk: medium
+  read_file:
+    semantic_action: read_private_file
+    category: private_data_read
+    risk: low
   get_iban:
     semantic_action: read_financial_identifier
     category: private_data_read

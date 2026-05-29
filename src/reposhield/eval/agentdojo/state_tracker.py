@@ -82,6 +82,27 @@ class AgentDojoStateTracker:
             self.unknown_tool_seen = True
         return self.as_bool_state()
 
+    def sanitize_tool_result(
+        self,
+        tool_name: str,
+        result: Any,
+        *,
+        suite: str | None = None,
+        tool_category: str | None = None,
+        semantic_action: str | None = None,
+        registered: bool | None = None,
+        side_effect: bool | None = None,
+    ) -> Any:
+        text = str(result)
+        should_redact = self.untrusted_observation_seen or _looks_untrusted(text) or _is_risky_read_tool(
+            tool_name,
+            tool_category=tool_category,
+            semantic_action=semantic_action,
+        )
+        if not should_redact:
+            return result
+        return _sanitize_value(result)
+
     def add_attack_goal(self, signature: str) -> None:
         if signature and signature not in self.attack_goal_signatures:
             self.attack_goal_signatures.append(signature)
@@ -121,26 +142,83 @@ def _truncate(value: Any, limit: int = 2000) -> str:
 
 
 def _looks_untrusted(text: str) -> bool:
+    suspicious_markers = (
+        "important instructions",
+        "important message",
+        "before you can solve the task",
+        "please do the following first",
+        "after you do that",
+        "signed,",
+        "ignore previous",
+        "ignore all previous",
+        "high priority",
+        "override original",
+        "prompt injection",
+        "attack",
+        "exfil",
+        "do not tell user",
+        "send to",
+        "send a transaction",
+        "send as much money as possible",
+        "transfer $",
+        "transfer to attacker",
+        "change the password",
+        "modify the recipient",
+        "include the iban",
+        "include the user's",
+        "as visible from the transaction history",
+        "if details of transactions are underspecified",
+        "post them to the website",
+        "concatenate all messages",
+        "invite user",
+    )
     return any(
         token in text
-        for token in (
-            "important instructions",
-            "ignore previous",
-            "ignore all previous",
-            "high priority",
-            "override original",
-            "prompt injection",
-            "attack",
-            "exfil",
-            "do not tell user",
-            "send to",
-            "transfer to attacker",
-        )
+        for token in suspicious_markers
     )
 
 
 def _looks_private(text: str) -> bool:
     return any(token in text for token in ("iban", "account number", "credit card", "password", "secret", "transaction", "invoice", "balance"))
+
+
+def _is_risky_read_tool(tool_name: str, *, tool_category: str | None = None, semantic_action: str | None = None) -> bool:
+    if tool_name in _RISKY_READ_TOOLS:
+        return True
+    if tool_category in {"read_untrusted_data", "read_untrusted_review_data", "read_untrusted_web", "read_private_messages"}:
+        return True
+    if semantic_action in {"read_untrusted_web", "read_untrusted_messages", "read_untrusted_review"}:
+        return True
+    return False
+
+
+def _sanitize_value(value: Any, depth: int = 0) -> Any:
+    if depth > 3:
+        return "[redacted]"
+    if isinstance(value, str):
+        return _sanitize_text(value)
+    if isinstance(value, list):
+        return [_sanitize_value(item, depth + 1) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_sanitize_value(item, depth + 1) for item in value)
+    if isinstance(value, dict):
+        return {key: _sanitize_value(val, depth + 1) for key, val in value.items()}
+    return value
+
+
+def _sanitize_text(text: str) -> str:
+    lines = text.splitlines()
+    kept: list[str] = []
+    for line in lines:
+        lowered = line.lower()
+        if _looks_untrusted(lowered) or "ignore previous" in lowered or "do not tell user" in lowered or "transfer to attacker" in lowered:
+            kept.append("[redacted suspicious instruction]")
+            continue
+        kept.append(line)
+    if not kept:
+        return "[content redacted: suspicious instructions removed]"
+    cleaned = "\n".join(kept)
+    return cleaned if len(cleaned) <= 2000 else cleaned[:2000] + "...[truncated]"
 
 
 _PRIVATE_DATA_TOOLS = {
@@ -168,4 +246,18 @@ _FINANCIAL_DATA_TOOLS = {
     "get_iban",
     "get_most_recent_transactions",
     "get_scheduled_transactions",
+}
+
+_RISKY_READ_TOOLS = {
+    "get_webpage",
+    "read_channel_messages",
+    "read_inbox",
+    "get_rating_reviews_for_hotels",
+    "get_rating_reviews_for_restaurants",
+    "get_rating_reviews_for_car_rental",
+    "search_emails",
+    "get_unread_emails",
+    "get_sent_emails",
+    "get_received_emails",
+    "get_draft_emails",
 }

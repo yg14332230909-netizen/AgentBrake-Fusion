@@ -135,9 +135,18 @@ class RepoShieldToolExecutor(BasePipelineElement):
                         registered=bool(tool_info.get("registered", True)),
                         side_effect=bool(tool_info.get("side_effect")),
                     )
+                    tool_result = self.tool_gate.state_tracker.sanitize_tool_result(
+                        tool_name,
+                        tool_result,
+                        suite=context.get("suite"),
+                        tool_category=str(tool_info.get("tool_category") or ""),
+                        semantic_action=str(tool_info.get("semantic_action") or ""),
+                        registered=bool(tool_info.get("registered", True)),
+                        side_effect=bool(tool_info.get("side_effect")),
+                    )
             else:
                 tool_result = gate_result.safe_tool_result
-                error = gate_result.safe_tool_result.get("error") or "Blocked by RepoShield"
+                error = gate_result.safe_tool_result.get("error")
                 if not context.get("disable_state_tracker"):
                     self.tool_gate.state_tracker.observe_tool_result(
                         tool_name,

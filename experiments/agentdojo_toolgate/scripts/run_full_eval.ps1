@@ -139,6 +139,14 @@ function Stop-Gateway {
       try { Stop-Process -Id [int]$gatewayProcessId -Force -ErrorAction Stop } catch {}
     }
   }
+  Get-CimInstance Win32_Process |
+    Where-Object { $_.CommandLine -match 'reposhield\.cli gateway-start' -and $_.CommandLine -match [regex]::Escape($repoRoot) } |
+    ForEach-Object {
+      try { Stop-Process -Id $_.ProcessId -Force -ErrorAction Stop } catch {}
+    }
+  if (Test-Path $gatewayPidPath) {
+    Remove-Item -Path $gatewayPidPath -Force -ErrorAction SilentlyContinue
+  }
 }
 
 function Restart-Gateway {
@@ -181,6 +189,33 @@ function Invoke-EvalRunWithRecovery {
   }
 }
 
+function Invoke-EvalRunOptional {
+  param(
+    [string]$Step,
+    [string]$RunName,
+    [string[]]$CommandArgs,
+    [string]$StdoutPath,
+    [switch]$MayRestartGateway
+  )
+  try {
+    Invoke-EvalRunWithRecovery -Step $Step -RunName $RunName -CommandArgs $CommandArgs -StdoutPath $StdoutPath -MayRestartGateway:$MayRestartGateway
+  } catch {
+    $failurePath = Join-Path $reportRoot "failed_${Step}.md"
+    @"
+# Optional Step Failed
+
+- step: $Step
+- run_name: $RunName
+- message: $($_.Exception.Message)
+- stdout: $StdoutPath
+- stderr: $([System.IO.Path]::ChangeExtension($StdoutPath, ".stderr.log"))
+
+This optional comparison step failed after retry. The full run continues so ToolGate results can still be produced.
+"@ | Set-Content -Path $failurePath -Encoding UTF8
+    Write-Host "==> $Step failed after retry; continuing"
+  }
+}
+
 try {
   if (-not $UpstreamApiKey) {
     throw "Missing upstream API key. Set OPENAI_API_KEY before starting the full eval."
@@ -218,16 +253,12 @@ try {
   }
 
   Start-Gateway
-  Set-GatewayEnv
 
   foreach ($suite in $suites) {
     $suiteLogRoot = Join-Path $logRoot $suite
-    $gatewayEnv = @{
-      OPENAI_BASE_URL = "http://127.0.0.1:$GatewayPort/v1"
-      OPENAI_API_KEY = $GatewayApiKey
-    }
 
-    Invoke-EvalRunWithRecovery -Step "${suite}_gateway_only" -RunName "${suite}_reposhield_gateway_only_attack" -CommandArgs @(
+    Set-GatewayEnv
+    Invoke-EvalRunOptional -Step "${suite}_gateway_only" -RunName "${suite}_reposhield_gateway_only_attack" -CommandArgs @(
       "-m", "reposhield.eval.agentdojo.run_toolgate_eval",
       "--suite", $suite,
       "--model", $Model,
@@ -238,6 +269,7 @@ try {
       "--report-dir", $runReportDir
     ) -StdoutPath (Join-Path $suiteLogRoot "gateway_only.stdout.log") -MayRestartGateway
 
+    Set-DirectUpstreamEnv
     Invoke-EvalRunWithRecovery -Step "${suite}_toolgate" -RunName "${suite}_reposhield_toolgate_attack" -CommandArgs @(
       "-m", "reposhield.eval.agentdojo.run_toolgate_eval",
       "--suite", $suite,

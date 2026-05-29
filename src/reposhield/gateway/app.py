@@ -136,10 +136,40 @@ class RepoShieldGateway:
             )
 
         upstream_contexts = [{"source_id": sid, "content": c.get("content", "")} for sid, c in zip(source_ids, contexts)]
-        if request.get("stream") and hasattr(self.upstream, "complete_streaming"):
-            assistant_msg = self.upstream.complete_streaming(request, contexts=upstream_contexts)
-        else:
-            assistant_msg = self.upstream.complete(request, contexts=upstream_contexts)
+        request_preview = {
+            "keys": sorted(str(k) for k in request.keys() if k not in {"messages", "input", "tools", "metadata", "contexts"}),
+            "message_count": len(messages),
+            "tool_count": len(request.get("tools") or []) if isinstance(request.get("tools"), list) else 0,
+            "has_headers": "_headers" in request,
+            "stream": bool(request.get("stream")),
+        }
+        cp.audit.append(
+            "gateway_request_preview",
+            request_preview,
+            task_id=cp.contract.task_id if cp.contract else None,
+            actor="gateway",
+        )
+        cp.audit.flush()
+        try:
+            if request.get("stream") and hasattr(self.upstream, "complete_streaming"):
+                assistant_msg = self.upstream.complete_streaming(request, contexts=upstream_contexts)
+            else:
+                assistant_msg = self.upstream.complete(request, contexts=upstream_contexts)
+        except Exception as exc:
+            cp.audit.append(
+                "gateway_upstream_error",
+                {
+                    "trace_id": trace.trace_id,
+                    "turn_id": turn_id,
+                    "error_type": type(exc).__name__,
+                    "detail": str(exc)[:2000],
+                    "request_preview": request_preview,
+                },
+                task_id=cp.contract.task_id if cp.contract else None,
+                actor="gateway",
+            )
+            cp.audit.flush()
+            raise
         cp.audit.append(
             "gateway_post_call",
             {
@@ -498,8 +528,16 @@ def serve_gateway(
                     {"path": self.path, "error_type": type(exc).__name__, "detail": str(exc)},
                     actor="gateway",
                 )
+                gateway.cp.audit.flush()
+                print(f"RepoShield gateway error: {type(exc).__name__}: {exc}", flush=True)
                 data = json.dumps(
-                    {"error": {"type": "upstream_error", "message": "upstream request failed"}},
+                    {
+                        "error": {
+                            "type": "upstream_error",
+                            "message": "upstream request failed",
+                            "detail": str(exc)[:1000],
+                        }
+                    },
                     ensure_ascii=False,
                 ).encode("utf-8")
                 self.send_response(500)

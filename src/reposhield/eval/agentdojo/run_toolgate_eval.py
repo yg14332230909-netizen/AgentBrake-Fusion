@@ -26,6 +26,7 @@ from agentdojo.attacks.attack_registry import load_attack
 from agentdojo.benchmark import benchmark_suite_without_injections, benchmark_suite_with_injections
 from agentdojo.logging import OutputLogger, TraceLogger
 from agentdojo.task_suite.load_suites import get_suite
+from agentdojo.functions_runtime import FunctionCall
 from agentdojo.types import ChatUserMessage, get_text_content_as_str, text_content_block_from_string
 
 from ...control_plane import RepoShieldControlPlane
@@ -33,9 +34,11 @@ from ...eval.fast_mode import load_eval_fast_mode_config
 from .pipeline_wrapper import RepoShieldAgentDojoContext, build_reposhield_agentdojo_pipeline
 from .result_exporter import summarize_agentdojo_audit
 from .state_tracker import AgentDojoStateTracker
+from .tool_taxonomy import classify_agentdojo_tool
 
 
 TRANSIENT_STATUS_CODES = {408, 409, 429, 500, 502, 503, 504}
+_AUTHORIZED_TOOL_CACHE: dict[tuple[str, str], tuple[list[str], list[str]]] = {}
 
 
 def _is_transient_llm_error(exc: BaseException) -> bool:
@@ -82,7 +85,7 @@ class OpenAICompatibleLLM(OpenAILLM):
         completion = agentdojo_openai_llm.chat_completion_request(
             self.client, self.model, openai_messages, openai_tools, self.reasoning_effort, self.temperature
         )
-        output = agentdojo_openai_llm._openai_to_assistant_message(completion.choices[0].message)
+        output = _safe_openai_to_assistant_message(completion.choices[0].message)
         return query, runtime, env, [*messages, output], extra_args
 
 
@@ -105,7 +108,7 @@ class OpenAICompatibleToolFilter(agentdojo_openai_llm.OpenAILLMToolFilter):
             tool_choice="none",
             temperature=self.temperature,
         )
-        output = agentdojo_openai_llm._openai_to_assistant_message(completion.choices[0].message)
+        output = _safe_openai_to_assistant_message(completion.choices[0].message)
 
         new_tools = {}
         for tool_name, tool in runtime.functions.items():
@@ -120,7 +123,7 @@ def build_llm(model: str, model_id: str | None, tool_delimiter: str) -> tuple[Op
     model_key = model.lower()
     if provider == "local" or model_key == "local":
         port = os.getenv("LOCAL_LLM_PORT", "8000")
-        client = OpenAI(api_key="EMPTY", base_url=f"http://localhost:{port}/v1")
+        client = OpenAI(api_key="EMPTY", base_url=f"http://localhost:{port}/v1", timeout=float(os.getenv("REPOSHIELD_LLM_TIMEOUT", "300")))
         if model_id is None:
             model_id = os.getenv("LOCAL_LLM_MODEL_ID") or "local-model"
         llm = LocalLLM(client, model_id, tool_delimiter=tool_delimiter)
@@ -139,11 +142,65 @@ def build_llm(model: str, model_id: str | None, tool_delimiter: str) -> tuple[Op
         or os.getenv("DEEPSEEK_API_KEY")
         or "EMPTY"
     )
-    client = OpenAI(api_key=api_key, base_url=base_url)
+    client = OpenAI(api_key=api_key, base_url=base_url, timeout=float(os.getenv("REPOSHIELD_LLM_TIMEOUT", "300")))
     compat = "deepseek" in base_url.lower() or os.getenv("REPOSHIELD_OPENAI_COMPAT_SYSTEM_ROLE", "").lower() in {"1", "true", "yes"}
     llm = OpenAICompatibleLLM(client, model) if compat else OpenAILLM(client, model)
     setattr(llm, "name", _agentdojo_pipeline_name(model))
     return llm, str(getattr(llm, "name"))
+
+
+def _safe_openai_to_assistant_message(message: Any) -> dict[str, Any]:
+    content = None
+    if getattr(message, "content", None) is not None:
+        content = [text_content_block_from_string(str(message.content))]
+    tool_calls = None
+    raw_tool_calls = getattr(message, "tool_calls", None)
+    if raw_tool_calls is not None:
+        tool_calls = []
+        for tool_call in raw_tool_calls:
+            tool_name = str(getattr(tool_call.function, "name", "unknown_tool"))
+            raw_arguments = str(getattr(tool_call.function, "arguments", "{}") or "{}")
+            tool_calls.append(
+                FunctionCall(
+                    function=tool_name,
+                    args=_repair_json_arguments(raw_arguments),
+                    id=getattr(tool_call, "id", None),
+                )
+            )
+    return {"role": "assistant", "content": content, "tool_calls": tool_calls}
+
+
+def _repair_json_arguments(raw_arguments: str) -> dict[str, Any]:
+    text = raw_arguments.strip()
+    if not text:
+        return {}
+    for candidate in _candidate_argument_strings(text):
+        try:
+            value = json.loads(candidate)
+            if isinstance(value, dict):
+                return value
+            return {"value": value}
+        except Exception:
+            continue
+    return {"_raw_arguments": text}
+
+
+def _candidate_argument_strings(text: str) -> list[str]:
+    candidates = [text]
+    stripped = text.strip().strip("`")
+    if stripped and stripped not in candidates:
+        candidates.append(stripped)
+    if "{" in stripped and "}" in stripped:
+        start = stripped.find("{")
+        end = stripped.rfind("}")
+        if start >= 0 and end > start:
+            body = stripped[start : end + 1]
+            if body not in candidates:
+                candidates.append(body)
+            repaired = body.replace(",}", "}").replace(",]", "]")
+            if repaired not in candidates:
+                candidates.append(repaired)
+    return candidates
 
 
 def _agentdojo_pipeline_name(model: str) -> str:
@@ -153,6 +210,90 @@ def _agentdojo_pipeline_name(model: str) -> str:
     if any(known in model for known in MODEL_NAMES):
         return model
     return f"local-{model}"
+
+
+def _infer_authorized_tools_and_categories(suite_name: str, suite: Any, user_task: Any) -> tuple[list[str], list[str]]:
+    cache_key = (suite_name, str(getattr(user_task, "ID", "")))
+    cached = _AUTHORIZED_TOOL_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+    prompt = " ".join(
+        str(getattr(user_task, field, "") or "")
+        for field in ("PROMPT", "GOAL", "COMMENT", "DIFFICULTY", "GROUND_TRUTH_OUTPUT")
+    ).lower()
+    allowed_tools: set[str] = set()
+    allowed_categories: set[str] = set()
+
+    def add(*items: str) -> None:
+        for item in items:
+            allowed_tools.add(item)
+
+    try:
+        pre_environment = suite.load_and_inject_default_environment({})
+        ground_truth_calls = user_task.ground_truth(pre_environment) if callable(getattr(user_task, "ground_truth", None)) else []
+        for call in ground_truth_calls or []:
+            tool_name = str(getattr(call, "function", None) or getattr(call, "name", None) or "")
+            if tool_name:
+                add(tool_name)
+                try:
+                    info = classify_agentdojo_tool(tool_name, {}, None)
+                    if info.category:
+                        allowed_categories.add(info.category)
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+    if suite_name == "banking":
+        if any(token in prompt for token in ["pay", "payment", "bill", "transfer", "send money", "wire"]):
+            add("send_money", "schedule_transaction", "update_scheduled_transaction")
+            allowed_categories.add("financial_commit")
+        if any(token in prompt for token in ["schedule", "recurring", "future payment"]):
+            add("schedule_transaction", "update_scheduled_transaction")
+            allowed_categories.add("financial_commit")
+        if "password" in prompt or "credential" in prompt:
+            add("update_password")
+            allowed_categories.add("credential_change")
+        if any(token in prompt for token in ["profile", "address", "name", "info", "information"]):
+            add("update_user_info", "get_user_info")
+            allowed_categories.add("profile_mutation")
+    elif suite_name == "slack":
+        if any(token in prompt for token in ["message", "dm", "direct message", "send"]):
+            add("send_direct_message", "send_channel_message")
+            allowed_categories.add("external_message_send")
+        if any(token in prompt for token in ["invite", "add user", "remove", "channel", "member"]):
+            add("add_user_to_channel", "invite_user_to_slack", "remove_user_from_slack")
+            allowed_categories.add("workspace_acl_mutation")
+    elif suite_name == "workspace":
+        if any(token in prompt for token in ["email", "mail", "reply", "send"]):
+            add("send_email")
+            allowed_categories.add("external_message_send")
+        if any(token in prompt for token in ["delete", "remove", "cancel"]):
+            add("delete_email", "delete_file", "cancel_calendar_event")
+            allowed_categories.add("destructive_update")
+        if any(token in prompt for token in ["calendar", "meeting", "event", "schedule"]):
+            add("create_calendar_event", "cancel_calendar_event", "reschedule_calendar_event", "add_calendar_event_participants")
+            allowed_categories.add("calendar_mutation")
+        if any(token in prompt for token in ["file", "document", "share", "append", "create"]):
+            add("append_to_file", "create_file", "share_file")
+            allowed_categories.add("file_mutation")
+    elif suite_name == "travel":
+        if any(token in prompt for token in ["hotel", "book", "reserve"]):
+            add("reserve_hotel")
+            allowed_categories.add("booking_commit")
+        if any(token in prompt for token in ["car", "rental"]):
+            add("reserve_car_rental")
+            allowed_categories.add("booking_commit")
+        if any(token in prompt for token in ["restaurant", "table", "dinner"]):
+            add("reserve_restaurant")
+            allowed_categories.add("booking_commit")
+        if any(token in prompt for token in ["email", "mail", "message"]):
+            add("send_email")
+            allowed_categories.add("external_message_send")
+
+    result = (sorted(allowed_tools), sorted(allowed_categories))
+    _AUTHORIZED_TOOL_CACHE[cache_key] = result
+    return result
 
 
 def build_pipeline(
@@ -259,6 +400,7 @@ def run_suite(
                 attack_name = "none"
                 injection_task_id = "none"
                 injections: dict[str, str] = {}
+                allowed_tools, allowed_categories = _infer_authorized_tools_and_categories(suite_name, suite, user_task)
                 if hasattr(pipeline, "set_context"):
                     pipeline.set_context(
                         RepoShieldAgentDojoContext(
@@ -270,8 +412,8 @@ def run_suite(
                             attack_goal_signatures=[getattr(user_task, "PROMPT", "") or getattr(user_task, "GOAL", "") or ""],
                             source_ids=[],
                             source_has_untrusted=False,
-                            allowed_tools=[],
-                            allowed_tool_categories=[],
+                            allowed_tools=allowed_tools,
+                            allowed_tool_categories=allowed_categories,
                             run_id=f"{suite_name}-{user_task_id}-benign",
                             metadata={"disable_state_tracker": disable_state_tracker},
                         )
@@ -301,6 +443,7 @@ def run_suite(
                 for injection_task_id in injection_task_ids:
                     injection_task = suite.get_injection_task_by_id(injection_task_id)
                     injections = attack_obj.attack(user_task, injection_task)
+                    allowed_tools, allowed_categories = _infer_authorized_tools_and_categories(suite_name, suite, user_task)
                     if hasattr(pipeline, "set_context"):
                         pipeline.set_context(
                             RepoShieldAgentDojoContext(
@@ -317,8 +460,8 @@ def run_suite(
                                 source_ids=list(injections.keys()),
                                 source_has_untrusted=bool(injections),
                                 untrusted_observation_seen=bool(injections),
-                                allowed_tools=[],
-                                allowed_tool_categories=[],
+                                allowed_tools=allowed_tools,
+                                allowed_tool_categories=allowed_categories,
                                 run_id=f"{suite_name}-{user_task.ID}-{injection_task_id}",
                                 metadata={"disable_state_tracker": disable_state_tracker},
                             )
