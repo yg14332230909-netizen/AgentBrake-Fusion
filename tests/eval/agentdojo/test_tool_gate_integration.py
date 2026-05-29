@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip("agentdojo")
+
 from reposhield.control_plane import RepoShieldControlPlane
 from reposhield.eval.agentdojo import RepoShieldToolGate, register_native_defense, reposhield_agentdojo
 

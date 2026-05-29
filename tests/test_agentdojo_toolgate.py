@@ -11,7 +11,7 @@ def test_agentdojo_tool_classification_handles_registered_and_unknown_tools():
     assert registered.semantic_action == "send_external_message"
     assert registered.registered is True
     assert unknown.registered is False
-    assert unknown.category == "unknown_external_commit"
+    assert unknown.category == "unknown_side_effect"
 
 
 def test_agentdojo_tool_gate_blocks_sensitive_untrusted_message_send(tmp_path):
@@ -36,4 +36,3 @@ def test_agentdojo_tool_gate_blocks_sensitive_untrusted_message_send(tmp_path):
     events = cp.audit.read_events()
     assert any(event["event_type"] == "agentdojo_tool_gate_decision" for event in events)
     assert any(event["event_type"] == "policy_fact_set" and "agentdojo" in event["payload"]["namespace_counts"] for event in events)
-

@@ -1,7 +1,6 @@
 """AgentDojo evaluation integration."""
 
 from .fact_adapter import agentdojo_facts_from_action
-from .pipeline_wrapper import RepoShieldAgentDojoPipeline, build_reposhield_agentdojo_pipeline
 from .result_exporter import summarize_agentdojo_audit
 from .state_tracker import AgentDojoStateTracker
 from .tool_gate import RepoShieldToolGate, ToolGateResult, taxonomy_coverage_summary
@@ -41,3 +40,7 @@ def __getattr__(name: str):
 
         return {"RepoShieldAgentDojoPipeline": RepoShieldAgentDojoPipeline, "build_reposhield_agentdojo_pipeline": build_reposhield_agentdojo_pipeline}[name]
     raise AttributeError(name)
+
+
+def __dir__() -> list[str]:
+    return sorted(set(globals()) | {"RepoShieldAgentDojoPipeline", "build_reposhield_agentdojo_pipeline", "reposhield_agentdojo", "register_native_defense"})

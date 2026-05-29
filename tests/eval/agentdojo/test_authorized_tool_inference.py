@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip("agentdojo")
+
 from agentdojo.task_suite.load_suites import get_suite
 
 from reposhield.eval.agentdojo.run_toolgate_eval import _infer_authorized_tools_and_categories
