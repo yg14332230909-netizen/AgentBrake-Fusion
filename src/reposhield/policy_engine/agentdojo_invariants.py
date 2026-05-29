@@ -21,12 +21,12 @@ def agentdojo_invariants() -> list[RegisteredInvariant]:
         ),
         _inv(
             "ADJ-FIN-002",
-            "financial_history_then_commit",
-            lambda f: _agentdojo(f) and _bool(f, "agentdojo", "financial_data_seen") and _bool(f, "agentdojo", "financial_commit") and _bool(f, "agentdojo", "attack_goal_overlap"),
-            ["agentdojo.financial_data_seen", "agentdojo.financial_commit", "agentdojo.attack_goal_overlap"],
-            DecisionConstraints(execution_env="none", network_scope="deny", audit_scope="full"),
-            ["agentdojo_financial_data_to_commit"],
-            ["block"],
+            "authorized_financial_commit_needs_approval",
+            lambda f: _agentdojo(f) and _bool(f, "agentdojo", "financial_commit") and _bool(f, "agentdojo", "task_authorized_tool") and _either_untrusted(f),
+            ["agentdojo.financial_commit", "agentdojo.task_authorized_tool", "source.has_untrusted"],
+            DecisionConstraints(execution_env="sandbox", human_gate="approval_required", audit_scope="full"),
+            ["agentdojo_authorized_financial_commit_requires_approval"],
+            ["sandbox_preflight", "human_approval"],
             98,
         ),
         _inv(
@@ -43,7 +43,7 @@ def agentdojo_invariants() -> list[RegisteredInvariant]:
             "ADJ-PRIVATE-EGRESS-001",
             "private_data_to_external_sink",
             lambda f: _agentdojo(f) and (_bool(f, "history", "private_data_seen") or _bool(f, "agentdojo", "private_data_read"))
-            and _any(f, [("agentdojo", "message_send"), ("agentdojo", "external_commit"), ("agentdojo", "external_file_share")]),
+            and _any(f, [("agentdojo", "message_send"), ("agentdojo", "external_commit"), ("agentdojo", "external_file_share"), ("agentdojo", "external_share")]),
             ["history.private_data_seen", "agentdojo.private_data_read", "agentdojo.message_send", "agentdojo.external_commit"],
             DecisionConstraints(execution_env="none", network_scope="deny", data_scope="no_secret", audit_scope="full"),
             ["agentdojo_private_data_egress"],
@@ -94,6 +94,26 @@ def agentdojo_invariants() -> list[RegisteredInvariant]:
             88,
         ),
         _inv(
+            "ADJ-TRAVEL-001",
+            "untrusted_booking_commit_exact",
+            lambda f: _agentdojo(f) and _bool(f, "agentdojo", "booking_commit") and not _bool(f, "agentdojo", "task_authorized_tool") and _either_untrusted(f),
+            ["agentdojo.booking_commit", "source.has_untrusted", "agentdojo.task_authorized_tool"],
+            DecisionConstraints(execution_env="none", network_scope="deny", audit_scope="full"),
+            ["agentdojo_untrusted_booking_commit_block"],
+            ["block"],
+            94,
+        ),
+        _inv(
+            "ADJ-TRAVEL-002",
+            "authorized_booking_commit_requires_approval",
+            lambda f: _agentdojo(f) and _bool(f, "agentdojo", "booking_commit") and _bool(f, "agentdojo", "task_authorized_tool") and _either_untrusted(f),
+            ["agentdojo.booking_commit", "source.has_untrusted", "agentdojo.task_authorized_tool"],
+            DecisionConstraints(execution_env="sandbox", human_gate="approval_required", audit_scope="full"),
+            ["agentdojo_authorized_booking_commit_requires_approval"],
+            ["sandbox_preflight", "human_approval"],
+            92,
+        ),
+        _inv(
             "ADJ-ACCOUNT-001",
             "credential_change_after_untrusted",
             lambda f: _agentdojo(f)
@@ -118,6 +138,30 @@ def agentdojo_invariants() -> list[RegisteredInvariant]:
             95,
         ),
         _inv(
+            "ADJ-ACL-001",
+            "workspace_acl_mutation_with_untrusted_context",
+            lambda f: _agentdojo(f)
+            and _bool(f, "agentdojo", "workspace_acl_mutation")
+            and _either_untrusted(f),
+            ["agentdojo.workspace_acl_mutation", "source.has_untrusted"],
+            DecisionConstraints(execution_env="none", audit_scope="full"),
+            ["agentdojo_workspace_acl_block"],
+            ["block"],
+            95,
+        ),
+        _inv(
+            "ADJ-CRED-001",
+            "credential_change_with_untrusted_context",
+            lambda f: _agentdojo(f)
+            and _bool(f, "agentdojo", "credential_change")
+            and _either_untrusted(f),
+            ["agentdojo.credential_change", "source.has_untrusted"],
+            DecisionConstraints(execution_env="none", audit_scope="full"),
+            ["agentdojo_credential_change_block"],
+            ["block"],
+            97,
+        ),
+        _inv(
             "ADJ-TERMINAL-001",
             "terminal_after_untrusted",
             lambda f: _agentdojo(f)
@@ -138,6 +182,26 @@ def agentdojo_invariants() -> list[RegisteredInvariant]:
             ["agentdojo_unknown_side_effect"],
             ["sandbox_preflight", "human_approval"],
             82,
+        ),
+        _inv(
+            "ADJ-WORKSPACE-001",
+            "workspace_destructive_update_without_authorization",
+            lambda f: _agentdojo(f) and _bool(f, "agentdojo", "destructive_update") and not _bool(f, "agentdojo", "task_authorized_tool"),
+            ["agentdojo.destructive_update", "agentdojo.task_authorized_tool"],
+            DecisionConstraints(execution_env="none", audit_scope="full"),
+            ["agentdojo_workspace_destructive_update_block"],
+            ["block"],
+            96,
+        ),
+        _inv(
+            "ADJ-WORKSPACE-002",
+            "private_data_share_block",
+            lambda f: _agentdojo(f) and _bool(f, "agentdojo", "external_share") and (_bool(f, "history", "private_data_seen") or _bool(f, "agentdojo", "private_data_seen")),
+            ["agentdojo.external_share", "history.private_data_seen", "agentdojo.private_data_seen"],
+            DecisionConstraints(execution_env="none", audit_scope="full"),
+            ["agentdojo_private_data_share_block"],
+            ["block"],
+            96,
         ),
     ]
 

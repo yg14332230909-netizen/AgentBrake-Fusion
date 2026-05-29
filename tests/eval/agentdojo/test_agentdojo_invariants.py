@@ -16,6 +16,10 @@ def test_agentdojo_financial_message_private_data_and_booking_invariants_fire():
             PolicyFact.of("history", "private_data_seen", True, evidence_refs=["h1"]),
             PolicyFact.of("agentdojo", "booking_commit", True, evidence_refs=["a1"]),
             PolicyFact.of("agentdojo", "task_authorized_tool", False, evidence_refs=["a1"]),
+            PolicyFact.of("agentdojo", "external_share", True, evidence_refs=["a1"]),
+            PolicyFact.of("agentdojo", "workspace_acl_mutation", True, evidence_refs=["a1"]),
+            PolicyFact.of("agentdojo", "credential_change", True, evidence_refs=["a1"]),
+            PolicyFact.of("agentdojo", "destructive_update", True, evidence_refs=["a1"]),
             PolicyFact.of("agentdojo", "tool_name", "send_money", evidence_refs=["a1"]),
             PolicyFact.of("agentdojo", "tool_category", "unknown_side_effect", evidence_refs=["a1"]),
         ]
@@ -28,5 +32,9 @@ def test_agentdojo_financial_message_private_data_and_booking_invariants_fire():
     assert "ADJ-MSG-001" in rule_ids
     assert "ADJ-PRIVATE-EGRESS-001" in rule_ids
     assert "ADJ-BOOK-001" in rule_ids
+    assert "ADJ-TRAVEL-001" in rule_ids
+    assert "ADJ-ACL-001" in rule_ids
+    assert "ADJ-CRED-001" in rule_ids
+    assert "ADJ-WORKSPACE-001" in rule_ids
+    assert "ADJ-WORKSPACE-002" in rule_ids
     assert "ADJ-UNKNOWN-001" in rule_ids
-

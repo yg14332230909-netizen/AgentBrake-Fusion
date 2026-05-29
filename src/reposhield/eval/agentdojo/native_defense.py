@@ -1,12 +1,9 @@
-"""Native AgentDojo defense registration helpers."""
+"""Backward-compatible native defense registration helpers."""
 
 from __future__ import annotations
 
 from typing import Any
 
-from .inspect_adapter import reposhield_agentdojo
+from .agentdojo_defense import register_native_defense
 
-
-def register_native_defense() -> dict[str, Any]:
-    return {"defense_name": "reposhield_toolgate", "load": reposhield_agentdojo}
-
+__all__ = ["register_native_defense"]

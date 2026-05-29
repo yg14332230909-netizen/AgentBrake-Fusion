@@ -1,0 +1,12 @@
+policy_name: reposhield_agentdojo_toolgate
+mode: fast
+defense:
+  default: reposhield_toolgate
+  gateway_only: true
+ablation:
+  taxonomy: true
+  state_tracker: true
+  invariants: true
+notes:
+  - AgentDojo custom defense registry is not available in agentdojo 0.1.35
+  - ToolGate is implemented as a pipeline wrapper around FunctionsRuntime.run_function()

@@ -6,6 +6,7 @@ import json
 import os
 import shutil
 import threading
+import time
 from dataclasses import asdict
 from enum import StrEnum
 from pathlib import Path
@@ -49,6 +50,7 @@ class AuditLog:
         self._buffer: list[str] = []
         self._buffer_limit = max(1, int(os.getenv("REPOSHIELD_AUDIT_BUFFER_LIMIT", "20")))
         self._head = self._read_head()
+        self.append_latency_samples_ms: list[float] = []
 
     @property
     def head(self) -> str:
@@ -65,6 +67,7 @@ class AuditLog:
         decision_id: str | None = None,
     ) -> AuditEvent:
         with self._lock:
+            start = time.perf_counter()
             redacted_payload = self._redact_payload(payload)
             event_without_hash = {
                 "event_id": new_id("evt"),
@@ -93,6 +96,7 @@ class AuditLog:
                 with self.log_path.open("a", encoding="utf-8") as f:
                     f.write(line)
             self._head = event_hash
+            self.append_latency_samples_ms.append((time.perf_counter() - start) * 1000)
             return event
 
     def flush(self) -> None:
@@ -102,6 +106,13 @@ class AuditLog:
             with self.log_path.open("a", encoding="utf-8") as f:
                 f.writelines(self._buffer)
             self._buffer = []
+
+    def latency_stats(self) -> dict[str, float]:
+        return {
+            "audit_append_avg_ms": _avg(self.append_latency_samples_ms),
+            "audit_append_p50_ms": _p50(self.append_latency_samples_ms),
+            "audit_append_p95_ms": _p95(self.append_latency_samples_ms),
+        }
 
     def verify(self) -> tuple[bool, list[str]]:
         self.flush()
@@ -237,3 +248,23 @@ class AuditLog:
         if event.get("event_type") == "source_ingested":
             return payload.get("source_type", "source")
         return event.get("event_type", "event")
+
+
+def _avg(values: list[float]) -> float:
+    return float(sum(values) / len(values)) if values else 0.0
+
+
+def _p50(values: list[float]) -> float:
+    return _percentile(values, 0.5)
+
+
+def _p95(values: list[float]) -> float:
+    return _percentile(values, 0.95)
+
+
+def _percentile(values: list[float], pct: float) -> float:
+    if not values:
+        return 0.0
+    ordered = sorted(values)
+    idx = min(len(ordered) - 1, int(round((len(ordered) - 1) * pct)))
+    return float(ordered[idx])
