@@ -1,74 +1,3 @@
-from __future__ import annotations
-
-import argparse
-import json
-import os
-import random
-from collections import Counter, defaultdict
-from dataclasses import dataclass, field
-from datetime import datetime
-from pathlib import Path
-from typing import Any
-
-from agentdojo.attacks.attack_registry import load_attack
-from agentdojo.logging import OutputLogger, TraceLogger
-from agentdojo.task_suite.load_suites import get_suite
-
-from reposhield.eval.agentdojo.run_toolgate_eval import (
-    _infer_authorized_tools_and_categories,
-    _run_agentdojo_task_with_retries,
-    build_llm,
-    build_pipeline,
-)
-from reposhield.eval.agentdojo_firewall.state import extract_targets, looks_like_injection
-from reposhield.eval.agentdojo_firewall.tool_firewall import summarize_agentdojo_firewall_audit
-from reposhield.eval.agentdojo.pipeline_wrapper import RepoShieldAgentDojoContext
-
-ROOT = Path(__file__).resolve().parents[3]
-REPORT_DIR = ROOT / "experiments" / "agentdojo_firewall" / "reports"
-ITER_DIR = REPORT_DIR / "iterations"
-LOG_DIR = ROOT / "experiments" / "agentdojo_firewall" / "logs" / "iterations"
-
-
-@dataclass
-class SampleResult:
-    suite: str
-    phase: str
-    user_task_id: str
-    injection_task_id: str
-    utility: bool
-    security: bool
-    run_path: Path
-    user_task_text: str
-    injection_text: str
-    tool_calls: list[dict[str, Any]] = field(default_factory=list)
-    messages: list[dict[str, Any]] = field(default_factory=list)
-    firewall_audit: dict[str, Any] = field(default_factory=dict)
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default="deepseek-chat")
-    parser.add_argument("--attack", default="important_instructions")
-    parser.add_argument("--seed", type=int, default=7)
-    parser.add_argument("--train-users", type=int, default=2)
-    parser.add_argument("--val-users", type=int, default=2)
-    parser.add_argument("--train-injections", type=int, default=2)
-    parser.add_argument("--val-injections", type=int, default=2)
-    parser.add_argument("--suites", nargs="+", default=["travel", "banking", "slack", "workspace"])
-    parser.add_argument("--benchmark-version", default="v1.2.2")
-    args = parser.parse_args()
-
-    REPORT_DIR.mkdir(parents=True, exist_ok=True)
-    ITER_DIR.mkdir(parents=True, exist_ok=True)
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
-
-    summary = {
-        "model": args.model,
-        "attack": args.attack,
-        "seed": args.seed,
-        "suites": {},
-    }
 #!/usr/bin/env python3
 """Safe failure-sample iterator for RepoShield-AgentDojo firewall.
 
@@ -410,11 +339,7 @@ def run_live_samples(args: argparse.Namespace, *, out_dir: Path) -> list[SampleR
     for suite_name in args.suites:
         suite = get_suite(args.benchmark_version, suite_name)
         user_ids = sample_ids(sorted(suite.user_tasks.keys()), args.train_users + args.val_users, seed=args.seed)
-        injection_ids = sample_ids(
-            sorted(suite.injection_tasks.keys()),
-            args.train_injections + args.val_injections,
-            seed=args.seed + 101,
-        )
+        injection_ids = sample_ids(sorted(suite.injection_tasks.keys()), args.train_injections + args.val_injections, seed=args.seed + 101)
         train_user_ids = user_ids[: args.train_users]
         val_user_ids = user_ids[args.train_users : args.train_users + args.val_users]
         train_injection_ids = injection_ids[: args.train_injections]
@@ -1173,11 +1098,7 @@ def build_failure_split(failures: list[SampleRecord], *, seed: int = 17) -> Spli
     val_end = max(train_end, int(n * 0.8))
     if n >= 3 and val_end == train_end:
         val_end = train_end + 1
-    return SplitPlan(
-        train=sorted(shuffled[:train_end]),
-        validation=sorted(shuffled[train_end:val_end]),
-        holdout=sorted(shuffled[val_end:]),
-    )
+    return SplitPlan(train=sorted(shuffled[:train_end]), validation=sorted(shuffled[train_end:val_end]), holdout=sorted(shuffled[val_end:]))
 
 
 def build_regression_plan(patches: list[CandidatePatch]) -> list[str]:
