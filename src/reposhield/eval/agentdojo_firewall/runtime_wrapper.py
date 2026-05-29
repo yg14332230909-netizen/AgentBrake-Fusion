@@ -3,12 +3,24 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Callable, Mapping
 
-from agentdojo.agent_pipeline import AgentPipeline
-from agentdojo.agent_pipeline.base_pipeline_element import BasePipelineElement
-from agentdojo.agent_pipeline.basic_elements import InitQuery
-from agentdojo.agent_pipeline.tool_execution import ToolsExecutionLoop, ToolsExecutor
-from agentdojo.functions_runtime import EmptyEnv, Env, FunctionsRuntime
-from agentdojo.types import ChatMessage
+try:  # pragma: no cover - optional dependency
+    from agentdojo.agent_pipeline import AgentPipeline
+    from agentdojo.agent_pipeline.base_pipeline_element import BasePipelineElement
+    from agentdojo.agent_pipeline.basic_elements import InitQuery
+    from agentdojo.agent_pipeline.tool_execution import ToolsExecutionLoop, ToolsExecutor
+    from agentdojo.functions_runtime import EmptyEnv, Env, FunctionsRuntime
+except Exception:  # pragma: no cover - keep package importable without agentdojo
+    AgentPipeline = None  # type: ignore[assignment]
+
+    class BasePipelineElement:  # type: ignore[override]
+        pass
+
+    InitQuery = None  # type: ignore[assignment]
+    ToolsExecutionLoop = None  # type: ignore[assignment]
+    ToolsExecutor = None  # type: ignore[assignment]
+    EmptyEnv = None  # type: ignore[assignment]
+    Env = Any  # type: ignore[assignment]
+    FunctionsRuntime = Any  # type: ignore[assignment]
 
 from .tool_firewall import AgentDojoToolFirewall
 from .types import ToolCallContext
@@ -130,10 +142,10 @@ class AgentDojoRuntimeInjector(BasePipelineElement):
         self,
         query: str,
         runtime: FunctionsRuntime,
-        env: Env = EmptyEnv(),
-        messages: list[ChatMessage] | tuple[ChatMessage, ...] = (),
+        env: Any = None,
+        messages: list[Any] | tuple[Any, ...] = (),
         extra_args: dict[str, Any] | None = None,
-    ) -> tuple[str, FunctionsRuntime, Env, list[ChatMessage] | tuple[ChatMessage, ...], dict[str, Any]]:
+    ) -> tuple[str, FunctionsRuntime, Any, list[Any] | tuple[Any, ...], dict[str, Any]]:
         context = self.context_getter() or {}
         suite = str(context.get("suite", self.default_suite))
         if isinstance(runtime, AgentDojoGuardedFunctionsRuntime):
@@ -164,6 +176,8 @@ class AgentDojoFirewallPipeline(BasePipelineElement):
         max_iters: int = 15,
         default_suite: str = "workspace",
     ) -> None:
+        if AgentPipeline is None or InitQuery is None or ToolsExecutionLoop is None or ToolsExecutor is None:
+            raise RuntimeError("agentdojo is required to build the AgentDojo firewall pipeline")
         self.llm = llm
         self.firewall = firewall or AgentDojoToolFirewall()
         self.system_message = system_message
@@ -184,10 +198,10 @@ class AgentDojoFirewallPipeline(BasePipelineElement):
         self,
         query: str,
         runtime: FunctionsRuntime,
-        env: Env = EmptyEnv(),
-        messages: list[ChatMessage] | tuple[ChatMessage, ...] = (),
+        env: Any = None,
+        messages: list[Any] | tuple[Any, ...] = (),
         extra_args: dict[str, Any] | None = None,
-    ) -> tuple[str, FunctionsRuntime, Env, list[ChatMessage] | tuple[ChatMessage, ...], dict[str, Any]]:
+    ) -> tuple[str, FunctionsRuntime, Any, list[Any] | tuple[Any, ...], dict[str, Any]]:
         extra_args = dict(extra_args or {})
         extra_args["agentdojo_firewall_context"] = self.context.as_dict()
         return self._pipeline.query(query, runtime, env, messages, extra_args)
