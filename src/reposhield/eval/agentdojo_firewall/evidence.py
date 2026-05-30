@@ -3,23 +3,33 @@ from __future__ import annotations
 from typing import Any
 
 from .models_compat import sha256_text
-from .state import AgentDojoStateTracker
-from .task_authorizer import sensitive_args_not_in_user_task, task_authorizes_tool
-from .state import extract_targets
+from .state import AgentDojoStateTracker, extract_targets
+from .task_authorizer import authorize_tool
 from .types import EvidenceBundle, ToolCallContext, ToolSpec
 
 SENSITIVE_ARG_KEYS = {"password", "token", "secret", "iban", "account", "recipient", "to", "email", "message", "body", "file_id", "amount"}
 
+
 class AgentDojoEvidenceBuilder:
-    def build(self, *, context: ToolCallContext, spec: ToolSpec, state: AgentDojoStateTracker, graph_facts: dict[str, Any] | None = None) -> EvidenceBundle:
-        task_authorized = task_authorizes_tool(context, spec)
+    def build(
+        self, *, context: ToolCallContext, spec: ToolSpec, state: AgentDojoStateTracker, graph_facts: dict[str, Any] | None = None
+    ) -> EvidenceBundle:
+        authorization = authorize_tool(
+            context,
+            spec,
+            untrusted_entities=state.untrusted_entities,
+            private_entities=state.private_entities,
+        )
+        task_authorized = authorization.task_authorized
         sensitive_args_present = self._sensitive_args_present(context.tool_args, spec)
-        sensitive_mismatch = sensitive_args_not_in_user_task(context.tool_args, spec, context.user_task)
+        sensitive_mismatch = authorization.sensitive_args_not_in_user_task
         attack_goal_overlap = state.attack_goal_overlap(context.tool_args)
         unknown = spec.group == "unknown"
-        user_task_targets = extract_targets(context.user_task)
+        user_task_targets = self._booking_target_values(context.user_task, spec)
         booking_target_values = self._booking_target_values(context.tool_args, spec)
-        booking_target_matches_user_goal = bool(user_task_targets and booking_target_values and user_task_targets.intersection(booking_target_values))
+        booking_target_matches_user_goal = bool(
+            user_task_targets and booking_target_values and user_task_targets.intersection(booking_target_values)
+        )
         explicit_booking_target_in_task = bool(user_task_targets)
         facts = {
             "agentdojo.suite": context.suite,
@@ -41,6 +51,13 @@ class AgentDojoEvidenceBuilder:
             "agentdojo.unknown_tool": unknown,
             "agentdojo.sensitive_args_present": sensitive_args_present,
             "agentdojo.sensitive_args_not_in_user_task": sensitive_mismatch,
+            "agentdojo.args_match_user_entity": authorization.args_match_user_entity,
+            "agentdojo.args_match_untrusted_entity": authorization.args_match_untrusted_entity,
+            "agentdojo.args_match_private_entity": authorization.args_match_private_entity,
+            "agentdojo.entity_authorization_confidence": authorization.entity_authorization_confidence,
+            "agentdojo.user_entities": authorization.user_entities.as_dict(),
+            "agentdojo.arg_entities": authorization.arg_entities.as_dict(),
+            "agentdojo.authorization_reasons": list(authorization.reasons),
             "agentdojo.user_task_targets": sorted(user_task_targets),
             "agentdojo.booking_target_values": sorted(booking_target_values),
             "agentdojo.booking_target_matches_user_goal": booking_target_matches_user_goal,
@@ -76,6 +93,10 @@ class AgentDojoEvidenceBuilder:
             unknown_tool=unknown,
             sensitive_args_present=sensitive_args_present,
             sensitive_args_not_in_user_task=sensitive_mismatch,
+            args_match_user_entity=authorization.args_match_user_entity,
+            args_match_untrusted_entity=authorization.args_match_untrusted_entity,
+            args_match_private_entity=authorization.args_match_private_entity,
+            entity_authorization_confidence=authorization.entity_authorization_confidence,
             tool_args_digest=sha256_text(repr(context.tool_args)),
             state_digest=state.digest(),
             facts=facts,
@@ -85,14 +106,7 @@ class AgentDojoEvidenceBuilder:
         text = " ".join(f"{k}={v}" for k, v in args.items()).lower()
         return any(key.lower() in text for key in set(spec.sensitive_args) | SENSITIVE_ARG_KEYS)
 
-    def _booking_target_values(self, args: dict[str, Any], spec: ToolSpec) -> set[str]:
+    def _booking_target_values(self, value: Any, spec: ToolSpec) -> set[str]:
         if spec.group != "booking_commit":
             return set()
-        target_keys = {"hotel", "hotel_name", "company", "company_name", "restaurant", "restaurant_name", "flight", "flight_name", "city"}
-        values: set[str] = set()
-        for key, value in args.items():
-            if str(key).lower() in target_keys and isinstance(value, str):
-                stripped = value.strip()
-                if stripped:
-                    values.add(stripped)
-        return values
+        return {target for target in extract_targets(str(value)) if target}

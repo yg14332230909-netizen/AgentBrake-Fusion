@@ -19,4 +19,3 @@ def test_agentdojo_taxonomy_covers_official_tool_subset():
     report = taxonomy_coverage_summary(tools)
     assert report["registered_tool_rate"] == 1.0
     assert all(tool in load_agentdojo_taxonomy() for tool in tools)
-

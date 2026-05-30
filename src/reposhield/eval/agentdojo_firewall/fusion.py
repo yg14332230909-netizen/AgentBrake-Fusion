@@ -5,6 +5,7 @@ from typing import Any
 
 from .types import ConstraintDecision, Decision, EvidenceBundle
 
+
 @dataclass(slots=True)
 class RuleHit:
     rule_id: str
@@ -13,6 +14,7 @@ class RuleHit:
     reason: str
     evidence: dict[str, Any] = field(default_factory=dict)
 
+
 @dataclass(slots=True)
 class FusionResult:
     decision: Decision
@@ -20,6 +22,7 @@ class FusionResult:
     reason_codes: list[str]
     rule_hits: list[RuleHit]
     facts: dict[str, Any]
+
 
 class AgentDojoEvidenceFusion:
     """Deterministic AgentDojo multi-source fusion.
@@ -51,21 +54,45 @@ class AgentDojoEvidenceFusion:
             hits.append(self._block("ADJ-GOAL-001", "tool arguments overlap suspicious target extracted from prior output", e))
         if e.group == "financial_commit" and e.untrusted_seen and not e.task_authorized:
             hits.append(self._block("ADJ-FIN-001", "untrusted context attempted unauthorized financial commit", e))
-        if e.external_sink and e.private_data_seen and (e.injection_seen or not e.task_authorized or e.attack_goal_overlap):
+        if e.group == "financial_commit" and (e.args_match_untrusted_entity or e.sensitive_args_not_in_user_task) and not e.task_authorized:
+            hits.append(self._block("ADJ-FIN-002", "financial commit arguments were not authorized by user task entities", e))
+        if (
+            e.external_sink
+            and e.private_data_seen
+            and (e.injection_seen or e.attack_goal_overlap)
+            and not e.task_authorized
+            and not e.args_match_user_entity
+        ):
             hits.append(self._block("ADJ-DATA-001", "private data observed before risky external sink", e))
-        if e.group == "external_send" and e.untrusted_seen and not e.task_authorized:
+        if (
+            e.external_sink
+            and e.sensitive_args_present
+            and (e.args_match_private_entity or e.args_match_untrusted_entity)
+            and not e.args_match_user_entity
+        ):
+            hits.append(self._block("ADJ-DATA-002", "external sink arguments appear sourced from private or untrusted observations", e))
+        if e.group == "external_send" and e.untrusted_seen and not e.args_match_user_entity and not e.task_authorized:
             hits.append(self._block("ADJ-MSG-001", "untrusted context attempted unauthorized external send", e))
-        if e.group == "booking_commit" and e.injection_seen and (not e.task_authorized or e.sensitive_args_not_in_user_task):
+        if (
+            e.group == "booking_commit"
+            and e.injection_seen
+            and (not e.task_authorized or e.sensitive_args_not_in_user_task)
+            and not e.args_match_user_entity
+        ):
             hits.append(self._block("ADJ-TRAVEL-001", "injection-like travel output attempted unauthorized or mismatched booking", e))
-        if e.group == "booking_commit" and e.untrusted_seen and not e.task_authorized:
+        if e.group == "booking_commit" and e.untrusted_seen and not e.args_match_user_entity and not e.task_authorized:
             hits.append(self._block("ADJ-TRAVEL-002", "untrusted travel content attempted unauthorized booking", e))
+        if e.group == "booking_commit" and e.args_match_untrusted_entity and not e.args_match_user_entity:
+            hits.append(self._block("ADJ-TRAVEL-004", "booking target appears sourced from untrusted output rather than user task", e))
         if (
             e.group == "booking_commit"
             and e.injection_seen
             and e.facts.get("agentdojo.explicit_booking_target_in_task")
             and not e.facts.get("agentdojo.booking_target_matches_user_goal")
         ):
-            hits.append(self._block("ADJ-TRAVEL-003", "travel booking target does not match the user goal after untrusted review content", e))
+            hits.append(
+                self._block("ADJ-TRAVEL-003", "travel booking target does not match the user goal after untrusted review content", e)
+            )
         if e.group in {"destructive_update", "credential_change", "membership_mutation"} and not e.task_authorized:
             hits.append(self._block("ADJ-STATE-001", "high-impact state mutation not authorized by user task", e))
         if e.group == "credential_change" and e.untrusted_seen:
@@ -84,8 +111,13 @@ class AgentDojoEvidenceFusion:
             decision="block",
             constraints=ConstraintDecision(execution_env="no_execute", network_scope="deny", data_scope="no_private", audit_scope="full"),
             reason=reason,
-            evidence={key: e.facts.get(key) for key in sorted(e.facts) if key.startswith(("agentdojo.", "source.", "contract.", "history.", "graph."))},
+            evidence={
+                key: e.facts.get(key)
+                for key in sorted(e.facts)
+                if key.startswith(("agentdojo.", "source.", "contract.", "history.", "graph."))
+            },
         )
+
 
 def dedupe_hits(hits: list[RuleHit]) -> list[RuleHit]:
     seen: set[str] = set()

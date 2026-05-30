@@ -4,6 +4,7 @@ When installed inside RepoShield, this module imports the real RepoShield model
 classes.  The fallback dataclasses make the adapter testable as a standalone
 upgrade bundle before Codex applies it to the repository.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -14,6 +15,7 @@ from uuid import uuid4
 try:  # pragma: no cover
     from reposhield.models import ActionEdge, ActionGraph, ActionNode, new_id, sha256_text  # type: ignore
 except Exception:  # pragma: no cover
+
     def new_id(prefix: str) -> str:
         return f"{prefix}_{uuid4().hex[:12]}"
 

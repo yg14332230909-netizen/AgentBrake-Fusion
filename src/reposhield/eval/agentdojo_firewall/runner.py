@@ -8,6 +8,7 @@ from typing import Any
 from .tool_firewall import AgentDojoToolFirewall
 from .types import ToolCallContext
 
+
 def run_scenario(path: Path) -> dict[str, Any]:
     data = json.loads(path.read_text(encoding="utf-8"))
     firewall = AgentDojoToolFirewall()
@@ -33,6 +34,7 @@ def run_scenario(path: Path) -> dict[str, Any]:
         outputs.append({"tool": ctx.tool_name, "decision": decision.decision, "reason_codes": decision.reason_codes, "result": result})
     return {"outputs": outputs, "state": firewall.state.as_dict(), "audit_events": firewall.audit_events}
 
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("scenario", type=Path)
@@ -45,6 +47,7 @@ def main() -> None:
         args.output.write_text(text, encoding="utf-8")
     else:
         print(text)
+
 
 if __name__ == "__main__":
     main()

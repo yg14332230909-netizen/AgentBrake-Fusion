@@ -5,6 +5,8 @@ from typing import Any, Literal
 
 Risk = Literal["low", "medium", "high", "critical"]
 Decision = Literal["allow", "allow_in_sandbox", "sandbox_then_approval", "quarantine", "block"]
+AgentDojoDefenseMode = Literal["fair", "oracle_user", "oracle_full"]
+SanitizeMode = Literal["off", "label", "soft", "hard"]
 ToolGroup = Literal[
     "read_only",
     "private_read",
@@ -21,6 +23,7 @@ ToolGroup = Literal[
     "unknown",
 ]
 
+
 @dataclass(slots=True)
 class ToolSpec:
     name: str
@@ -36,6 +39,7 @@ class ToolSpec:
     decision_hints: list[str] = field(default_factory=list)
     description: str = ""
 
+
 @dataclass(slots=True)
 class ToolCallContext:
     suite: str
@@ -50,6 +54,8 @@ class ToolCallContext:
     run_id: str = "agentdojo_run"
     sample_id: str | None = None
     raw_tool_call: Any = None
+    defense_mode: AgentDojoDefenseMode = "fair"
+
 
 @dataclass(slots=True)
 class EvidenceBundle:
@@ -72,10 +78,15 @@ class EvidenceBundle:
     unknown_tool: bool
     sensitive_args_present: bool
     sensitive_args_not_in_user_task: bool
+    args_match_user_entity: bool
+    args_match_untrusted_entity: bool
+    args_match_private_entity: bool
+    entity_authorization_confidence: float
     tool_args_digest: str
     state_digest: str
     action_graph_id: str | None = None
     facts: dict[str, Any] = field(default_factory=dict)
+
 
 @dataclass(slots=True)
 class ConstraintDecision:
@@ -106,6 +117,7 @@ class ConstraintDecision:
         if self.network_scope == "deny" or self.data_scope == "no_private":
             return "allow_in_sandbox"
         return "allow"
+
 
 def _max_order(left: str, right: str, order: list[str]) -> str:
     return left if order.index(left) >= order.index(right) else right

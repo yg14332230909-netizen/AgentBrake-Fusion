@@ -38,9 +38,15 @@ def __getattr__(name: str):
     if name in {"RepoShieldAgentDojoPipeline", "build_reposhield_agentdojo_pipeline"}:
         from .pipeline_wrapper import RepoShieldAgentDojoPipeline, build_reposhield_agentdojo_pipeline
 
-        return {"RepoShieldAgentDojoPipeline": RepoShieldAgentDojoPipeline, "build_reposhield_agentdojo_pipeline": build_reposhield_agentdojo_pipeline}[name]
+        return {
+            "RepoShieldAgentDojoPipeline": RepoShieldAgentDojoPipeline,
+            "build_reposhield_agentdojo_pipeline": build_reposhield_agentdojo_pipeline,
+        }[name]
     raise AttributeError(name)
 
 
 def __dir__() -> list[str]:
-    return sorted(set(globals()) | {"RepoShieldAgentDojoPipeline", "build_reposhield_agentdojo_pipeline", "reposhield_agentdojo", "register_native_defense"})
+    return sorted(
+        set(globals())
+        | {"RepoShieldAgentDojoPipeline", "build_reposhield_agentdojo_pipeline", "reposhield_agentdojo", "register_native_defense"}
+    )

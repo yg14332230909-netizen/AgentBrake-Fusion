@@ -7,7 +7,6 @@ from agentdojo.task_suite.load_suites import get_suite
 
 from reposhield.eval.agentdojo.tool_taxonomy import coverage_report, load_agentdojo_taxonomy
 
-
 ROOT = Path(__file__).resolve().parents[1]
 REPORTS = ROOT / "reports"
 REPORTS.mkdir(parents=True, exist_ok=True)

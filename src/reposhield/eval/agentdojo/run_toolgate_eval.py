@@ -6,38 +6,33 @@ import argparse
 import json
 import os
 import time
-from dataclasses import asdict
 from functools import partial
 from pathlib import Path
 from typing import Any
 
-from openai import OpenAI
-from openai import APIConnectionError, APIStatusError, APITimeoutError, RateLimitError
-
 from agentdojo.agent_pipeline import AgentPipeline, PipelineConfig
 from agentdojo.agent_pipeline.agent_pipeline import TOOL_FILTER_PROMPT
 from agentdojo.agent_pipeline.basic_elements import InitQuery, SystemMessage
+from agentdojo.agent_pipeline.llms import openai_llm as agentdojo_openai_llm
 from agentdojo.agent_pipeline.llms.local_llm import LocalLLM
 from agentdojo.agent_pipeline.llms.openai_llm import OpenAILLM
-from agentdojo.agent_pipeline.llms import openai_llm as agentdojo_openai_llm
 from agentdojo.agent_pipeline.tool_execution import ToolsExecutionLoop, ToolsExecutor, tool_result_to_str
-from agentdojo.attacks.base_attacks import MODEL_NAMES
 from agentdojo.attacks.attack_registry import load_attack
-from agentdojo.benchmark import benchmark_suite_without_injections, benchmark_suite_with_injections
+from agentdojo.attacks.base_attacks import MODEL_NAMES
+from agentdojo.functions_runtime import FunctionCall
 from agentdojo.logging import OutputLogger, TraceLogger
 from agentdojo.task_suite.load_suites import get_suite
-from agentdojo.functions_runtime import FunctionCall
 from agentdojo.types import ChatUserMessage, get_text_content_as_str, text_content_block_from_string
+from openai import APIConnectionError, APIStatusError, APITimeoutError, OpenAI, RateLimitError
 
 from ...control_plane import RepoShieldControlPlane
 from ...eval.fast_mode import load_eval_fast_mode_config
+from ..agentdojo_firewall.runtime_wrapper import build_agentdojo_firewall_pipeline
+from ..agentdojo_firewall.tool_firewall import summarize_agentdojo_firewall_audit
 from .pipeline_wrapper import RepoShieldAgentDojoContext, build_reposhield_agentdojo_pipeline
 from .result_exporter import summarize_agentdojo_audit
 from .state_tracker import AgentDojoStateTracker
 from .tool_taxonomy import classify_agentdojo_tool
-from ..agentdojo_firewall.runtime_wrapper import build_agentdojo_firewall_pipeline
-from ..agentdojo_firewall.tool_firewall import summarize_agentdojo_firewall_audit
-
 
 TRANSIENT_STATUS_CODES = {408, 409, 429, 500, 502, 503, 504}
 _AUTHORIZED_TOOL_CACHE: dict[tuple[str, str], tuple[list[str], list[str]]] = {}
@@ -52,7 +47,9 @@ def _is_transient_llm_error(exc: BaseException) -> bool:
     return any(marker in text for marker in ["error code: 502", "error code: 503", "timeout", "rate limit"])
 
 
-def _run_agentdojo_task_with_retries(suite: Any, pipeline: AgentPipeline, user_task: Any, injection_task: Any, injections: dict[str, str]) -> tuple[bool, bool]:
+def _run_agentdojo_task_with_retries(
+    suite: Any, pipeline: AgentPipeline, user_task: Any, injection_task: Any, injections: dict[str, str]
+) -> tuple[bool, bool]:
     max_attempts = int(os.getenv("AGENTDOJO_LLM_RETRY_ATTEMPTS", "4"))
     delay_sec = float(os.getenv("AGENTDOJO_LLM_RETRY_INITIAL_SEC", "2"))
     last_exc: BaseException | None = None
@@ -138,12 +135,7 @@ def build_llm(model: str, model_id: str | None, tool_delimiter: str) -> tuple[Op
         or os.getenv("DEEPSEEK_API_BASE")
         or "https://api.openai.com/v1"
     )
-    api_key = (
-        os.getenv("REPOSHIELD_LLM_API_KEY")
-        or os.getenv("OPENAI_API_KEY")
-        or os.getenv("DEEPSEEK_API_KEY")
-        or "EMPTY"
-    )
+    api_key = os.getenv("REPOSHIELD_LLM_API_KEY") or os.getenv("OPENAI_API_KEY") or os.getenv("DEEPSEEK_API_KEY") or "EMPTY"
     client = OpenAI(api_key=api_key, base_url=base_url, timeout=float(os.getenv("REPOSHIELD_LLM_TIMEOUT", "300")))
     compat = "deepseek" in base_url.lower() or os.getenv("REPOSHIELD_OPENAI_COMPAT_SYSTEM_ROLE", "").lower() in {"1", "true", "yes"}
     llm = OpenAICompatibleLLM(client, model) if compat else OpenAILLM(client, model)
@@ -220,8 +212,7 @@ def _infer_authorized_tools_and_categories(suite_name: str, suite: Any, user_tas
     if cached is not None:
         return cached
     prompt = " ".join(
-        str(getattr(user_task, field, "") or "")
-        for field in ("PROMPT", "GOAL", "COMMENT", "DIFFICULTY", "GROUND_TRUTH_OUTPUT")
+        str(getattr(user_task, field, "") or "") for field in ("PROMPT", "GOAL", "COMMENT", "DIFFICULTY", "GROUND_TRUTH_OUTPUT")
     ).lower()
     allowed_tools: set[str] = set()
     allowed_categories: set[str] = set()

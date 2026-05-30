@@ -37,4 +37,3 @@ def test_control_plane_emits_performance_trace_and_skips_preflight_in_fast_mode(
     events = AuditLog(tmp_path / "audit.jsonl").read_events()
     assert any(event["event_type"] == "performance_trace" for event in events)
     assert not any(event["event_type"] == "exec_trace" for event in events)
-

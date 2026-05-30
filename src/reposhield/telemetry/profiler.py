@@ -27,4 +27,3 @@ class EvalProfiler:
             "type": "performance_trace",
             "timings_ms": {name: round(value, 3) for name, value in sorted(self.timings.items())},
         }
-

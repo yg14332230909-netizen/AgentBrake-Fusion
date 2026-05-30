@@ -51,7 +51,9 @@ class RepoShieldToolGate:
         for signature in context.get("attack_goal_signatures") or []:
             self.state_tracker.add_attack_goal(str(signature))
         action = self._to_action_ir(tool_call, context)
-        call_tracking = self.state_tracker.observe_tool_call(action.metadata["agentdojo"]["tool_name"], action.metadata["agentdojo"].get("tool_args"))
+        call_tracking = self.state_tracker.observe_tool_call(
+            action.metadata["agentdojo"]["tool_name"], action.metadata["agentdojo"].get("tool_args")
+        )
         action.metadata["agentdojo"].update(call_tracking)
         action.metadata["agentdojo"]["source_has_untrusted"] = bool(
             context.get("source_has_untrusted")
@@ -155,16 +157,27 @@ class RepoShieldToolGate:
                 "external_message_send": info.category == "external_message_send" or info.semantic_action == "send_external_message",
                 "financial_commit": info.category == "financial_commit" or info.semantic_action == "financial_transaction",
                 "booking_commit": info.category == "booking_commit" or info.semantic_action == "booking_commit",
-                "workspace_mutation": info.category in {"workspace_mutation", "file_mutation", "destructive_update", "privilege_or_membership_change"},
-                "destructive_update": info.category in {"destructive_update", "destructive_file_operation", "destructive_membership_update"},
+                "workspace_mutation": info.category
+                in {"workspace_mutation", "file_mutation", "destructive_update", "privilege_or_membership_change"},
+                "destructive_update": info.category
+                in {"destructive_update", "destructive_file_operation", "destructive_membership_update"},
                 "credential_change": info.category in {"account_security_change", "credential_change"},
                 "external_share": info.category == "external_file_share",
-                "workspace_acl_mutation": info.category in {"privilege_or_membership_change", "membership_expansion", "destructive_membership_update"},
+                "workspace_acl_mutation": info.category
+                in {"privilege_or_membership_change", "membership_expansion", "destructive_membership_update"},
                 "read_private_file": tool_name in {"read_file", "get_file_by_id", "search_files", "search_files_by_filename"},
-                "read_private_messages": tool_name in {"read_inbox", "get_unread_emails", "get_sent_emails", "get_received_emails", "get_draft_emails", "search_emails"},
+                "read_private_messages": tool_name
+                in {"read_inbox", "get_unread_emails", "get_sent_emails", "get_received_emails", "get_draft_emails", "search_emails"},
                 "read_private_user_info": tool_name in {"get_user_info", "get_user_information"},
                 "read_public_travel_data": info.category == "read_only" and task_context.get("suite") == "travel",
-                "read_untrusted_data": tool_name in {"get_webpage", "get_rating_reviews_for_hotels", "get_rating_reviews_for_restaurants", "get_rating_reviews_for_car_rental", "read_channel_messages"},
+                "read_untrusted_data": tool_name
+                in {
+                    "get_webpage",
+                    "get_rating_reviews_for_hotels",
+                    "get_rating_reviews_for_restaurants",
+                    "get_rating_reviews_for_car_rental",
+                    "read_channel_messages",
+                },
             }
         }
         return ActionIR(

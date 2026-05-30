@@ -41,4 +41,3 @@ def render_markdown(timings: dict[str, list[float]]) -> str:
 
 if __name__ == "__main__":
     main()
-

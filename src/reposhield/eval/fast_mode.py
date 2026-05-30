@@ -37,4 +37,3 @@ def load_eval_fast_mode_config() -> EvalFastModeConfig:
         policy_trace_mode=os.getenv("REPOSHIELD_POLICY_TRACE_MODE", "summary" if enabled else "full"),
         session_cache=env_flag("REPOSHIELD_SESSION_CACHE", default=enabled),
     )
-

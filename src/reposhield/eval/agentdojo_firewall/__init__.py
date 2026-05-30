@@ -3,9 +3,7 @@
 A benchmark-specific adapter that keeps RepoShield's core idea:
 ActionGraph -> multi-source evidence fusion -> deterministic ToolGate decision.
 """
-from .tool_firewall import AgentDojoToolFirewall, ToolExecutionDecision
-from .taxonomy import AgentDojoToolTaxonomy, ToolSpec
-from .state import AgentDojoStateTracker
+
 from .action_graph import AgentDojoActionGraphBuilder
 from .fusion import AgentDojoEvidenceFusion
 from .runtime_wrapper import (
@@ -15,6 +13,9 @@ from .runtime_wrapper import (
     build_agentdojo_firewall_pipeline,
     wrap_functions_runtime,
 )
+from .state import AgentDojoStateTracker
+from .taxonomy import AgentDojoToolTaxonomy, ToolSpec
+from .tool_firewall import AgentDojoToolFirewall, ToolExecutionDecision
 
 __all__ = [
     "AgentDojoToolFirewall",

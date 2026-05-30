@@ -22,7 +22,9 @@ class ReposhieldAgentDojoTask:
             self.metadata = {}
 
 
-def reposhield_agentdojo(*, repo_root: str | Path, suite: str, task_id: str | None = None, injection_task_id: str | None = None) -> dict[str, Any]:
+def reposhield_agentdojo(
+    *, repo_root: str | Path, suite: str, task_id: str | None = None, injection_task_id: str | None = None
+) -> dict[str, Any]:
     from ...control_plane import RepoShieldControlPlane
     from .tool_gate import RepoShieldToolGate
 

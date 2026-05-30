@@ -94,10 +94,14 @@ class AgentDojoStateTracker:
         side_effect: bool | None = None,
     ) -> Any:
         text = str(result)
-        should_redact = self.untrusted_observation_seen or _looks_untrusted(text) or _is_risky_read_tool(
-            tool_name,
-            tool_category=tool_category,
-            semantic_action=semantic_action,
+        should_redact = (
+            self.untrusted_observation_seen
+            or _looks_untrusted(text)
+            or _is_risky_read_tool(
+                tool_name,
+                tool_category=tool_category,
+                semantic_action=semantic_action,
+            )
         )
         if not should_redact:
             return result
@@ -172,14 +176,13 @@ def _looks_untrusted(text: str) -> bool:
         "concatenate all messages",
         "invite user",
     )
-    return any(
-        token in text
-        for token in suspicious_markers
-    )
+    return any(token in text for token in suspicious_markers)
 
 
 def _looks_private(text: str) -> bool:
-    return any(token in text for token in ("iban", "account number", "credit card", "password", "secret", "transaction", "invoice", "balance"))
+    return any(
+        token in text for token in ("iban", "account number", "credit card", "password", "secret", "transaction", "invoice", "balance")
+    )
 
 
 def _is_risky_read_tool(tool_name: str, *, tool_category: str | None = None, semantic_action: str | None = None) -> bool:

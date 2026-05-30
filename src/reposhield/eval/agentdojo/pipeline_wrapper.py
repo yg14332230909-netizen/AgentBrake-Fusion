@@ -9,12 +9,16 @@ from typing import Any, Callable
 from agentdojo.agent_pipeline import AgentPipeline
 from agentdojo.agent_pipeline.base_pipeline_element import BasePipelineElement
 from agentdojo.agent_pipeline.basic_elements import InitQuery
-from agentdojo.agent_pipeline.tool_execution import EMPTY_FUNCTION_NAME, ToolsExecutionLoop, is_string_list, text_content_block_from_string, tool_result_to_str
+from agentdojo.agent_pipeline.tool_execution import (
+    EMPTY_FUNCTION_NAME,
+    ToolsExecutionLoop,
+    is_string_list,
+    text_content_block_from_string,
+    tool_result_to_str,
+)
 from agentdojo.functions_runtime import EmptyEnv, Env, FunctionsRuntime
-from agentdojo.logging import Logger
 from agentdojo.types import ChatMessage, ChatToolResultMessage
 
-from ...models import ActionIR, new_id
 from .state_tracker import AgentDojoStateTracker
 from .tool_gate import RepoShieldToolGate
 

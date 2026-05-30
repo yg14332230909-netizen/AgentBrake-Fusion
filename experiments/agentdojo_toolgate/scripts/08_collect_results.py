@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import json
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
 from typing import Any
-
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORTS = ROOT / "reports"
@@ -161,7 +160,12 @@ def render_summary(
     invariants: dict[str, dict[str, Any]],
 ) -> str:
     out = ["# AgentDojo ToolGate Summary", ""]
-    out += ["## Main Results", "", "| Method | Utility Under Attack | Security | Targeted ASR | 总耗时(min) | 说明 |", "|---|---:|---:|---:|---:|---|"]
+    out += [
+        "## Main Results",
+        "",
+        "| Method | Utility Under Attack | Security | Targeted ASR | 总耗时(min) | 说明 |",
+        "|---|---:|---:|---:|---:|---|",
+    ]
     for row in rows:
         if row.get("status") == "Not implemented":
             out.append(f"| {row['method']} | - | - | - | - | Not implemented |")
@@ -177,7 +181,13 @@ def render_summary(
             out.append(
                 f"| {row['method']} | {fmt(row.get('security'))} | {fmt(row.get('targeted_asr'))} | {fmt(row.get('utility_under_attack'))} | {row.get('run_name')} |"
             )
-    out += ["", "## Tool Coverage", "", "| Run | ToolGate Calls | Unknown Rate | Registered Rate | Policy p95(ms) | Audit p95(ms) |", "|---|---:|---:|---:|---:|---:|"]
+    out += [
+        "",
+        "## Tool Coverage",
+        "",
+        "| Run | ToolGate Calls | Unknown Rate | Registered Rate | Policy p95(ms) | Audit p95(ms) |",
+        "|---|---:|---:|---:|---:|---:|",
+    ]
     for row in audit_rows:
         out.append(
             f"| {row['run_name']} | {fmt(row.get('tool_gate_calls'))} | {fmt(row.get('unknown_tool_rate'))} | {fmt(row.get('registered_tool_rate'))} | {fmt(row.get('policy_p95_ms'))} | {fmt(row.get('audit_p95_ms'))} |"
@@ -196,7 +206,9 @@ def render_audit_check(runs: list[dict[str, Any]]) -> str:
         audit = run.get("reposhield_audit_summary")
         if not audit:
             continue
-        lines.append(f"- {run.get('run_name')}: checked={audit.get('reposhield_checked_calls')} blocks={audit.get('reposhield_blocks')} unknown_rate={fmt(audit.get('reposhield_unknown_tool_rate'))}")
+        lines.append(
+            f"- {run.get('run_name')}: checked={audit.get('reposhield_checked_calls')} blocks={audit.get('reposhield_blocks')} unknown_rate={fmt(audit.get('reposhield_unknown_tool_rate'))}"
+        )
     if len(lines) == 2:
         lines.append("- No RepoShield audit logs were found.")
     return "\n".join(lines) + "\n"

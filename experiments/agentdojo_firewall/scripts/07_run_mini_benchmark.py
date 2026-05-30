@@ -6,7 +6,6 @@ from pathlib import Path
 
 from reposhield.eval.agentdojo.run_toolgate_eval import run_suite
 
-
 ROOT = Path(__file__).resolve().parents[3]
 REPORT_DIR = ROOT / "experiments" / "agentdojo_firewall" / "reports"
 RUN_DIR = REPORT_DIR / "runs"

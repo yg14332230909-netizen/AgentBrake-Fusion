@@ -46,6 +46,7 @@ def load_agentdojo_taxonomy() -> dict[str, dict[str, Any]]:
             out[str(alias).lower()] = {**normalized, "alias_of": str(name)}
     return out
 
+
 def coverage_report(known_tools: list[str]) -> dict[str, Any]:
     taxonomy = load_agentdojo_taxonomy()
     normalized = {tool.strip().lower() for tool in known_tools if tool}
@@ -145,7 +146,11 @@ def _sensitive_arg_hints(args: dict[str, Any]) -> list[str]:
         key_low = str(key).lower()
         if key_low in {"password", "token", "secret", "apikey", "api_key", "amount", "recipient", "email", "message", "body"}:
             hints.append(key_low)
-        if isinstance(value, str) and len(value) > 0 and any(token in value.lower() for token in ("attacker", "secret", "ignore previous", "transfer")):
+        if (
+            isinstance(value, str)
+            and len(value) > 0
+            and any(token in value.lower() for token in ("attacker", "secret", "ignore previous", "transfer"))
+        ):
             hints.append(key_low)
     return sorted(set(hints))
 

@@ -6,7 +6,15 @@ from typing import Any, Callable
 from .tool_firewall import AgentDojoToolFirewall
 from .types import ToolCallContext
 
-def wrap_tool_function(*, firewall: AgentDojoToolFirewall, suite: str, func: Callable[..., Any], tool_name: str | None = None, task_context: dict[str, Any] | None = None) -> Callable[..., Any]:
+
+def wrap_tool_function(
+    *,
+    firewall: AgentDojoToolFirewall,
+    suite: str,
+    func: Callable[..., Any],
+    tool_name: str | None = None,
+    task_context: dict[str, Any] | None = None,
+) -> Callable[..., Any]:
     name = tool_name or getattr(func, "__name__", "unknown_tool")
     base = dict(task_context or {})
 
@@ -37,6 +45,7 @@ def wrap_tool_function(*, firewall: AgentDojoToolFirewall, suite: str, func: Cal
 
     return guarded
 
+
 class RuntimeToolCallAdapter:
     def __init__(self, runtime: Any, firewall: AgentDojoToolFirewall, *, suite: str, task_context: dict[str, Any] | None = None) -> None:
         self.runtime = runtime
@@ -60,7 +69,17 @@ class RuntimeToolCallAdapter:
         tool_args = dict(kwargs)
         if args:
             tool_args["_positional_args"] = args
-        context = ToolCallContext(suite=self.suite, tool_name=str(tool_name), tool_args=tool_args, user_task=str(self.task_context.get("user_task", "")), allowed_tools=set(self.task_context.get("allowed_tools", [])), allowed_groups=set(self.task_context.get("allowed_groups", [])), attack_goal_signatures=list(self.task_context.get("attack_goal_signatures", [])), run_id=str(self.task_context.get("run_id", "agentdojo_run")), sample_id=self.task_context.get("sample_id"))
+        context = ToolCallContext(
+            suite=self.suite,
+            tool_name=str(tool_name),
+            tool_args=tool_args,
+            user_task=str(self.task_context.get("user_task", "")),
+            allowed_tools=set(self.task_context.get("allowed_tools", [])),
+            allowed_groups=set(self.task_context.get("allowed_groups", [])),
+            attack_goal_signatures=list(self.task_context.get("attack_goal_signatures", [])),
+            run_id=str(self.task_context.get("run_id", "agentdojo_run")),
+            sample_id=self.task_context.get("sample_id"),
+        )
         decision = self.firewall.guard_before_tool(context)
         if not decision.execute:
             return decision.safe_result

@@ -270,7 +270,9 @@ class RepoShieldControlPlane:
 
         if state is not None:
             with profiler.span("session.persist_ms"):
-                updated = self.session_states.update(action, decision, trace, secret_event, run_id=self.run_id, task_id=self.contract.task_id)
+                updated = self.session_states.update(
+                    action, decision, trace, secret_event, run_id=self.run_id, task_id=self.contract.task_id
+                )
             self.audit.append(
                 "session_state_update",
                 session_state_payload(updated),

@@ -72,6 +72,7 @@ FailureKind = Literal[
     "mixed_failure",
     "model_or_no_tool_failure",
     "runtime_or_log_failure",
+    "benchmark_edge_case",
 ]
 
 META_INSTRUCTION_PATTERNS = [
@@ -780,10 +781,11 @@ def generate_candidate_patches(samples: list[SampleRecord], *, mode: DefenseMode
                     "all": [
                         "agentdojo.tool_group in {destructive_update, credential_change, membership_mutation}",
                         "agentdojo.task_authorized == false",
+                        "agentdojo.untrusted_seen OR agentdojo.sensitive_args_not_in_user_task OR graph.has_injection_to_side_effect_edge",
                     ]
                 },
                 decision="block",
-                evidence_requirements=["tool_group", "task_authorized"],
+                evidence_requirements=["tool_group", "task_authorized", "untrusted_or_mismatched_args_or_graph_edge"],
                 source_failure_ids=failure_ids_by_key["state_mutation"],
                 expected_effect={"security": "increase", "utility_risk": "low if authorization is accurate"},
                 risk_notes=["Verify benign tasks that explicitly delete/cancel/remove still pass."],
@@ -911,6 +913,7 @@ def write_iteration_outputs(
         for sample in failures:
             handle.write(json.dumps(sample.as_failure_case(), ensure_ascii=False) + "\n")
     write_candidate_files(out_dir, patches)
+    (out_dir / "validation_plan.md").write_text(render_validation_plan(summary), encoding="utf-8")
     (out_dir / "iteration_report.md").write_text(render_iteration_report(summary), encoding="utf-8")
     (out_dir / "README_NEXT_STEPS.md").write_text(render_next_steps(), encoding="utf-8")
 
@@ -961,6 +964,8 @@ def render_iteration_report(summary: dict[str, Any]) -> str:
     lines.append("")
     lines.append("These are **proposals only**. They must pass regression and holdout validation before being merged.")
     lines.append("")
+    lines.append("本迭代器不会自动修改核心防御规则，只生成候选补丁。正式合并前必须经过 validation set 和 holdout set 检查。")
+    lines.append("")
     lines.append("| Patch | Type | Decision | Failures |")
     lines.append("|---|---|---|---:|")
     for patch in summary.get("candidate_patches", []):
@@ -978,6 +983,36 @@ def render_iteration_report(summary: dict[str, Any]) -> str:
     for key, value in summary.get("guardrails", {}).items():
         lines.append(f"- **{key}**: {value}")
     return "\n".join(lines) + "\n"
+
+
+def render_validation_plan(summary: dict[str, Any]) -> str:
+    lines = [
+        "# Validation Plan",
+        "",
+        "This iterator does not modify `fusion.py` or other core defense files.",
+        "",
+        "本迭代器不会自动修改核心防御规则，只生成候选补丁。正式合并前必须经过 validation set 和 holdout set 检查。",
+        "",
+        "## Splits",
+        "",
+    ]
+    split = summary.get("split_plan", {})
+    for name in ["train", "validation", "holdout"]:
+        lines.append(f"- {name}: {len(split.get(name, []))} failures")
+    lines.extend(
+        [
+            "",
+            "## Required Checks",
+            "",
+            "- Apply accepted candidates manually on a branch.",
+            "- Run validation set and reject regressions.",
+            "- Run holdout set only after selecting candidates.",
+            "- Run benign utility and latency regression gates.",
+            "- Reject any candidate that relies on InjectionTask.GOAL/PROMPT in fair mode.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
 
 
 def render_next_steps() -> str:
