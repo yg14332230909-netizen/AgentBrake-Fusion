@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 from collections import Counter
@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[3]
-REPORT_DIR = ROOT / "experiments" / "agentdojo_firewall" / "reports"
-LOG_DIR = ROOT / "experiments" / "agentdojo_firewall" / "logs"
+REPORT_DIR = ROOT / "experiments" / "agentdojo" / "reports"
+LOG_DIR = ROOT / "experiments" / "agentdojo" / "logs"
 
 
 def main() -> None:
@@ -66,7 +66,7 @@ def render_main_results(runs: list[dict[str, Any]]) -> list[str]:
     lines = [
         "## Table 1: AgentDojo Main Results",
         "",
-        "| Method | Utility Under Attack ↑ | Security ↑ | Targeted ASR ↓ | Total Time | Notes |",
+        "| Method | Utility Under Attack 鈫?| Security 鈫?| Targeted ASR 鈫?| Total Time | Notes |",
         "|---|---:|---:|---:|---:|---|",
     ]
     labels = {
@@ -122,7 +122,7 @@ def render_decision_distribution(runs: list[dict[str, Any]]) -> list[str]:
     lines = [
         "## Table 3: ToolGate Decision Distribution",
         "",
-        "| 方法 | allow | block | safe_blocked_result | unknown_tool | tool_gate_decisions |",
+        "| 鏂规硶 | allow | block | safe_blocked_result | unknown_tool | tool_gate_decisions |",
         "|---|---:|---:|---:|---:|---:|",
     ]
     for run in runs:
@@ -155,7 +155,7 @@ def render_performance(runs: list[dict[str, Any]]) -> list[str]:
     lines = [
         "## Table 5: Performance",
         "",
-        "| 方法 | runtime_min | avg_sample_sec | policy_p50_ms | policy_p95_ms |",
+        "| 鏂规硶 | runtime_min | avg_sample_sec | policy_p50_ms | policy_p95_ms |",
         "|---|---:|---:|---:|---:|",
     ]
     for run in runs:
@@ -178,3 +178,6 @@ def load_json(path: Path) -> Any:
 
 if __name__ == "__main__":
     main()
+
+
+

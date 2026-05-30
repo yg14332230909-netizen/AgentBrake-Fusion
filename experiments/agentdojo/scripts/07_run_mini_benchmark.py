@@ -1,18 +1,18 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
 from pathlib import Path
 
-from reposhield.eval.agentdojo.run_toolgate_eval import run_suite
+from reposhield.eval.agentdojo.runner.run_tool_firewall_eval import run_suite
 
 ROOT = Path(__file__).resolve().parents[3]
-REPORT_DIR = ROOT / "experiments" / "agentdojo_firewall" / "reports"
+REPORT_DIR = ROOT / "experiments" / "agentdojo" / "reports"
 RUN_DIR = REPORT_DIR / "runs"
 
 
 def run_suite_limit(*, suite: str, model: str, attack: str, limit: int) -> dict[str, object]:
-    logdir = ROOT / "experiments" / "agentdojo_firewall" / "logs" / f"mini_{suite}"
+    logdir = ROOT / "experiments" / "agentdojo" / "logs" / f"mini_{suite}"
     return run_suite(
         suite,
         model,
@@ -70,3 +70,6 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+

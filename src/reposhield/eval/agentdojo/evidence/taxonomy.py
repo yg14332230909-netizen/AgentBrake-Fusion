@@ -1,4 +1,4 @@
-"""AgentDojo tool taxonomy.
+﻿"""AgentDojo tool taxonomy.
 
 This mapping is based on AgentDojo default-suite tools.  It classifies tools by
 security effect, not by attack name.  This is important: the firewall should not
@@ -11,7 +11,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from .types import ToolGroup, ToolSpec
+from ..compat.types import ToolGroup, ToolSpec
 
 try:
     import yaml
@@ -338,3 +338,5 @@ def infer_unknown_tool(tool_name: str) -> ToolSpec:
             description="inferred side-effect unknown tool",
         )
     return spec(tool_name, "unknown_tool", "unknown", "medium", description="unclassified AgentDojo tool")
+
+

@@ -1,4 +1,4 @@
-"""Track AgentDojo state across tool calls."""
+﻿"""Track AgentDojo state across tool calls."""
 
 from __future__ import annotations
 
@@ -264,3 +264,4 @@ _RISKY_READ_TOOLS = {
     "get_received_emails",
     "get_draft_emails",
 }
+

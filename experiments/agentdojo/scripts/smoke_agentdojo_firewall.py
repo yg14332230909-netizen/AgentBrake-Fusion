@@ -1,7 +1,7 @@
-import json
+﻿import json
 from pathlib import Path
 
-from reposhield.eval.agentdojo_firewall.runner import run_scenario
+from reposhield.eval.agentdojo.runner.run_scenario import run_scenario
 
 SCENARIOS = {
     "authorized_travel_review": {
@@ -44,7 +44,7 @@ SCENARIOS = {
 
 
 def main():
-    out_dir = Path("experiments/agentdojo_firewall/reports/smoke")
+    out_dir = Path("experiments/agentdojo/reports/smoke")
     out_dir.mkdir(parents=True, exist_ok=True)
     summary = {}
     for name, scenario in SCENARIOS.items():
@@ -58,3 +58,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+

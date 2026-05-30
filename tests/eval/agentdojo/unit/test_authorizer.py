@@ -1,7 +1,7 @@
-from reposhield.eval.agentdojo_firewall.entity_extractor import extract_entities
-from reposhield.eval.agentdojo_firewall.task_authorizer import authorize_tool
-from reposhield.eval.agentdojo_firewall.taxonomy import AgentDojoToolTaxonomy
-from reposhield.eval.agentdojo_firewall.types import ToolCallContext
+﻿from reposhield.eval.agentdojo.evidence.entity_extractor import extract_entities
+from reposhield.eval.agentdojo.evidence.task_authorizer import authorize_tool
+from reposhield.eval.agentdojo.evidence.taxonomy import AgentDojoToolTaxonomy
+from reposhield.eval.agentdojo.compat.types import ToolCallContext
 
 
 def test_reserve_hotel_matching_user_entity_authorized():
@@ -124,3 +124,5 @@ def test_send_direct_message_mismatched_recipient_is_not_authorized():
         user_task="Send Alice a direct message with the summary.",
     )
     assert authorize_tool(ctx, spec).task_authorized is False
+
+

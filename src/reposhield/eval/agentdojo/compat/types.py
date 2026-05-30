@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Literal
@@ -121,3 +121,4 @@ class ConstraintDecision:
 
 def _max_order(left: str, right: str, order: list[str]) -> str:
     return left if order.index(left) >= order.index(right) else right
+

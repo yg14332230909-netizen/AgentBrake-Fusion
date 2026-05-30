@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from reposhield.eval.agentdojo.fact_adapter import agentdojo_facts_from_action
 from reposhield.models import ActionIR
@@ -75,3 +75,5 @@ def test_agentdojo_facts_emit_message_send_and_private_data_flags():
     assert values[("agentdojo", "external_message_send")] is True
     assert values[("agentdojo", "private_data_seen")] is True
     assert values[("agentdojo", "task_authorized_tool")] is False
+
+

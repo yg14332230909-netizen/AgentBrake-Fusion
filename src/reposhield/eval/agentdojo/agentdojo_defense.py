@@ -1,10 +1,10 @@
-"""AgentDojo defense registration and compatibility helpers."""
+﻿"""AgentDojo defense registration and compatibility helpers."""
 
 from __future__ import annotations
 
 from typing import Any
 
-from .inspect_adapter import reposhield_agentdojo
+from .adapters.inspect_adapter import reposhield_agentdojo
 
 
 def register_native_defense() -> dict[str, Any]:
@@ -22,3 +22,4 @@ def get_defense_manifest() -> dict[str, Any]:
         "entrypoint": "reposhield.eval.agentdojo.agentdojo_defense:register_native_defense",
         "mode": "pipeline_wrapper",
     }
+

@@ -1,4 +1,4 @@
-"""AgentDojo pipeline wrapper that inserts RepoShield before tool execution."""
+﻿"""AgentDojo pipeline wrapper that inserts RepoShield before tool execution."""
 
 from __future__ import annotations
 
@@ -19,11 +19,11 @@ from agentdojo.agent_pipeline.tool_execution import (
 from agentdojo.functions_runtime import EmptyEnv, Env, FunctionsRuntime
 from agentdojo.types import ChatMessage, ChatToolResultMessage
 
-from .state_tracker import AgentDojoStateTracker
-from .tool_gate import RepoShieldToolGate
+from ..state_tracker import AgentDojoStateTracker
+from ..tool_gate import RepoShieldToolGate
 
 if False:  # pragma: no cover - typing only
-    from ...control_plane import RepoShieldControlPlane
+    from ....control_plane import RepoShieldControlPlane
 
 
 @dataclass
@@ -236,3 +236,5 @@ def build_reposhield_agentdojo_pipeline(
         tool_output_formatter=tool_output_formatter,
         max_iters=max_iters,
     )
+
+

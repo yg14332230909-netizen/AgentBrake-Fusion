@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from reposhield.eval.agentdojo.tool_gate import taxonomy_coverage_summary
 from reposhield.eval.agentdojo.tool_taxonomy import load_agentdojo_taxonomy
@@ -19,3 +19,5 @@ def test_agentdojo_taxonomy_covers_official_tool_subset():
     report = taxonomy_coverage_summary(tools)
     assert report["registered_tool_rate"] == 1.0
     assert all(tool in load_agentdojo_taxonomy() for tool in tools)
+
+

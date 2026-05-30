@@ -1,11 +1,11 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from typing import Any
 
-from .models_compat import sha256_text
+from ..compat.models_compat import sha256_text
 from .state import AgentDojoStateTracker, extract_targets
 from .task_authorizer import authorize_tool
-from .types import EvidenceBundle, ToolCallContext, ToolSpec
+from ..compat.types import EvidenceBundle, ToolCallContext, ToolSpec
 
 SENSITIVE_ARG_KEYS = {"password", "token", "secret", "iban", "account", "recipient", "to", "email", "message", "body", "file_id", "amount"}
 
@@ -110,3 +110,5 @@ class AgentDojoEvidenceBuilder:
         if spec.group != "booking_commit":
             return set()
         return {target for target in extract_targets(str(value)) if target}
+
+

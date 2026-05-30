@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from functools import wraps
 from typing import Any, Callable
@@ -86,3 +86,4 @@ class RuntimeToolCallAdapter:
         method = getattr(self.runtime, method_name)
         raw = method(tool_name, *args, **kwargs)
         return self.firewall.observe_after_tool(context, raw)
+

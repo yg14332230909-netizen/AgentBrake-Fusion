@@ -1,5 +1,5 @@
-from reposhield.eval.agentdojo_firewall import AgentDojoToolFirewall
-from reposhield.eval.agentdojo_firewall.types import ToolCallContext
+﻿from reposhield.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
+from reposhield.eval.agentdojo.compat.types import ToolCallContext
 
 
 def test_block_prevents_original_tool_execution():
@@ -29,3 +29,5 @@ def test_allow_executes_original_tool_and_updates_state():
     assert decision.execute is True
     assert "file.txt" in result
     assert fw.audit_events
+
+

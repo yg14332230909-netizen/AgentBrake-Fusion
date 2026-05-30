@@ -1,4 +1,4 @@
-"""Non-oracle task authorization for AgentDojo firewall decisions."""
+﻿"""Non-oracle task authorization for AgentDojo firewall decisions."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from .entity_extractor import EntitySet, extract_entities
-from .types import ToolCallContext, ToolSpec
+from ..compat.types import ToolCallContext, ToolSpec
 
 KEYWORDS_BY_GROUP = {
     "financial_commit": ("pay", "bill", "transfer", "send money", "payment", "refund", "schedule transaction"),
@@ -234,3 +234,5 @@ def _calendar_target_authorized(user_task: str, user_entities: EntitySet, arg_en
     if any(word in user_task.lower() for word in ("remind", "reminder", "calendar", "event", "schedule")):
         return True
     return False
+
+

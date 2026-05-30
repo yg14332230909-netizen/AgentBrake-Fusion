@@ -1,4 +1,4 @@
-"""Convert AgentDojo metadata into PolicyGraph facts."""
+﻿"""Convert AgentDojo metadata into PolicyGraph facts."""
 
 from __future__ import annotations
 
@@ -102,3 +102,4 @@ def _tool_args_sensitive(value: Any) -> bool:
     sensitive_keys = {"password", "token", "secret", "ssn", "account", "routing", "card", "email", "recipient", "message", "body"}
     text = " ".join(f"{k}={v}" for k, v in value.items()).lower()
     return any(key in text for key in sensitive_keys)
+

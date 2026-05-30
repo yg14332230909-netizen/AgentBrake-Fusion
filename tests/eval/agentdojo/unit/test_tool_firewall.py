@@ -1,7 +1,9 @@
-from reposhield.eval.agentdojo_firewall import AgentDojoGuardedFunctionsRuntime, AgentDojoToolFirewall, AgentDojoToolTaxonomy
-from reposhield.eval.agentdojo_firewall.runtime_wrapper import AgentDojoFirewallTaskContext
-from reposhield.eval.agentdojo_firewall.state import AgentDojoStateTracker
-from reposhield.eval.agentdojo_firewall.types import ToolCallContext
+﻿from reposhield.eval.agentdojo.gate.runtime_wrapper import AgentDojoGuardedFunctionsRuntime
+from reposhield.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
+from reposhield.eval.agentdojo.evidence.taxonomy import AgentDojoToolTaxonomy
+from reposhield.eval.agentdojo.gate.runtime_wrapper import AgentDojoFirewallTaskContext
+from reposhield.eval.agentdojo.evidence.state import AgentDojoStateTracker
+from reposhield.eval.agentdojo.compat.types import ToolCallContext
 
 
 def test_taxonomy_real_agentdojo_tool_names():
@@ -190,3 +192,5 @@ def test_injection_block_only_adds_targets_from_injection_block():
     )
     assert "riverside view hotel" in {value.lower() for value in state.suspicious_targets}
     assert "city hub" not in {value.lower() for value in state.suspicious_targets}
+
+

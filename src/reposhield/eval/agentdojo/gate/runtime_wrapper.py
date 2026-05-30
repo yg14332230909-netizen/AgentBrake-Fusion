@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Callable, Mapping
@@ -23,8 +23,8 @@ except Exception:  # pragma: no cover - keep package importable without agentdoj
     Env = Any  # type: ignore[assignment]
     FunctionsRuntime = Any  # type: ignore[assignment]
 
-from .tool_firewall import AgentDojoToolFirewall
-from .types import AgentDojoDefenseMode, SanitizeMode, ToolCallContext
+from ..gate.tool_firewall import AgentDojoToolFirewall
+from ..compat.types import AgentDojoDefenseMode, SanitizeMode, ToolCallContext
 
 
 @dataclass(slots=True)
@@ -286,3 +286,5 @@ def build_agentdojo_firewall_pipeline(
         default_suite=default_suite,
         sanitize_mode=sanitize_mode,
     )
+
+

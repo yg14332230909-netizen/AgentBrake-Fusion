@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -13,19 +13,19 @@ from agentdojo.logging import OutputLogger, TraceLogger
 from agentdojo.task_suite.load_suites import get_suite
 
 from reposhield.eval.agentdojo.pipeline_wrapper import RepoShieldAgentDojoContext
-from reposhield.eval.agentdojo.run_toolgate_eval import (
+from reposhield.eval.agentdojo.runner.run_tool_firewall_eval import (
     _infer_authorized_tools_and_categories,
     _run_agentdojo_task_with_retries,
     build_llm,
     build_pipeline,
 )
-from reposhield.eval.agentdojo_firewall.tool_firewall import summarize_agentdojo_firewall_audit
+from reposhield.eval.agentdojo.gate.tool_firewall import summarize_agentdojo_firewall_audit
 
 ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_ITERATION_JSON = (
-    ROOT / "experiments" / "agentdojo_firewall" / "reports" / "iterations" / "check_iterator" / "iteration_summary.json"
+    ROOT / "experiments" / "agentdojo" / "reports" / "iterations" / "check_iterator" / "iteration_summary.json"
 )
-DEFAULT_OUT_DIR = ROOT / "experiments" / "agentdojo_firewall" / "reports" / "validation"
+DEFAULT_OUT_DIR = ROOT / "experiments" / "agentdojo" / "reports" / "validation"
 
 
 @dataclass(slots=True)
@@ -141,7 +141,7 @@ def run_specs(
             pipeline.firewall.sanitize_mode = sanitize_mode
             pipeline.firewall.state.sanitize_mode = sanitize_mode
         attack_obj = load_attack(attack, suite, pipeline)
-        with OutputLogger(str(ROOT / "experiments" / "agentdojo_firewall" / "logs" / f"validation_{suite_name}_{mode}")):
+        with OutputLogger(str(ROOT / "experiments" / "agentdojo" / "logs" / f"validation_{suite_name}_{mode}")):
             for spec in suite_specs:
                 user_task = suite.get_user_task_by_id(spec.user_task_id)
                 injection_task = suite.get_injection_task_by_id(spec.injection_task_id)
@@ -177,7 +177,7 @@ def run_specs(
                     )
                 before = len(getattr(getattr(pipeline, "firewall", None), "audit_events", []) or [])
                 with TraceLogger(
-                    delegate=OutputLogger(str(ROOT / "experiments" / "agentdojo_firewall" / "logs" / f"validation_{suite_name}_{mode}")),
+                    delegate=OutputLogger(str(ROOT / "experiments" / "agentdojo" / "logs" / f"validation_{suite_name}_{mode}")),
                     suite_name=suite.name,
                     user_task_id=spec.user_task_id,
                     injection_task_id=spec.injection_task_id,
@@ -269,3 +269,6 @@ def _avg_bool(values: list[bool]) -> float:
 
 if __name__ == "__main__":
     main()
+
+
+

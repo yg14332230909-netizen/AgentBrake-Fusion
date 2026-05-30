@@ -1,4 +1,4 @@
-"""AgentDojo state tracker and output sanitizer."""
+﻿"""AgentDojo state tracker and output sanitizer."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from .entity_extractor import EntitySet, extract_entities
-from .types import SanitizeMode, ToolSpec
+from ..compat.types import SanitizeMode, ToolSpec
 
 INJECTION_MARKERS = (
     "important instructions",
@@ -342,3 +342,5 @@ def _hash_text(text: str) -> str:
 
 def _event_id(kind: str, tool_name: str) -> str:
     return _hash_text(f"{kind}:{tool_name}:{id(object())}")[:24]
+
+

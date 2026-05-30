@@ -15,6 +15,16 @@ dependencies = []
 test = ["pytest>=8", "PyYAML>=6", "ruff>=0.8"]
 yaml = ["PyYAML>=6"]
 shell-ast = ["bashlex>=0.18"]
+agentdojo = [
+  "agentdojo>=0.1.35,<0.2",
+  "openai>=1.0",
+  "PyYAML>=6",
+]
+eval = [
+  "agentdojo>=0.1.35,<0.2",
+  "openai>=1.0",
+  "PyYAML>=6",
+]
 
 [project.scripts]
 reposhield = "reposhield.cli:main"
@@ -24,12 +34,17 @@ peposhield = "reposhield.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-reposhield = ["integration/profiles/*.yaml"]
+reposhield = ["integration/profiles/*.yaml", "eval/agentdojo/evidence/*.yaml"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
 addopts = "-q --basetemp=.pytest_tmp"
+markers = [
+  "agentdojo: AgentDojo evaluation tests",
+  "external: requires real external API or installed benchmark package",
+  "slow: slow benchmark-style tests",
+]
 
 [tool.ruff]
 line-length = 140

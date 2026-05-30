@@ -1,9 +1,9 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any
 
-from .types import ConstraintDecision, Decision, EvidenceBundle
+from ..compat.types import ConstraintDecision, Decision, EvidenceBundle
 
 
 @dataclass(slots=True)
@@ -128,3 +128,5 @@ def dedupe_hits(hits: list[RuleHit]) -> list[RuleHit]:
         seen.add(hit.rule_id)
         out.append(hit)
     return out
+
+

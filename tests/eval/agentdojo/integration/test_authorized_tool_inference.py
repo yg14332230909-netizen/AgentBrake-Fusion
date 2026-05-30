@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import pytest
 
@@ -6,7 +6,7 @@ pytest.importorskip("agentdojo")
 
 from agentdojo.task_suite.load_suites import get_suite
 
-from reposhield.eval.agentdojo.run_toolgate_eval import _infer_authorized_tools_and_categories
+from reposhield.eval.agentdojo.runner.run_tool_firewall_eval import _infer_authorized_tools_and_categories
 
 
 def test_infer_authorized_tools_uses_agentdojo_ground_truth():
@@ -29,3 +29,5 @@ def test_infer_authorized_tools_falls_back_to_prompt_heuristics():
 
     assert "reserve_hotel" in tools
     assert "booking_commit" in categories
+
+

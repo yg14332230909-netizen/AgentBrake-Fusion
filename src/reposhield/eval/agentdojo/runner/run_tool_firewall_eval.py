@@ -1,4 +1,4 @@
-"""Run AgentDojo evaluations with RepoShield ToolGate."""
+﻿"""Run AgentDojo evaluations with RepoShield ToolGate."""
 
 from __future__ import annotations
 
@@ -25,14 +25,14 @@ from agentdojo.task_suite.load_suites import get_suite
 from agentdojo.types import ChatUserMessage, get_text_content_as_str, text_content_block_from_string
 from openai import APIConnectionError, APIStatusError, APITimeoutError, OpenAI, RateLimitError
 
-from ...control_plane import RepoShieldControlPlane
-from ...eval.fast_mode import load_eval_fast_mode_config
-from ..agentdojo_firewall.runtime_wrapper import build_agentdojo_firewall_pipeline
-from ..agentdojo_firewall.tool_firewall import summarize_agentdojo_firewall_audit
-from .pipeline_wrapper import RepoShieldAgentDojoContext, build_reposhield_agentdojo_pipeline
+from ....control_plane import RepoShieldControlPlane
+from ...fast_mode import load_eval_fast_mode_config
+from ..gate.runtime_wrapper import build_agentdojo_firewall_pipeline
+from ..gate.tool_firewall import summarize_agentdojo_firewall_audit
+from ..adapters.pipeline_wrapper import RepoShieldAgentDojoContext, build_reposhield_agentdojo_pipeline
 from .result_exporter import summarize_agentdojo_audit
-from .state_tracker import AgentDojoStateTracker
-from .tool_taxonomy import classify_agentdojo_tool
+from ..state_tracker import AgentDojoStateTracker
+from ..tool_taxonomy import classify_agentdojo_tool
 
 TRANSIENT_STATUS_CODES = {408, 409, 429, 500, 502, 503, 504}
 _AUTHORIZED_TOOL_CACHE: dict[tuple[str, str], tuple[list[str], list[str]]] = {}
@@ -573,3 +573,6 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+

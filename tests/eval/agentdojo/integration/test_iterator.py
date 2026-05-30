@@ -1,9 +1,9 @@
-import importlib.util
+﻿import importlib.util
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-ITERATOR_PATH = ROOT / "experiments" / "agentdojo_firewall" / "scripts" / "08_iterate_firewall.py"
+ROOT = Path(__file__).resolve().parents[4]
+ITERATOR_PATH = ROOT / "experiments" / "agentdojo" / "scripts" / "08_iterate_firewall.py"
 
 
 def load_iterator():
@@ -54,3 +54,5 @@ def test_iterator_does_not_modify_fusion_py(tmp_path):
     assert summary["candidate_patch_count"] >= 1
     assert (tmp_path / "candidate_rules.yaml").exists()
     assert not (tmp_path / "fusion.py").exists()
+
+

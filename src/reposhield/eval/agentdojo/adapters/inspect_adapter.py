@@ -1,4 +1,4 @@
-"""Inspect-style AgentDojo adapter entrypoints."""
+﻿"""Inspect-style AgentDojo adapter entrypoints."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .state_tracker import AgentDojoStateTracker
+from ..state_tracker import AgentDojoStateTracker
 
 
 @dataclass
@@ -25,8 +25,8 @@ class ReposhieldAgentDojoTask:
 def reposhield_agentdojo(
     *, repo_root: str | Path, suite: str, task_id: str | None = None, injection_task_id: str | None = None
 ) -> dict[str, Any]:
-    from ...control_plane import RepoShieldControlPlane
-    from .tool_gate import RepoShieldToolGate
+    from ....control_plane import RepoShieldControlPlane
+    from ..tool_gate import RepoShieldToolGate
 
     cp = RepoShieldControlPlane(repo_root)
     gate = RepoShieldToolGate(cp)
@@ -37,3 +37,5 @@ def reposhield_agentdojo(
         "tool_gate": gate,
         "state_tracker": tracker,
     }
+
+

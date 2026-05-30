@@ -1,4 +1,4 @@
-"""Clean AgentDojo firewall benchmark entrypoint.
+﻿"""Clean AgentDojo firewall benchmark entrypoint.
 
 This module is the preferred runner for AgentDojo firewall experiments. It uses
 AgentDojo's official suite execution and scoring while inserting
@@ -17,16 +17,16 @@ from agentdojo.attacks.attack_registry import load_attack
 from agentdojo.logging import OutputLogger, TraceLogger
 from agentdojo.task_suite.load_suites import get_suite
 
-from reposhield.eval.agentdojo.pipeline_wrapper import RepoShieldAgentDojoContext
-from reposhield.eval.agentdojo.run_toolgate_eval import (
+from reposhield.eval.agentdojo.adapters.pipeline_wrapper import RepoShieldAgentDojoContext
+from reposhield.eval.agentdojo.runner.run_tool_firewall_eval import (
     _infer_authorized_tools_and_categories,
     _run_agentdojo_task_with_retries,
     build_llm,
     build_pipeline,
 )
 
-from .tool_firewall import summarize_agentdojo_firewall_audit
-from .types import AgentDojoDefenseMode, SanitizeMode
+from ..gate.tool_firewall import summarize_agentdojo_firewall_audit
+from ..compat.types import AgentDojoDefenseMode, SanitizeMode
 
 
 def main() -> None:
@@ -55,7 +55,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--mode", choices=["fair", "oracle_user", "oracle_full"], default="fair")
     parser.add_argument("--sanitize-mode", choices=["off", "label", "soft", "hard"], default="soft")
-    parser.add_argument("--out-dir", type=Path, default=Path("experiments/agentdojo_firewall/logs/agentdojo_firewall_fair"))
+    parser.add_argument("--out-dir", type=Path, default=Path("experiments/agentdojo/reports/tool_firewall"))
     parser.add_argument("--benchmark-version", default="v1.2.2")
     parser.add_argument("--max-iters", type=int, default=15)
     return parser.parse_args()
@@ -259,3 +259,7 @@ def _mode_warning(mode: str) -> str:
 
 if __name__ == "__main__":
     main()
+
+
+
+

@@ -1,4 +1,4 @@
-"""AgentDojo tool taxonomy mapped to RepoShield semantic actions."""
+﻿"""AgentDojo tool taxonomy mapped to RepoShield semantic actions."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ class AgentDojoToolInfo:
 
 
 def _taxonomy_path() -> Path:
-    return Path(__file__).with_name("tool_taxonomy.yaml")
+    return Path(__file__).parent / "evidence" / "tool_taxonomy.yaml"
 
 
 @lru_cache(maxsize=1)
@@ -187,3 +187,4 @@ EXTERNAL_COMMIT_HINTS = ("send_", "transfer", "pay_", "book_", "delete_", "updat
 
 
 AGENTDOJO_TOOL_TAXONOMY = load_agentdojo_taxonomy()
+

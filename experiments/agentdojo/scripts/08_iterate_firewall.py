@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Safe failure-sample iterator for RepoShield-AgentDojo firewall.
 
 This script replaces the previous ad-hoc iteration script with a conservative
@@ -17,13 +17,13 @@ Design goals
 Typical usage
 -------------
 Analyze existing runs:
-    python experiments/agentdojo_firewall/scripts/08_iterate_firewall.py \
+    python experiments/agentdojo/scripts/08_iterate_firewall.py \
         --mode fair \
-        --log-root experiments/agentdojo_firewall/logs \
-        --out-dir experiments/agentdojo_firewall/reports/iterations
+        --log-root experiments/agentdojo/logs \
+        --out-dir experiments/agentdojo/reports/iterations
 
 Run a very small live train/validation split, then analyze it:
-    python experiments/agentdojo_firewall/scripts/08_iterate_firewall.py \
+    python experiments/agentdojo/scripts/08_iterate_firewall.py \
         --run-live --mode fair --model deepseek-chat --suites travel banking \
         --train-users 2 --train-injections 2 --val-users 2 --val-injections 2
 
@@ -50,18 +50,18 @@ from pathlib import Path
 from typing import Any, Iterable, Literal
 
 try:
-    from reposhield.eval.agentdojo_firewall.state import extract_targets, looks_like_injection
-    from reposhield.eval.agentdojo_firewall.taxonomy import AgentDojoToolTaxonomy
+    from reposhield.eval.agentdojo.evidence.state import extract_targets, looks_like_injection
+    from reposhield.eval.agentdojo.evidence.taxonomy import AgentDojoToolTaxonomy
 except Exception:  # pragma: no cover - keeps this script readable before installation.
     extract_targets = None  # type: ignore[assignment]
     looks_like_injection = None  # type: ignore[assignment]
     AgentDojoToolTaxonomy = None  # type: ignore[assignment]
 
 ROOT = Path(__file__).resolve().parents[3]
-DEFAULT_REPORT_DIR = ROOT / "experiments" / "agentdojo_firewall" / "reports" / "iterations"
+DEFAULT_REPORT_DIR = ROOT / "experiments" / "agentdojo" / "reports" / "iterations"
 DEFAULT_LOG_ROOTS = [
-    ROOT / "experiments" / "agentdojo_firewall" / "logs",
-    ROOT / "experiments" / "agentdojo_gateway_only" / "logs",
+    ROOT / "experiments" / "agentdojo" / "logs",
+    ROOT / "experiments" / "agentdojo" / "archive" / "gateway_only" / "logs",
 ]
 
 DefenseMode = Literal["fair", "oracle_user", "oracle_full"]
@@ -248,7 +248,7 @@ ITERATION_GUARDRAILS = {
 # ---------------------------------------------------------------------------
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Safe AgentDojo firewall failure iterator")
     parser.add_argument("--mode", choices=["fair", "oracle_user", "oracle_full"], default="fair")
     parser.add_argument("--out-dir", type=Path, default=None)
@@ -265,7 +265,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--val-users", type=int, default=2)
     parser.add_argument("--val-injections", type=int, default=2)
     parser.add_argument("--max-files", type=int, default=2000, help="Maximum JSON files to scan per log root")
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def main() -> None:
@@ -320,7 +320,7 @@ def run_live_samples(args: argparse.Namespace, *, out_dir: Path) -> list[SampleR
         from agentdojo.attacks.attack_registry import load_attack
         from agentdojo.logging import OutputLogger, TraceLogger
         from agentdojo.task_suite.load_suites import get_suite
-        from reposhield.eval.agentdojo.run_toolgate_eval import (
+        from reposhield.eval.agentdojo.runner.run_tool_firewall_eval import (
             _infer_authorized_tools_and_categories,
             _run_agentdojo_task_with_retries,
             build_llm,
@@ -964,7 +964,7 @@ def render_iteration_report(summary: dict[str, Any]) -> str:
     lines.append("")
     lines.append("These are **proposals only**. They must pass regression and holdout validation before being merged.")
     lines.append("")
-    lines.append("本迭代器不会自动修改核心防御规则，只生成候选补丁。正式合并前必须经过 validation set 和 holdout set 检查。")
+    lines.append("This iterator does not modify core firewall rules automatically. It only generates candidate patches that must pass validation and holdout checks before merge.")
     lines.append("")
     lines.append("| Patch | Type | Decision | Failures |")
     lines.append("|---|---|---|---:|")
@@ -991,7 +991,7 @@ def render_validation_plan(summary: dict[str, Any]) -> str:
         "",
         "This iterator does not modify `fusion.py` or other core defense files.",
         "",
-        "本迭代器不会自动修改核心防御规则，只生成候选补丁。正式合并前必须经过 validation set 和 holdout set 检查。",
+        "This iterator only proposes changes. Merge candidates only after validation and holdout checks pass.",
         "",
         "## Splits",
         "",
@@ -1243,3 +1243,7 @@ def _looks_like_injection(text: str) -> bool:
 
 if __name__ == "__main__":
     main()
+
+
+
+

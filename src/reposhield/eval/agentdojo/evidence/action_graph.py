@@ -1,4 +1,4 @@
-"""AgentDojo-adapted ActionGraph.
+﻿"""AgentDojo-adapted ActionGraph.
 
 This is not a shell or program DFG.  It is a tool relation graph that exposes
 AgentDojo-specific security relations:
@@ -15,9 +15,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable
 
-from .models_compat import ActionEdge, ActionGraph, ActionNode, new_id, sha256_text
+from ..compat.models_compat import ActionEdge, ActionGraph, ActionNode, new_id, sha256_text
 from .state import AgentDojoStateTracker, ToolEvent
-from .types import EvidenceBundle, ToolCallContext, ToolSpec
+from ..compat.types import EvidenceBundle, ToolCallContext, ToolSpec
 
 
 @dataclass(slots=True)
@@ -216,3 +216,5 @@ class AgentDojoActionGraphBuilder:
             if event.kind == kind:
                 return event
         return None
+
+

@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from reposhield.control_plane import RepoShieldControlPlane
 from reposhield.eval.agentdojo import RepoShieldToolGate, classify_agentdojo_tool
@@ -36,3 +36,5 @@ def test_agentdojo_tool_gate_blocks_sensitive_untrusted_message_send(tmp_path):
     events = cp.audit.read_events()
     assert any(event["event_type"] == "agentdojo_tool_gate_decision" for event in events)
     assert any(event["event_type"] == "policy_fact_set" and "agentdojo" in event["payload"]["namespace_counts"] for event in events)
+
+

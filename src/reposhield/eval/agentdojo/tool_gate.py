@@ -1,4 +1,4 @@
-"""RepoShield guard for AgentDojo tool calls."""
+﻿"""RepoShield guard for AgentDojo tool calls."""
 
 from __future__ import annotations
 
@@ -235,3 +235,4 @@ def _blocked_result(error: str, decision: PolicyDecision) -> dict[str, Any]:
 
 def taxonomy_coverage_summary(known_tools: list[str]) -> dict[str, Any]:
     return coverage_report(known_tools)
+

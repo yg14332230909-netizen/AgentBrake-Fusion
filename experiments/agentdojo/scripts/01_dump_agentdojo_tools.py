@@ -1,10 +1,10 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 from pathlib import Path
 from typing import Any
 
-from reposhield.eval.agentdojo_firewall import AgentDojoToolTaxonomy
+from reposhield.eval.agentdojo.evidence.taxonomy import AgentDojoToolTaxonomy
 
 try:
     from agentdojo.task_suite import get_suite  # type: ignore
@@ -21,7 +21,7 @@ else:
 
 
 ROOT = Path(__file__).resolve().parents[3]
-REPORT_DIR = ROOT / "experiments" / "agentdojo_firewall" / "reports"
+REPORT_DIR = ROOT / "experiments" / "agentdojo" / "reports"
 SUITES = ("banking", "slack", "workspace", "travel", "workspace_plus")
 
 
@@ -108,3 +108,6 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+

@@ -1,4 +1,4 @@
-"""Compatibility layer for ActionGraph objects.
+﻿"""Compatibility layer for ActionGraph objects.
 
 When installed inside RepoShield, this module imports the real RepoShield model
 classes.  The fallback dataclasses make the adapter testable as a standalone
@@ -56,3 +56,4 @@ except Exception:  # pragma: no cover
         parser_version: str = "agentdojo-tool-relation-graph-v3"
         complete: bool = True
         metadata: dict[str, Any] = field(default_factory=dict)
+

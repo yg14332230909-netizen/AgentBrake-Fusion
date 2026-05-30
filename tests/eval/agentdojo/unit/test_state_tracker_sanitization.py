@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from reposhield.eval.agentdojo.state_tracker import AgentDojoStateTracker
 
@@ -25,3 +25,5 @@ def test_state_tracker_detects_banking_style_prompt_injection():
 
     assert "important message" not in str(safe).lower()
     assert "send a transaction" not in str(safe).lower()
+
+

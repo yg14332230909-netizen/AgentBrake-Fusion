@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from reposhield.control_plane import RepoShieldControlPlane
 from reposhield.eval.agentdojo.tool_gate import RepoShieldToolGate
@@ -24,3 +24,5 @@ def test_tool_gate_blocks_and_allows_without_executing_original_tool(tmp_path):
     assert blocked.block_reason
     assert allowed.execute is True
     assert any(event["event_type"] == "agentdojo_tool_gate_decision" for event in cp.audit.read_events())
+
+

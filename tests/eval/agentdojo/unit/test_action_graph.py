@@ -1,5 +1,5 @@
-from reposhield.eval.agentdojo_firewall import AgentDojoToolFirewall
-from reposhield.eval.agentdojo_firewall.types import ToolCallContext
+﻿from reposhield.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
+from reposhield.eval.agentdojo.compat.types import ToolCallContext
 
 
 def test_private_data_seen_send_email_creates_private_to_external_edge():
@@ -51,3 +51,5 @@ def test_attack_goal_signature_oracle_mode_is_marked():
     decision = fw.guard_before_tool(ctx)
     assert decision.action_graph_facts["graph.has_attack_goal_to_action_edge"] is True
     assert decision.action_graph_facts["graph.attack_goal_evidence_source"] == "oracle_upper_bound"
+
+

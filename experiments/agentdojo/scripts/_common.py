@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import os
 import subprocess
@@ -6,8 +6,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-REPORT_DIR = ROOT / "experiments" / "agentdojo_firewall" / "reports" / "runs"
-LOG_DIR = ROOT / "experiments" / "agentdojo_firewall" / "logs"
+REPORT_DIR = ROOT / "experiments" / "agentdojo" / "reports" / "runs"
+LOG_DIR = ROOT / "experiments" / "agentdojo" / "logs"
 
 DEFENSE_LOG_DIRS = {
     "none": "no_defense",
@@ -35,7 +35,7 @@ def run_eval(*, suite: str, defense: str, run_name: str, attack: str, model: str
         cmd = [
             sys.executable,
             "-m",
-            "reposhield.eval.agentdojo.run_toolgate_eval",
+            "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
             "--suite",
             suite,
             "--model",
@@ -55,7 +55,7 @@ def run_eval(*, suite: str, defense: str, run_name: str, attack: str, model: str
         cmd = [
             sys.executable,
             "-m",
-            "reposhield.eval.agentdojo_firewall.run_benchmark",
+            "reposhield.eval.agentdojo.runner.run_benchmark",
             "--suite",
             suite,
             "--model",
@@ -68,3 +68,6 @@ def run_eval(*, suite: str, defense: str, run_name: str, attack: str, model: str
             str(log_dir),
         ]
     subprocess.run(cmd, check=True, cwd=str(ROOT))
+
+
+

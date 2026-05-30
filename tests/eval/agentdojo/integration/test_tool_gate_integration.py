@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import pytest
 
@@ -36,3 +36,5 @@ def test_inspect_and_native_defense_entrypoints_import():
     defense = register_native_defense()
     assert task["task"].suite == "banking"
     assert defense["defense_name"] == "reposhield_toolgate"
+
+

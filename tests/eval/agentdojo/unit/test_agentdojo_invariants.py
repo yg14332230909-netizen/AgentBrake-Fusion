@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from reposhield.policy_engine.facts import PolicyFact, PolicyFactSet
 from reposhield.policy_engine.invariants import InvariantEngine
@@ -38,3 +38,5 @@ def test_agentdojo_financial_message_private_data_and_booking_invariants_fire():
     assert "ADJ-WORKSPACE-001" in rule_ids
     assert "ADJ-WORKSPACE-002" in rule_ids
     assert "ADJ-UNKNOWN-001" in rule_ids
+
+

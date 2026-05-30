@@ -39,6 +39,7 @@ from .studio.event_stream import StudioEventIndex
 from .studio.evidence_exporter import export_evidence
 from .studio.scenario_runner import run_scenario
 from .trace_matrix import run_trace_matrix
+from .cli_commands.eval_agentdojo import register_eval_agentdojo
 
 
 def _print_json(data: object) -> None:
@@ -583,6 +584,7 @@ def cmd_replay_verify(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="reposhield", description="RepoShield/PepoShield coding-agent security control-plane plugin")
     sub = p.add_subparsers(dest="cmd", required=True)
+    register_eval_agentdojo(sub)
 
     scan = sub.add_parser("scan", help="扫描仓库资产与攻击面")
     scan.add_argument("--repo", required=True)

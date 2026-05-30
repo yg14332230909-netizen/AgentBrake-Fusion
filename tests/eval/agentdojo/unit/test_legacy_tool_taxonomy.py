@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from reposhield.eval.agentdojo.tool_taxonomy import classify_agentdojo_tool
 
@@ -15,3 +15,5 @@ def test_unknown_side_effect_tool_falls_back_to_safe_unknown_category():
     assert info.registered is False
     assert info.category == "unknown_side_effect"
     assert info.semantic_action == "unknown_side_effect"
+
+

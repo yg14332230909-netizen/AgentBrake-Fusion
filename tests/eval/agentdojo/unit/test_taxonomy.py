@@ -1,4 +1,4 @@
-from reposhield.eval.agentdojo_firewall import AgentDojoToolTaxonomy
+﻿from reposhield.eval.agentdojo.evidence.taxonomy import AgentDojoToolTaxonomy
 
 
 def test_taxonomy_groups_core_tools():
@@ -8,3 +8,5 @@ def test_taxonomy_groups_core_tools():
     assert tax.classify("reserve_hotel", suite="travel").group == "booking_commit"
     assert tax.classify("delete_file", suite="workspace").group == "destructive_update"
     assert tax.classify("totally_new_mutating_tool").group == "unknown"
+
+
