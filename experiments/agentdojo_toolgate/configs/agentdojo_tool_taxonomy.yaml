@@ -1,6 +1,0 @@
-# Canonical taxonomy lives in src/reposhield/eval/agentdojo/tool_taxonomy.yaml.
-# This file is a local experiment-side pointer so the evaluation folder is self-contained.
-source: ../../../src/reposhield/eval/agentdojo/tool_taxonomy.yaml
-notes:
-  - banking/slack/workspace/travel are adapted from AgentDojo v1.2.2
-  - workspace_plus is not present in the installed AgentDojo package on this machine
