@@ -1,0 +1,62 @@
+{
+  "artifact_schema_version": "reposhield_agentdojo_artifact_v1",
+  "repo_url": "https://github.com/yg14332230909-netizen/RepoShield",
+  "commit_hash": "de6b73b56209165ed2873e78e6c45f49a209a045",
+  "branch": "main",
+  "model": "deepseek-v4-flash",
+  "benchmark_type": "agentdojo_derived_tool_boundary_replay",
+  "case_count": 144,
+  "unsafe_case_count": 55,
+  "safe_case_count": 89,
+  "local_allow_candidate_count": 22,
+  "trace_missing_count": 0,
+  "phase1_shortfall": {
+    "unsafe": 0,
+    "safe": 0
+  },
+  "metrics": {
+    "unsafe_interception_rate": 1.0,
+    "safe_pass_rate": 0.7865168539325843,
+    "false_positive_rate": 0.20224719101123595,
+    "block_reason_accuracy": 1.0
+  },
+  "acceptance": {
+    "structural_acceptance": "PASS",
+    "effectiveness_acceptance": "WARN",
+    "overall_status": "WARN",
+    "allowed_warnings": [
+      "workspace.safe sample_count < 10"
+    ],
+    "warnings": [
+      {
+        "name": "domain_workspace_safe_sample_count",
+        "category": "domain",
+        "status": "WARN",
+        "detail": "workspace.safe sample_count=1 < 10"
+      }
+    ]
+  },
+  "canonical_paths": {
+    "replay_results": "deepseekv4_flash/replay/agentdojo_derived_replay_results.json",
+    "replay_summary": "deepseekv4_flash/replay/agentdojo_derived_replay_summary.json",
+    "final_acceptance_md": "deepseekv4_flash/final_acceptance_check.md",
+    "final_acceptance_json": "deepseekv4_flash/final_acceptance_check.json"
+  },
+  "excluded_stale_paths": [
+    "deepseekv4_flash/agentdojo_derived_replay.jsonl",
+    "deepseekv4_flash/agentdojo_derived_replay_summary.json"
+  ],
+  "validation_commands": [
+    "python -m ruff check src tests",
+    "pytest -q tests/eval/agentdojo/unit",
+    "pytest -q tests",
+    "python experiments/agentdojo/scripts/16_validate_replay_cases.py --cases-dir experiments/agentdojo/replay_cases",
+    "python experiments/agentdojo/scripts/11_run_replay_benchmark.py --cases-dir experiments/agentdojo/replay_cases/agentdojo_derived --out-dir experiments/agentdojo/reports/deepseekv4_flash/replay",
+    "python experiments/agentdojo/scripts/19_final_acceptance_check.py --replay-cases-dir experiments/agentdojo/replay_cases --reports-dir experiments/agentdojo/reports/deepseekv4_flash"
+  ],
+  "generated_at": "2026-05-31T16:41:01.697253+00:00",
+  "artifact_name": "reposhield_agentdojo_phase1_1_deepseekv4_flash_de6b73b.zip",
+  "artifact_path": "E:\\project\\reposhield_plugin_v0.3\\experiments\\agentdojo\\artifacts\\reposhield_agentdojo_phase1_1_deepseekv4_flash_de6b73b.zip",
+  "artifact_sha256": "ac4b0aebd4013cc078df5179cde5aab755d1e78e261a60e9c248e29700783cc2",
+  "artifact_sha256_scope": "authoritative external ZIP hash; embedded artifact manifest uses a non-hash placeholder to avoid self-referential ZIP hashing"
+}

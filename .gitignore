@@ -258,5 +258,24 @@ reports/
 reports_tmp*/
 TEST_RUN_RESULT.txt
 
+# AgentDojo Phase 1.1 lightweight review artifacts.
+!experiments/agentdojo/reports/
+experiments/agentdojo/reports/*
+!experiments/agentdojo/reports/deepseekv4_flash/
+experiments/agentdojo/reports/deepseekv4_flash/*
+!experiments/agentdojo/reports/deepseekv4_flash/README.md
+!experiments/agentdojo/reports/deepseekv4_flash/artifact_manifest.json
+!experiments/agentdojo/reports/deepseekv4_flash/commit_hash.txt
+!experiments/agentdojo/reports/deepseekv4_flash/release_artifact_url_or_path.txt
+!experiments/agentdojo/reports/deepseekv4_flash/final_acceptance_check.md
+!experiments/agentdojo/reports/deepseekv4_flash/final_acceptance_check.json
+!experiments/agentdojo/reports/deepseekv4_flash/corrected_summary.md
+!experiments/agentdojo/reports/deepseekv4_flash/effect_improvement_delta.md
+!experiments/agentdojo/reports/deepseekv4_flash/effect_improvement_delta.json
+!experiments/agentdojo/reports/deepseekv4_flash/replay/
+experiments/agentdojo/reports/deepseekv4_flash/replay/*
+!experiments/agentdojo/reports/deepseekv4_flash/replay/agentdojo_derived_replay_results.json
+!experiments/agentdojo/reports/deepseekv4_flash/replay/agentdojo_derived_replay_summary.json
+
 # RepoShield local runtime state
 .reposhield/
