@@ -3,7 +3,6 @@ import importlib.util
 import json
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[4]
 SCRIPT = ROOT / "experiments" / "agentdojo" / "scripts" / "14_generate_normalized_reports.py"
 spec = importlib.util.spec_from_file_location("generate_normalized_reports_counts", SCRIPT)

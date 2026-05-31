@@ -7,8 +7,8 @@ import re
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-from .entity_extractor import EntitySet, extract_entities
 from ..compat.types import EventStatus, SanitizeMode, ToolSpec
+from .entity_extractor import EntitySet, extract_entities
 
 INJECTION_MARKERS = (
     "important instructions",

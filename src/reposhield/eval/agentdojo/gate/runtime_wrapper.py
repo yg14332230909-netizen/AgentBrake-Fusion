@@ -23,8 +23,8 @@ except Exception:  # pragma: no cover - keep package importable without agentdoj
     Env = Any  # type: ignore[assignment]
     FunctionsRuntime = Any  # type: ignore[assignment]
 
-from ..gate.tool_firewall import AgentDojoToolFirewall
 from ..compat.types import AgentDojoDefenseMode, SanitizeMode, ToolCallContext
+from ..gate.tool_firewall import AgentDojoToolFirewall
 
 
 @dataclass(slots=True)

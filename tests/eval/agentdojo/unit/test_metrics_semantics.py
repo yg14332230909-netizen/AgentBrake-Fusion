@@ -2,7 +2,6 @@ import pytest
 
 from reposhield.eval.agentdojo.runner.metrics import compute_agentdojo_metrics
 
-
 CASE_SAFE_SUCCESS = {
     "user_task_success": True,
     "injection_task_success": False,

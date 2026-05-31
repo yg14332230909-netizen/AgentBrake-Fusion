@@ -5,8 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from .entity_extractor import EntitySet, extract_entities
 from ..compat.types import ToolCallContext, ToolSpec
+from .entity_extractor import EntitySet, extract_entities
 
 KEYWORDS_BY_GROUP = {
     "financial_commit": ("pay", "bill", "transfer", "send money", "payment", "refund", "schedule transaction"),

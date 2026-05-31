@@ -16,8 +16,8 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 from ..compat.models_compat import ActionEdge, ActionGraph, ActionNode, new_id, sha256_text
-from .state import AgentDojoStateTracker, ToolEvent
 from ..compat.types import EvidenceBundle, ToolCallContext, ToolSpec
+from .state import AgentDojoStateTracker, ToolEvent
 
 
 @dataclass(slots=True)

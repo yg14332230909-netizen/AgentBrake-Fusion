@@ -1,7 +1,6 @@
 import importlib.util
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[4]
 SCRIPT = ROOT / "experiments" / "agentdojo" / "scripts" / "16_validate_replay_cases.py"
 spec = importlib.util.spec_from_file_location("validate_replay_cases_script", SCRIPT)

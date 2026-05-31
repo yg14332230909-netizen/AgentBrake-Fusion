@@ -1,7 +1,7 @@
-﻿from reposhield.eval.agentdojo.evidence.entity_extractor import extract_entities
+﻿from reposhield.eval.agentdojo.compat.types import ToolCallContext
+from reposhield.eval.agentdojo.evidence.entity_extractor import extract_entities
 from reposhield.eval.agentdojo.evidence.task_authorizer import authorize_tool
 from reposhield.eval.agentdojo.evidence.taxonomy import AgentDojoToolTaxonomy
-from reposhield.eval.agentdojo.compat.types import ToolCallContext
 
 
 def test_reserve_hotel_matching_user_entity_authorized():

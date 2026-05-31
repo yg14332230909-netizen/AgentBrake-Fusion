@@ -1,5 +1,5 @@
-﻿from reposhield.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
-from reposhield.eval.agentdojo.compat.types import ToolCallContext
+﻿from reposhield.eval.agentdojo.compat.types import ToolCallContext
+from reposhield.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
 
 
 def test_block_prevents_original_tool_execution():

@@ -4,13 +4,13 @@ import time
 from dataclasses import asdict, dataclass, field
 from typing import Any, Callable
 
-from .blocked_result import BlockedActionTracker, build_blocked_tool_result, build_confirmation_required_result
+from ..compat.types import ConfirmationMode, SanitizeMode, ToolCallContext
 from ..evidence.action_graph import AgentDojoActionGraphBuilder
 from ..evidence.evidence import AgentDojoEvidenceBuilder
 from ..evidence.fusion import AgentDojoEvidenceFusion, FusionResult
 from ..evidence.state import AgentDojoStateTracker
 from ..evidence.taxonomy import AgentDojoToolTaxonomy, infer_unknown_tool
-from ..compat.types import ConfirmationMode, SanitizeMode, ToolCallContext
+from .blocked_result import BlockedActionTracker, build_blocked_tool_result, build_confirmation_required_result
 
 
 @dataclass(slots=True)

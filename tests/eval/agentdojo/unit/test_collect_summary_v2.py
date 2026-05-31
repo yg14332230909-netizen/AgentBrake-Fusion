@@ -1,7 +1,6 @@
 import importlib.util
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[4]
 SCRIPT = ROOT / "experiments" / "agentdojo" / "scripts" / "06_collect_summary.py"
 spec = importlib.util.spec_from_file_location("collect_summary", SCRIPT)

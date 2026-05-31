@@ -21,7 +21,7 @@ def test_strict_eval_confirmation_does_not_execute():
 
 def test_gateway_eval_counts_confirmation_separately():
     fw = AgentDojoToolFirewall(confirmation_mode="gateway_eval")
-    decision = fw.guard_before_tool(
+    fw.guard_before_tool(
         ToolCallContext(suite="banking", tool_name="send_money", tool_args={"recipient": "US00", "amount": 5}, user_task="Pay if known.")
     )
     event = fw.audit_events[-1]

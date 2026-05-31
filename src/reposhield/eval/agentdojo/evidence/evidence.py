@@ -4,10 +4,10 @@ from dataclasses import asdict
 from typing import Any
 
 from ..compat.models_compat import sha256_text
-from .state import AgentDojoStateTracker, extract_targets
-from .contracts import SourceInfluenceGraph, TaskContractMatch, payment_contract_from_user_task
-from .task_authorizer import authorize_tool
 from ..compat.types import ArgumentProvenance, EvidenceBundle, ToolCallContext, ToolSpec, ValueMatchEvidence
+from .contracts import SourceInfluenceGraph, TaskContractMatch, payment_contract_from_user_task
+from .state import AgentDojoStateTracker, extract_targets
+from .task_authorizer import authorize_tool
 
 SENSITIVE_ARG_KEYS = {"password", "token", "secret", "iban", "account", "recipient", "to", "email", "message", "body", "file_id", "amount"}
 

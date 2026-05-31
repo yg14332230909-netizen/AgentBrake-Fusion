@@ -1,7 +1,6 @@
 import importlib.util
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[4]
 SCRIPT = ROOT / "experiments" / "agentdojo" / "scripts" / "18_debug_blocked_recovery.py"
 spec = importlib.util.spec_from_file_location("debug_blocked_recovery_required_name", SCRIPT)

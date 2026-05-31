@@ -14,12 +14,12 @@ from typing import Any
 
 from ....control_plane import RepoShieldControlPlane
 from ...fast_mode import load_eval_fast_mode_config
+from ..compat.agentdojo_api import require_agentdojo
 from ..gate.tool_firewall import summarize_agentdojo_firewall_audit
-from .result_exporter import summarize_agentdojo_audit
-from .metrics import compute_agentdojo_metrics, normalize_raw_agentdojo_result
 from ..state_tracker import AgentDojoStateTracker
 from ..tool_taxonomy import classify_agentdojo_tool
-from ..compat.agentdojo_api import require_agentdojo
+from .metrics import compute_agentdojo_metrics, normalize_raw_agentdojo_result
+from .result_exporter import summarize_agentdojo_audit
 
 TRANSIENT_STATUS_CODES = {408, 409, 429, 500, 502, 503, 504}
 _AUTHORIZED_TOOL_CACHE: dict[tuple[str, str], tuple[list[str], list[str]]] = {}

@@ -25,8 +25,8 @@ from reposhield.eval.agentdojo.runner.run_tool_firewall_eval import (
     build_pipeline,
 )
 
-from ..gate.tool_firewall import summarize_agentdojo_firewall_audit
 from ..compat.types import AgentDojoDefenseMode, SanitizeMode
+from ..gate.tool_firewall import summarize_agentdojo_firewall_audit
 
 
 def main() -> None:

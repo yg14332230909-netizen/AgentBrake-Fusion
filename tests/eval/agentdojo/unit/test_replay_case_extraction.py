@@ -2,7 +2,6 @@ import importlib.util
 import json
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[4]
 SCRIPT = ROOT / "experiments" / "agentdojo" / "scripts" / "17_extract_agentdojo_replay_cases.py"
 spec = importlib.util.spec_from_file_location("extract_replay_cases", SCRIPT)

@@ -1,5 +1,5 @@
-﻿from reposhield.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
-from reposhield.eval.agentdojo.compat.types import ToolCallContext
+﻿from reposhield.eval.agentdojo.compat.types import ToolCallContext
+from reposhield.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
 
 
 def test_untrusted_financial_commit_not_authorized_blocks():

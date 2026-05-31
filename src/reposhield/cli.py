@@ -18,6 +18,7 @@ from .approval_api import serve_approval_api
 from .approvals import ApprovalCenter, ApprovalStore
 from .bench import run_sample
 from .bench_suite import generate_stage2_samples, run_suite
+from .cli_commands.eval_agentdojo import register_eval_agentdojo
 from .control_plane import RepoShieldControlPlane
 from .dashboard import render_dashboard
 from .demo import run_demo
@@ -39,7 +40,6 @@ from .studio.event_stream import StudioEventIndex
 from .studio.evidence_exporter import export_evidence
 from .studio.scenario_runner import run_scenario
 from .trace_matrix import run_trace_matrix
-from .cli_commands.eval_agentdojo import register_eval_agentdojo
 
 
 def _print_json(data: object) -> None:
