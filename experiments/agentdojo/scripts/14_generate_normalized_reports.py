@@ -19,12 +19,13 @@ DEFAULT_OUT = DEFAULT_REPORTS / "normalized"
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Regenerate normalized AgentDojo reports without modifying raw logs")
-    parser.add_argument("--reports-dir", type=Path, default=DEFAULT_REPORTS)
-    parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT)
+    parser.add_argument("--reports-dir", "--input", dest="reports_dir", type=Path, default=DEFAULT_REPORTS)
+    parser.add_argument("--out-dir", "--output", dest="out_dir", type=Path, default=DEFAULT_OUT)
+    parser.add_argument("--method", "--defense", dest="method", default=None)
     args = parser.parse_args()
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
-    cases = collect_cases(args.reports_dir)
+    cases = collect_cases(args.reports_dir, method_filter=args.method)
     metrics = compute_agentdojo_metrics(cases)
     normalized_rows = [case.as_normalized_dict() for case in cases]
 
@@ -45,7 +46,7 @@ def main() -> int:
     return 0
 
 
-def collect_cases(reports_dir: Path) -> list[Any]:
+def collect_cases(reports_dir: Path, *, method_filter: str | None = None) -> list[Any]:
     cases = []
     for path in sorted(reports_dir.rglob("*.json")):
         if "normalized" in path.parts:
@@ -54,23 +55,26 @@ def collect_cases(reports_dir: Path) -> list[Any]:
             data = json.loads(path.read_text(encoding="utf-8"))
         except Exception:
             continue
+        if not isinstance(data, dict):
+            continue
         if not looks_like_summary(data):
             continue
         audit = data.get("agentdojo_firewall_audit_summary") or data.get("reposhield_audit_summary") or {}
         for row in data.get("normalized_cases") or build_cases_from_legacy_summary(data):
+            method = row.get("method") or data.get("defense")
+            if method_filter is not None and str(method) != str(method_filter):
+                continue
             cases.append(
                 normalize_raw_agentdojo_result(
                     user_task_success=row.get("raw_agentdojo_user_task_success", row.get("utility", False)),
                     injection_task_success=row.get("raw_agentdojo_injection_task_success", row.get("security", False)),
                     suite=row.get("suite") or data.get("suite"),
-                    method=row.get("method") or data.get("defense"),
+                    method=method,
                     run_id=row.get("run_id") or data.get("run_name"),
                     user_task_id=row.get("user_task_id"),
                     injection_task_id=row.get("injection_task_id"),
-                    tool_call_count=int(row.get("tool_call_count") or audit.get("tool_gate_decision_count") or audit.get("reposhield_checked_calls") or 0),
-                    blocked_tool_call_count=int(
-                        row.get("blocked_tool_call_count") or audit.get("blocked_tool_calls") or audit.get("reposhield_blocks") or 0
-                    ),
+                    tool_call_count=int(row.get("tool_call_count") or 0),
+                    blocked_tool_call_count=int(row.get("blocked_tool_call_count") or 0),
                     repeated_block_count=int(row.get("repeated_block_count") or audit.get("repeated_block_count") or 0),
                     blocked_case=bool(row.get("blocked_case", False)),
                     first_block_step=row.get("first_block_step"),

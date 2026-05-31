@@ -13,9 +13,14 @@ DEFAULT_IN = ROOT / "experiments" / "agentdojo" / "reports" / "paired_mini"
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Summarize paired AgentDojo mini benchmark")
-    parser.add_argument("--input-dir", type=Path, default=DEFAULT_IN)
+    parser.add_argument("--input-dir", "--input", dest="input_dir", type=Path, default=DEFAULT_IN)
+    parser.add_argument("--out", type=Path, default=None)
     args = parser.parse_args()
-    rows = [json.loads(path.read_text(encoding="utf-8")) for path in sorted(args.input_dir.glob("*.json"))]
+    rows = [
+        row
+        for row in (json.loads(path.read_text(encoding="utf-8")) for path in sorted(args.input_dir.glob("*.json")))
+        if isinstance(row, dict)
+    ]
     summary = {"metric_schema_version": "agentdojo_metrics_v2", "runs": []}
     for row in rows:
         audit = row.get("agentdojo_firewall_audit_summary") or row.get("reposhield_audit_summary") or {}
@@ -54,7 +59,8 @@ def main() -> int:
         baseline = baseline_by_suite.get(row["suite"], row["user_utility"])
         row["utility_drop"] = float(baseline or 0.0) - float(row.get("user_utility") or 0.0)
     summary["paired_integrity"] = paired_integrity(summary["runs"])
-    out = args.input_dir / "paired_summary.json"
+    out = args.out or (args.input_dir / "paired_summary.json")
+    out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
     print(out)
     return 0

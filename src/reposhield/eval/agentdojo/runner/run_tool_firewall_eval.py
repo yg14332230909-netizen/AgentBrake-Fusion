@@ -367,6 +367,18 @@ def _infer_authorized_tools_and_categories(suite_name: str, suite: Any, user_tas
     return result
 
 
+def _task_id_matches(actual: Any, requested: set[str], prefix: str) -> bool:
+    if not requested:
+        return True
+    actual_text = str(actual)
+    aliases = {actual_text}
+    if actual_text.startswith(prefix):
+        aliases.add(actual_text[len(prefix) :])
+    elif actual_text.isdigit():
+        aliases.add(f"{prefix}{actual_text}")
+    return bool(aliases & requested)
+
+
 def build_pipeline(
     defense: str,
     llm: Any,
@@ -489,7 +501,7 @@ def run_suite(
     user_tasks = list(suite.user_tasks.values())
     if user_task_ids:
         selected_user_ids = {str(item) for item in user_task_ids}
-        user_tasks = [task for task in user_tasks if str(getattr(task, "ID", "")) in selected_user_ids]
+        user_tasks = [task for task in user_tasks if _task_id_matches(getattr(task, "ID", ""), selected_user_ids, "user_task_")]
     if limit is not None:
         user_tasks = user_tasks[:limit]
 
@@ -572,7 +584,7 @@ def run_suite(
                 selected_injection_task_ids = list(suite.injection_tasks.keys())
             if requested_injection_task_ids:
                 selected_injection_task_ids = [
-                    item for item in selected_injection_task_ids if str(item) in requested_injection_task_ids
+                    item for item in selected_injection_task_ids if _task_id_matches(item, requested_injection_task_ids, "injection_task_")
                 ]
             for user_task in user_tasks:
                 for injection_task_id in selected_injection_task_ids:

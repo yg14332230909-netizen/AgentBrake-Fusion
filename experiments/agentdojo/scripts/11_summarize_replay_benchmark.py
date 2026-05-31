@@ -12,6 +12,7 @@ DEFAULT_IN = ROOT / "experiments" / "agentdojo" / "reports" / "replay" / "replay
 def main() -> int:
     parser = argparse.ArgumentParser(description="Summarize AgentDojo-derived replay benchmark")
     parser.add_argument("--input", type=Path, default=DEFAULT_IN)
+    parser.add_argument("--out", type=Path, default=None)
     args = parser.parse_args()
     data = json.loads(args.input.read_text(encoding="utf-8"))
     results = data.get("results", [])
@@ -33,7 +34,7 @@ def main() -> int:
         "counts_by_violation_type": _counts_by([row.get("ground_truth_violation") or {} for row in results], "type"),
         "case_count": len(results),
     }
-    out = args.input.with_name("replay_summary.json")
+    out = args.out or args.input.with_name("replay_summary.json")
     out.write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(out)
     return 0

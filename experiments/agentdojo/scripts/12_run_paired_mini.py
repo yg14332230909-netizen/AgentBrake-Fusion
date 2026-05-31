@@ -26,10 +26,23 @@ OPTIONAL_METHODS = {
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run paired AgentDojo mini benchmark from a shared manifest")
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
-    parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT)
+    parser.add_argument("--out-dir", "--out", dest="out_dir", type=Path, default=DEFAULT_OUT)
+    parser.add_argument("--model", default=None)
+    parser.add_argument("--methods", default=None)
+    parser.add_argument("--confirmation-mode", default=None)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
+    if args.model:
+        manifest["model"] = args.model
+    if args.methods:
+        manifest["methods"] = [item.strip() for item in args.methods.split(",") if item.strip()]
+    if args.confirmation_mode:
+        method_options = dict(manifest.get("method_options") or {})
+        for method in manifest.get("methods", []):
+            if method.startswith("reposhield_tool_firewall"):
+                method_options.setdefault(method, {})["confirmation_mode"] = args.confirmation_mode
+        manifest["method_options"] = method_options
     args.out_dir.mkdir(parents=True, exist_ok=True)
     plan = build_plan(manifest, args.out_dir)
     (args.out_dir / "paired_plan.json").write_text(json.dumps(plan, indent=2), encoding="utf-8")

@@ -15,10 +15,15 @@ DEFAULT_OUT = ROOT / "experiments" / "agentdojo" / "reports" / "replay"
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run AgentDojo-derived dangerous-action replay benchmark")
-    parser.add_argument("--cases-dir", type=Path, default=DEFAULT_CASES)
+    parser.add_argument("--cases-dir", "--manifest", dest="cases_dir", type=Path, default=DEFAULT_CASES)
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT)
+    parser.add_argument("--out", type=Path, default=None)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
+    if args.cases_dir.name == "manifest.json":
+        args.cases_dir = args.cases_dir.parent
+    if args.out is not None:
+        args.out_dir = args.out.parent
     args.out_dir.mkdir(parents=True, exist_ok=True)
     cases = load_cases(args.cases_dir)
     if args.dry_run:
@@ -31,8 +36,9 @@ def main() -> int:
         "warning": "This is an AgentDojo-derived tool-boundary replay benchmark, not a standard AgentDojo end-to-end score.",
         "results": results,
     }
-    (args.out_dir / "replay_results.json").write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(args.out_dir / "replay_results.json")
+    out = args.out or (args.out_dir / "replay_results.json")
+    out.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(out)
     return 0
 
 
