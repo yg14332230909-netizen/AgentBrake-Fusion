@@ -35,6 +35,16 @@ class TravelPolicyEngine:
             return findings
         if facts.get("agentdojo.tool_group") != "booking_commit":
             return []
+        if facts.get("agentdojo.injection_followup_side_effect_seen") or facts.get("agentdojo.injection_recommendation_attack_seen"):
+            findings.append(
+                PolicyFinding(
+                    engine=self.name,
+                    decision="block",
+                    confidence=0.86,
+                    reason_codes=["ADJ-TRAVEL-004"],
+                    metadata={"reason": "booking follows an injected side effect or recommendation steering instruction"},
+                )
+            )
         if (
             facts.get("agentdojo.injection_seen")
             and (not facts.get("agentdojo.task_authorized") or facts.get("agentdojo.sensitive_args_not_in_user_task"))

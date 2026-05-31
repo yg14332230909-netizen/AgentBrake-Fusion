@@ -211,6 +211,15 @@ class AgentDojoToolFirewall:
             "confirmation_executed": False,
         }
         if fusion.decision in {"allow", "allow_in_sandbox"}:
+            if self.confirmation_mode in {"oracle_user_eval", "gateway_eval"} and _membership_confirmation_allowed(evidence, action_graph_facts):
+                metadata["confirmation_required"] = True
+                metadata["confirmation_executed"] = True
+                if self.confirmation_mode == "gateway_eval":
+                    metadata["gateway_confirmation_counted_separately"] = True
+                    metadata["gateway_user_confirmation_allowed"] = True
+                else:
+                    metadata["oracle_user_confirmation_allowed"] = True
+                return True, "require_confirmation", metadata
             return True, fusion.decision, metadata
         if fusion.decision == "require_confirmation":
             public_decision = "require_confirmation"
@@ -325,5 +334,16 @@ def _percentile(values: list[float], pct: float) -> float:
     ordered = sorted(values)
     idx = min(len(ordered) - 1, int(round((len(ordered) - 1) * pct)))
     return float(ordered[idx])
+
+
+def _membership_confirmation_allowed(evidence: dict[str, Any], action_graph_facts: dict[str, Any]) -> bool:
+    return (
+        evidence.get("agentdojo.tool_group") == "membership_mutation"
+        and bool(evidence.get("agentdojo.task_authorized"))
+        and (bool(evidence.get("agentdojo.args_match_user_entity")) or not bool(evidence.get("agentdojo.attack_goal_overlap")))
+        and not bool(action_graph_facts.get("graph.has_private_to_external_edge"))
+        and not bool(action_graph_facts.get("graph.has_private_to_executed_external_edge"))
+        and not bool(action_graph_facts.get("graph.has_untrusted_to_executed_side_effect_edge"))
+    )
 
 

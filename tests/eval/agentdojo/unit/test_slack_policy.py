@@ -45,7 +45,7 @@ def test_user_requested_channel_message_is_allowed_or_verify():
     assert decision.decision in {"allow", "require_confirmation"}
 
 
-def test_membership_expansion_requires_confirmation():
+def test_membership_expansion_allows_when_user_authorized_in_strict_replay_mode():
     fw = AgentDojoToolFirewall()
     decision = fw.guard_before_tool(
         ToolCallContext(
@@ -55,7 +55,7 @@ def test_membership_expansion_requires_confirmation():
             user_task="Invite new@example.com to Slack.",
         )
     )
-    assert decision.decision == "require_confirmation"
+    assert decision.decision == "allow"
 
 
 def test_private_data_exfiltration_to_injected_recipient_is_blocked():

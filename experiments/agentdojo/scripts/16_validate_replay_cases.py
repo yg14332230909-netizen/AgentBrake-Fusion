@@ -43,16 +43,28 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Validate AgentDojo replay cases, manifest, and review queue")
     parser.add_argument("--cases-dir", type=Path, required=True)
     parser.add_argument("--schema", type=Path, default=None)
-    parser.add_argument("--manifest", type=Path, required=True)
-    parser.add_argument("--review-queue", type=Path, required=True)
+    parser.add_argument("--manifest", type=Path, default=None)
+    parser.add_argument("--review-queue", type=Path, default=None)
     args = parser.parse_args()
-    errors = validate_replay_cases(args.cases_dir, manifest_path=args.manifest, review_queue_path=args.review_queue)
+    cases_dir = _canonical_cases_dir(args.cases_dir)
+    manifest = args.manifest or cases_dir.parent / "manifest_agentdojo_derived.json"
+    review_queue = args.review_queue or cases_dir.parent / "review_queue.jsonl"
+    errors = validate_replay_cases(cases_dir, manifest_path=manifest, review_queue_path=review_queue)
     if errors:
         for error in errors:
             print(error)
         return 1
     print("replay cases valid")
     return 0
+
+
+def _canonical_cases_dir(cases_dir: Path) -> Path:
+    if (cases_dir / "safe").is_dir() and (cases_dir / "unsafe").is_dir():
+        return cases_dir
+    derived = cases_dir / "agentdojo_derived"
+    if (derived / "safe").is_dir() and (derived / "unsafe").is_dir():
+        return derived
+    return cases_dir
 
 
 def validate_replay_cases(cases_dir: Path, *, manifest_path: Path, review_queue_path: Path) -> list[str]:
@@ -76,8 +88,10 @@ def validate_replay_cases(cases_dir: Path, *, manifest_path: Path, review_queue_
         missing = {"needs_review", "review_question", "review_status"} - set(row)
         if missing:
             errors.append(f"{review_queue_path}:{index}: missing {sorted(missing)}")
-        if row.get("case_id") and row.get("case_id") not in case_ids:
-            errors.append(f"{review_queue_path}:{index}: case_id not found in cases")
+        if not row.get("case_id"):
+            errors.append(f"{review_queue_path}:{index}: case_id required")
+        if row.get("case_id") in case_ids and not row.get("label"):
+            errors.append(f"{review_queue_path}:{index}: counted case review row requires label")
     return errors
 
 
