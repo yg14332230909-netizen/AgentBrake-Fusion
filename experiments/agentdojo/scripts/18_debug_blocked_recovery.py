@@ -28,10 +28,11 @@ DEFAULT_CASES = [
 def main() -> int:
     parser = argparse.ArgumentParser(description="Debug RepoShield blocked recovery cases from AgentDojo paired raw reports")
     parser.add_argument("--reports-dir", type=Path, required=True)
+    parser.add_argument("--trace-dir", type=Path, default=None)
     parser.add_argument("--out-dir", type=Path, required=True)
     parser.add_argument("--case", action="append", default=None)
     args = parser.parse_args()
-    analyses = analyze_blocked_cases(args.reports_dir, selectors=args.case or DEFAULT_CASES)
+    analyses = analyze_blocked_cases(args.reports_dir, selectors=args.case or DEFAULT_CASES, trace_dir=args.trace_dir)
     args.out_dir.mkdir(parents=True, exist_ok=True)
     write_jsonl(args.out_dir / "blocked_case_analysis.jsonl", analyses)
     (args.out_dir / "blocked_case_analysis.md").write_text(render_markdown(analyses), encoding="utf-8")
@@ -41,7 +42,7 @@ def main() -> int:
     return 0
 
 
-def analyze_blocked_cases(reports_dir: Path, *, selectors: list[str]) -> list[dict[str, Any]]:
+def analyze_blocked_cases(reports_dir: Path, *, selectors: list[str], trace_dir: Path | None = None) -> list[dict[str, Any]]:
     patterns = [parse_selector(selector) for selector in selectors]
     analyses: list[dict[str, Any]] = []
     for summary_path, summary in iter_summaries(reports_dir):
@@ -53,7 +54,7 @@ def analyze_blocked_cases(reports_dir: Path, *, selectors: list[str]) -> list[di
             injection_task_id = str(row.get("injection_task_id") or "")
             if not matches_any(patterns, suite, user_task_id, injection_task_id):
                 continue
-            trace_path = resolve_trace_path(row.get("trace_file"), summary_path)
+            trace_path = resolve_trace_path(row.get("trace_file"), summary_path, trace_dir)
             trace = load_trace(trace_path)
             if not has_full_trace(trace):
                 analyses.append(base_analysis(summary_path, row, suite, user_task_id, injection_task_id, trace_path, "missing_trace"))
@@ -74,12 +75,26 @@ def analyze_with_trace(
     events = [event for event in trace.get("audit_events") or [] if isinstance(event, dict)]
     blocked = first_block_event(events)
     post_block_calls = post_block_tool_calls(trace.get("tool_calls") or [], row.get("first_block_step"))
+    next_assistant = next_assistant_message_after(trace.get("messages") or [], blocked)
     category = classify_failure(row, blocked, post_block_calls)
+    safe_result = blocked.get("safe_result") if isinstance(blocked, dict) else None
+    if not isinstance(safe_result, dict):
+        safe_result = blocked.get("safe_blocked_result") if isinstance(blocked, dict) else None
+    if not isinstance(safe_result, dict):
+        safe_result = {}
     result = base_analysis(summary_path, row, suite, user_task_id, injection_task_id, trace_path, category)
     result.update(
         {
             "trace_status": "full_trace_available",
             "first_block_event": summarize_event(blocked),
+            "blocked_tool": (blocked.get("evidence") or {}).get("agentdojo.tool_name") if isinstance(blocked, dict) else None,
+            "decision": blocked.get("decision") if isinstance(blocked, dict) else None,
+            "reason_codes": blocked.get("reason_codes") if isinstance(blocked, dict) else [],
+            "blocked_result_text": safe_result.get("message") or safe_result.get("human_readable_reason"),
+            "allowed_next_steps": safe_result.get("allowed_next_steps") or [],
+            "disallowed_next_steps": safe_result.get("disallowed_next_steps") or [],
+            "confirmation_executed": bool(blocked.get("confirmation_executed")) if isinstance(blocked, dict) else False,
+            "next_assistant_message": next_assistant,
             "post_block_tool_call_count_from_trace": len(post_block_calls),
             "next_tool_call_after_block": post_block_calls[0] if post_block_calls else None,
         }
@@ -128,6 +143,23 @@ def first_block_event(events: list[dict[str, Any]]) -> dict[str, Any] | None:
             continue
         if not bool(event.get("execute")) and event.get("decision") in {"block", "quarantine", "require_confirmation", "sandbox_then_approval"}:
             return event
+    return None
+
+
+def next_assistant_message_after(messages: list[Any], blocked: dict[str, Any] | None) -> str | None:
+    if not isinstance(blocked, dict):
+        return None
+    # Audit events do not carry message indexes. Use the first assistant message
+    # after a blocked result-like tool message as a conservative recovery signal.
+    saw_blocked_tool_result = False
+    for message in messages:
+        if not isinstance(message, dict):
+            continue
+        if message.get("role") == "tool" and "RepoShield" in json.dumps(message.get("content"), ensure_ascii=False, default=str):
+            saw_blocked_tool_result = True
+            continue
+        if saw_blocked_tool_result and message.get("role") == "assistant":
+            return json.dumps(message.get("content"), ensure_ascii=False, default=str)
     return None
 
 
@@ -240,14 +272,21 @@ def iter_summaries(reports_dir: Path) -> Any:
             yield path, data
 
 
-def resolve_trace_path(raw: Any, summary_path: Path) -> Path | None:
+def resolve_trace_path(raw: Any, summary_path: Path, trace_dir: Path | None = None) -> Path | None:
     if not raw:
         return None
     path = Path(str(raw))
     if path.is_absolute() or path.exists():
         return path
     candidate = summary_path.parent / path
-    return candidate if candidate.exists() else path
+    if candidate.exists():
+        return candidate
+    if trace_dir:
+        tail = Path(*path.parts[-4:]) if len(path.parts) >= 4 else path
+        candidate = trace_dir / tail
+        if candidate.exists():
+            return candidate
+    return path
 
 
 def load_trace(path: Path | None) -> dict[str, Any] | None:

@@ -28,3 +28,21 @@ def test_confirmation_required_is_separate_from_block_count():
     assert metrics["blocked_case_count"] == 0
     assert metrics["confirmation_case_count"] == 1
     assert metrics["confirmation_required_rate"] == 1
+
+
+def test_executed_confirmation_counts_as_recovery_cohort():
+    metrics = compute_recovery_metrics(
+        [
+            {
+                "blocked_case": False,
+                "confirmation_required_count": 1,
+                "confirmation_executed_count": 1,
+                "final_user_task_success": True,
+                "final_injection_task_success": False,
+            }
+        ]
+    )
+    assert metrics["blocked_case_count"] == 0
+    assert metrics["confirmation_case_count"] == 1
+    assert metrics["confirmation_execute_rate"] == 1
+    assert metrics["recovery_success_rate"] == 1

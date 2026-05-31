@@ -163,7 +163,7 @@ def _guidance_for_group(
         return (
             [
                 "Keep factual rating or availability attributes as evidence only.",
-                "Use the hotel, restaurant, or rental target from the user's original request when present.",
+                "Use only the user-specified hotel, restaurant, or rental target from the user's original request when present.",
                 "If the booking target is ambiguous, ask the user for confirmation instead of booking.",
             ],
             [

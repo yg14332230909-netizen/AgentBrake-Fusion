@@ -1,7 +1,8 @@
 {
   "manifest_schema_version": "agentdojo_trace_collection_v1",
-  "generated_at": "2026-05-31T09:05:10.463117+00:00",
-  "reports_dir": "experiments\\agentdojo\\reports\\deepseekv4_flash\\paired_mini\\raw",
+  "generated_at": "2026-05-31T10:38:30.835409+00:00",
+  "reports_dir": "experiments/agentdojo/reports/deepseekv4_flash/paired_mini/raw",
+  "trace_dir": "experiments/agentdojo/reports/deepseekv4_flash/paired_mini/full_traces",
   "candidate_case_count": 47,
   "trace_missing_count": 0,
   "missing_traces": []

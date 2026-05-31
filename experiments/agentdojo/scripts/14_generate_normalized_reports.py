@@ -69,6 +69,8 @@ def collect_report_data(reports_dir: Path, *, method_filter: str | None = None) 
     for path in sorted(reports_dir.rglob("*.json")):
         if "normalized" in path.parts:
             continue
+        if "confirmation_modes" in path.parts and "confirmation_modes" not in reports_dir.parts:
+            continue
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
         except Exception:

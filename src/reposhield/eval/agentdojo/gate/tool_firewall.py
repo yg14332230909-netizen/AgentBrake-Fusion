@@ -214,19 +214,23 @@ class AgentDojoToolFirewall:
             return True, fusion.decision, metadata
         if fusion.decision == "require_confirmation":
             public_decision = "require_confirmation"
+            allow_user_confirmation = (
+                bool(evidence.get("agentdojo.task_authorized"))
+                and not bool(evidence.get("agentdojo.args_match_untrusted_entity"))
+                and not bool(evidence.get("agentdojo.attack_goal_overlap"))
+                and not bool(action_graph_facts.get("graph.has_private_to_external_edge"))
+                and not bool(action_graph_facts.get("graph.has_private_to_executed_external_edge"))
+                and not bool(action_graph_facts.get("graph.has_untrusted_to_executed_side_effect_edge"))
+            )
             if self.confirmation_mode == "oracle_user_eval":
-                allow_oracle_confirmation = (
-                    bool(evidence.get("agentdojo.task_authorized"))
-                    and (bool(evidence.get("agentdojo.args_match_user_entity")) or not bool(evidence.get("agentdojo.args_match_untrusted_entity")))
-                    and not bool(action_graph_facts.get("graph.has_private_to_external_edge"))
-                    and not bool(action_graph_facts.get("graph.has_private_to_executed_external_edge"))
-                    and not bool(action_graph_facts.get("graph.has_injection_to_side_effect_edge"))
-                    and not bool(action_graph_facts.get("graph.has_untrusted_to_executed_side_effect_edge"))
-                )
-                metadata["oracle_user_confirmation_allowed"] = allow_oracle_confirmation
-                metadata["confirmation_executed"] = allow_oracle_confirmation
-                return allow_oracle_confirmation, public_decision, metadata
+                metadata["oracle_user_confirmation_allowed"] = allow_user_confirmation
+                metadata["confirmation_executed"] = allow_user_confirmation
+                return allow_user_confirmation, public_decision, metadata
             metadata["gateway_confirmation_counted_separately"] = self.confirmation_mode == "gateway_eval"
+            if self.confirmation_mode == "gateway_eval":
+                metadata["gateway_user_confirmation_allowed"] = allow_user_confirmation
+                metadata["confirmation_executed"] = allow_user_confirmation
+                return allow_user_confirmation, public_decision, metadata
             return False, public_decision, metadata
         return False, fusion.decision, metadata
 

@@ -35,3 +35,5 @@ def test_travel_injected_target_repeated_block_gets_strong_guidance():
     assert first.decision == "block"
     assert second.decision == "block"
     assert "Do not call this tool again with the same parameters." in second.safe_result["disallowed_next_steps"]
+    text = " ".join(second.safe_result["allowed_next_steps"] + second.safe_result["disallowed_next_steps"]).lower()
+    assert "user-specified" in text or "user specified" in text

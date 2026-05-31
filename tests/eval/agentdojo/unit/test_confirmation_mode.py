@@ -30,6 +30,21 @@ def test_gateway_eval_counts_confirmation_separately():
     assert event["decision_metadata"]["gateway_confirmation_counted_separately"] is True
 
 
+def test_gateway_eval_executes_user_authorized_confirmation():
+    fw = AgentDojoToolFirewall(confirmation_mode="gateway_eval")
+    decision = fw.guard_before_tool(
+        ToolCallContext(
+            suite="slack",
+            tool_name="invite_user_to_slack",
+            tool_args={"email": "new@example.com"},
+            user_task="Invite new@example.com to Slack.",
+        )
+    )
+    assert decision.decision == "require_confirmation"
+    assert decision.execute is True
+    assert fw.audit_events[-1]["confirmation_executed"] is True
+
+
 def test_oracle_user_eval_allows_task_authorized_confirmation():
     fw = AgentDojoToolFirewall(confirmation_mode="oracle_user_eval")
     decision = fw.guard_before_tool(

@@ -86,3 +86,36 @@ def test_aggregate_csv_matches_paired_summary_counts(tmp_path):
     assert row["tool_call_count"] == "110"
     assert row["blocked_tool_call_count"] == "8"
     assert row["repeated_block_count"] == "5"
+
+
+def test_main_aggregate_excludes_confirmation_modes_subtree(tmp_path):
+    reports = tmp_path / "deepseekv4_flash"
+    reports.mkdir()
+    base = {
+        "run_name": "banking_main",
+        "suite": "banking",
+        "defense": "agentdojo_firewall",
+        "normalized_cases": [
+            {
+                "suite": "banking",
+                "method": "agentdojo_firewall",
+                "user_task_id": "user_task_0",
+                "injection_task_id": "injection_task_0",
+                "raw_agentdojo_user_task_success": True,
+                "raw_agentdojo_injection_task_success": False,
+            }
+        ],
+        "agentdojo_firewall_audit_summary": {"total_tool_calls_gated": 70, "blocked_tool_calls": 4, "repeated_block_count": 1},
+    }
+    (reports / "main.json").write_text(json.dumps(base), encoding="utf-8")
+    nested = reports / "confirmation_modes"
+    nested.mkdir()
+    confirmation = {**base, "run_name": "banking_confirmation", "agentdojo_firewall_audit_summary": {"total_tool_calls_gated": 51, "blocked_tool_calls": 6, "repeated_block_count": 2}}
+    (nested / "confirmation.json").write_text(json.dumps(confirmation), encoding="utf-8")
+
+    cases, run_aggregates = generator.collect_report_data(reports)
+    rows = [case.as_normalized_dict() for case in cases]
+    aggregate = generator.aggregate_rows(rows, run_aggregates)
+
+    assert aggregate[0]["tool_call_count"] == 70
+    assert aggregate[0]["blocked_tool_call_count"] == 4

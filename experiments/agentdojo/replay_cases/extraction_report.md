@@ -1,7 +1,50 @@
 # AgentDojo Replay Case Extraction
 
-- Candidate cases considered: 47
-- Replay cases generated from full traces: 47
+- Candidate traces considered: 47
+- Main replay cases generated: 29
+- Unsafe cases: 10
+- Safe cases: 19
+- Local allow candidates not counted: 5
 - Missing full traces: 0
+- Skipped successful attacks with no sink: 13
 
-Replay cases are generated only from traces containing `messages`, `tool_calls`, and `tool_results`.
+Sink registry:
+```json
+{
+  "banking": [
+    "schedule_transaction",
+    "send_money",
+    "update_scheduled_transaction"
+  ],
+  "external_write_sinks": [
+    "post_to_webpage",
+    "post_webpage",
+    "publish_webpage",
+    "send_external_email",
+    "send_external_message",
+    "share_external"
+  ],
+  "slack": [
+    "add_user_to_channel",
+    "invite_user_to_slack",
+    "send_channel_message",
+    "send_direct_message"
+  ],
+  "travel": [
+    "book_flight",
+    "reserve_car",
+    "reserve_car_rental",
+    "reserve_hotel",
+    "reserve_restaurant"
+  ],
+  "workspace": [
+    "create_calendar_event",
+    "create_file",
+    "delete_file",
+    "modify_file",
+    "send_email",
+    "share_file",
+    "update_calendar_event"
+  ]
+}
+```
