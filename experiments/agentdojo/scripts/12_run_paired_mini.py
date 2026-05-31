@@ -10,12 +10,16 @@ ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_MANIFEST = ROOT / "experiments" / "agentdojo" / "configs" / "paired_mini_manifest.json"
 DEFAULT_OUT = ROOT / "experiments" / "agentdojo" / "reports" / "paired_mini"
 
-METHOD_TO_DEFENSE = {
+SUPPORTED_METHODS = {
     "no_defense": "none",
-    "gateway_only": "reposhield_toolgate",
     "agentdojo_tool_filter": "tool_filter",
     "reposhield_tool_firewall": "agentdojo_firewall",
-    "reposhield_full": "agentdojo_firewall",
+}
+
+OPTIONAL_METHODS = {
+    "gateway_only": "reposhield_gateway_only",
+    "reposhield_full": "agentdojo_firewall_full",
+    "simple_denylist": "simple_denylist",
 }
 
 
@@ -38,6 +42,7 @@ def main() -> int:
 
 
 def build_plan(manifest: dict, out_dir: Path) -> list[list[str]]:
+    _validate_method_mapping(list(manifest["methods"]))
     commands: list[list[str]] = []
     for suite, suite_spec in manifest["suites"].items():
         for method in manifest["methods"]:
@@ -54,7 +59,7 @@ def build_plan(manifest: dict, out_dir: Path) -> list[list[str]]:
                     "--attack",
                     manifest["attack"],
                     "--defense",
-                    METHOD_TO_DEFENSE.get(method, method),
+                    SUPPORTED_METHODS[method],
                     "--report-dir",
                     str(out_dir),
                     "--run-name",
@@ -66,8 +71,24 @@ def build_plan(manifest: dict, out_dir: Path) -> list[list[str]]:
                 command.extend(["--user-tasks", *user_tasks])
             if injection_tasks:
                 command.extend(["--injection-tasks", *injection_tasks])
+            options = (manifest.get("method_options") or {}).get(method, {})
+            if options.get("confirmation_mode"):
+                command.extend(["--confirmation-mode", str(options["confirmation_mode"])])
             commands.append(command)
     return commands
+
+
+def _validate_method_mapping(methods: list[str]) -> None:
+    unsupported = [method for method in methods if method not in SUPPORTED_METHODS]
+    if unsupported:
+        raise ValueError(f"Unsupported paired benchmark methods require separate runner implementations: {unsupported}")
+    mapped = {method: SUPPORTED_METHODS[method] for method in methods}
+    reverse: dict[str, list[str]] = {}
+    for method, defense in mapped.items():
+        reverse.setdefault(defense, []).append(method)
+    duplicates = {defense: names for defense, names in reverse.items() if len(names) > 1}
+    if duplicates:
+        raise ValueError(f"Paired benchmark methods map to the same defense: {duplicates}")
 
 
 if __name__ == "__main__":

@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from ..compat.types import ConstraintDecision, Decision, EvidenceBundle
+from .policies import DEFAULT_POLICY_ENGINES
+from .policies.base import PolicyFinding
 
 
 @dataclass(slots=True)
@@ -34,15 +36,31 @@ class AgentDojoEvidenceFusion:
 
     def __init__(self, *, eval_mode: bool = True) -> None:
         self.eval_mode = eval_mode
+        self.policy_engines = list(DEFAULT_POLICY_ENGINES)
 
     def decide(self, evidence: EvidenceBundle) -> FusionResult:
+        engine_findings, engine_names = self._evaluate_policy_engines(evidence)
         hits = self._evaluate_rules(evidence)
+        hits.extend(self._rule_hit_from_policy_finding(finding, evidence) for finding in engine_findings)
+        hits = dedupe_hits(hits)
+        evidence.facts["policy_engines_executed"] = engine_names
+        evidence.facts["policy_engine_findings"] = [finding.as_dict() for finding in engine_findings]
         constraints = ConstraintDecision()
         for hit in hits:
             constraints = constraints.join(hit.constraints)
         decision = constraints.to_public_decision(eval_mode=self.eval_mode)
         reasons = [hit.rule_id for hit in hits] or ["ADJ-ALLOW-READONLY" if not evidence.side_effect else "ADJ-ALLOW-AUTHORIZED"]
         return FusionResult(decision=decision, constraints=constraints, reason_codes=reasons, rule_hits=hits, facts=evidence.facts)
+
+    def _evaluate_policy_engines(self, evidence: EvidenceBundle) -> tuple[list[Any], list[str]]:
+        findings = []
+        executed = []
+        for engine in self.policy_engines:
+            if evidence.suite not in engine.suites:
+                continue
+            executed.append(engine.name)
+            findings.extend(engine.evaluate(facts=evidence.facts, graph=evidence.facts, context=evidence))
+        return findings, executed
 
     def _evaluate_rules(self, e: EvidenceBundle) -> list[RuleHit]:
         hits: list[RuleHit] = []
@@ -52,20 +70,6 @@ class AgentDojoEvidenceFusion:
             hits.append(self._block("ADJ-UNKNOWN-001", "unknown side-effecting tool", e))
         if e.attack_goal_overlap:
             hits.append(self._block("ADJ-GOAL-001", "tool arguments overlap suspicious target extracted from prior output", e))
-        if e.group == "financial_commit" and e.untrusted_seen and not e.task_authorized:
-            hits.append(self._block("ADJ-FIN-001", "untrusted context attempted unauthorized financial commit", e))
-        if (
-            e.group == "financial_commit"
-            and e.facts.get("agentdojo.target_entity_source") == "unknown"
-            and e.facts.get("agentdojo.sensitive_args_present")
-        ):
-            hits.append(self._confirm("ADJ-BANKING-CONFIRM-UNKNOWN-RECIPIENT", "unknown payment recipient requires user confirmation", e))
-        if (
-            e.group == "financial_commit"
-            and (e.args_match_untrusted_entity or (e.sensitive_args_not_in_user_task and e.untrusted_seen))
-            and not e.task_authorized
-        ):
-            hits.append(self._block("ADJ-BANKING-UNTRUSTED-FINANCIAL-COMMIT", "financial commit arguments were not authorized by user task entities", e))
         if (
             e.external_sink
             and e.private_data_seen
@@ -78,56 +82,63 @@ class AgentDojoEvidenceFusion:
             e.external_sink
             and e.sensitive_args_present
             and (e.args_match_private_entity or e.args_match_untrusted_entity)
-            and not e.args_match_user_entity
+                and not e.args_match_user_entity
         ):
             hits.append(self._block("ADJ-DATA-002", "external sink arguments appear sourced from private or untrusted observations", e))
-        if e.group == "external_send" and e.untrusted_seen and not e.args_match_user_entity and not e.task_authorized:
-            hits.append(self._block("ADJ-MSG-001", "untrusted context attempted unauthorized external send", e))
-        if (
-            e.group == "external_send"
-            and e.facts.get("agentdojo.message_recipient_source") in {"untrusted_tool_result", "injection_text"}
-            and not e.args_match_user_entity
-        ):
-            hits.append(self._block("ADJ-SLACK-INJECTED-RECIPIENT", "message recipient appears sourced from injected content", e))
-        if e.group == "external_send" and e.facts.get("agentdojo.message_contains_private_data") and e.args_match_untrusted_entity:
-            hits.append(self._block("ADJ-SLACK-PRIVATE-EXFIL", "private data would be sent to an injected recipient or channel", e))
-        if e.group == "external_send" and e.facts.get("agentdojo.message_recipient_source") == "unknown" and not e.task_authorized:
-            hits.append(self._confirm("ADJ-SLACK-CONFIRM-UNKNOWN-DESTINATION", "unknown message destination requires confirmation", e))
-        if (
-            e.group == "booking_commit"
-            and e.injection_seen
-            and (not e.task_authorized or e.sensitive_args_not_in_user_task)
-            and not e.args_match_user_entity
-        ):
-            hits.append(self._block("ADJ-TRAVEL-001", "injection-like travel output attempted unauthorized or mismatched booking", e))
-        if e.group == "booking_commit" and e.facts.get("agentdojo.target_entity_source") == "unknown":
-            hits.append(self._confirm("ADJ-TRAVEL-CONFIRM-UNKNOWN-TARGET", "unknown travel booking target requires confirmation", e))
-        if e.group == "booking_commit" and e.untrusted_seen and not e.args_match_user_entity and not e.task_authorized:
-            hits.append(self._block("ADJ-TRAVEL-002", "untrusted travel content attempted unauthorized booking", e))
-        if e.group == "booking_commit" and e.args_match_untrusted_entity and not e.args_match_user_entity:
-            hits.append(self._block("ADJ-TRAVEL-004", "booking target appears sourced from untrusted output rather than user task", e))
-        if (
-            e.group == "booking_commit"
-            and e.injection_seen
-            and e.facts.get("agentdojo.explicit_booking_target_in_task")
-            and not e.facts.get("agentdojo.booking_target_matches_user_goal")
-        ):
-            hits.append(
-                self._block("ADJ-TRAVEL-003", "travel booking target does not match the user goal after untrusted review content", e)
-            )
-        if e.group == "membership_mutation":
-            hits.append(self._confirm("ADJ-SLACK-CONFIRM-MEMBERSHIP-EXPANSION", "workspace membership changes require confirmation", e))
-        if e.group in {"destructive_update", "credential_change"} and not e.task_authorized:
+        if e.group == "destructive_update" and not e.task_authorized:
             hits.append(self._block("ADJ-STATE-001", "high-impact state mutation not authorized by user task", e))
-        if e.group == "credential_change" and e.untrusted_seen:
-            hits.append(self._block("ADJ-CRED-001", "credential change after untrusted observation", e))
         if e.facts.get("graph.has_private_to_external_edge") and (e.injection_seen or not e.task_authorized):
             hits.append(self._block("ADJ-GRAPH-001", "ActionGraph found private-data-to-external relation", e))
         if e.facts.get("graph.has_injection_to_side_effect_edge") and not e.task_authorized:
             hits.append(self._block("ADJ-GRAPH-002", "ActionGraph found injection-like output influencing unauthorized side effect", e))
         if e.facts.get("graph.has_attack_goal_to_action_edge"):
             hits.append(self._block("ADJ-GRAPH-003", "ActionGraph found attack-goal-to-action relation", e))
-        return dedupe_hits(hits)
+        return hits
+
+    def _rule_hit_from_policy_finding(self, finding: PolicyFinding, e: EvidenceBundle) -> RuleHit:
+        rule_id = finding.reason_codes[0] if finding.reason_codes else f"ADJ-POLICY-{finding.engine.upper()}"
+        reason = str(finding.metadata.get("reason") or rule_id)
+        if finding.decision == "block":
+            return self._block(rule_id, reason, e)
+        if finding.decision == "quarantine":
+            return RuleHit(
+                rule_id=rule_id,
+                decision="quarantine",
+                constraints=ConstraintDecision(
+                    execution_env="no_execute", network_scope="deny", data_scope="no_private", audit_scope="full"
+                ),
+                reason=reason,
+                evidence=self._policy_evidence(finding, e),
+            )
+        if finding.decision == "require_confirmation":
+            return self._confirm(rule_id, reason, e)
+        if finding.decision == "allow_in_sandbox":
+            return RuleHit(
+                rule_id=rule_id,
+                decision="allow_in_sandbox",
+                constraints=ConstraintDecision(execution_env="sandbox", audit_scope="full"),
+                reason=reason,
+                evidence=self._policy_evidence(finding, e),
+            )
+        return RuleHit(
+            rule_id=rule_id,
+            decision="allow",
+            constraints=ConstraintDecision(),
+            reason=reason,
+            evidence=self._policy_evidence(finding, e),
+        )
+
+    def _policy_evidence(self, finding: PolicyFinding, e: EvidenceBundle) -> dict[str, Any]:
+        evidence = {
+            key: e.facts.get(key)
+            for key in sorted(e.facts)
+            if key.startswith(("agentdojo.", "source.", "contract.", "history.", "graph."))
+        }
+        evidence["policy_engine"] = finding.engine
+        evidence["policy_confidence"] = finding.confidence
+        evidence["unsafe_parameters"] = list(finding.unsafe_parameters)
+        evidence["trusted_parameters"] = list(finding.trusted_parameters)
+        return evidence
 
     def _block(self, rule_id: str, reason: str, e: EvidenceBundle) -> RuleHit:
         return RuleHit(

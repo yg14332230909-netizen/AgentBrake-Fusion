@@ -24,9 +24,12 @@
   },
   "methods": [
     "no_defense",
-    "gateway_only",
     "agentdojo_tool_filter",
-    "reposhield_tool_firewall",
-    "reposhield_full"
-  ]
+    "reposhield_tool_firewall"
+  ],
+  "method_options": {
+    "reposhield_tool_firewall": {
+      "confirmation_mode": "strict_eval"
+    }
+  }
 }

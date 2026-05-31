@@ -4,13 +4,13 @@ import time
 from dataclasses import asdict, dataclass, field
 from typing import Any, Callable
 
-from .blocked_result import BlockedActionTracker, build_blocked_tool_result
+from .blocked_result import BlockedActionTracker, build_blocked_tool_result, build_confirmation_required_result
 from ..evidence.action_graph import AgentDojoActionGraphBuilder
 from ..evidence.evidence import AgentDojoEvidenceBuilder
 from ..evidence.fusion import AgentDojoEvidenceFusion, FusionResult
 from ..evidence.state import AgentDojoStateTracker
 from ..evidence.taxonomy import AgentDojoToolTaxonomy, infer_unknown_tool
-from ..compat.types import SanitizeMode, ToolCallContext
+from ..compat.types import ConfirmationMode, SanitizeMode, ToolCallContext
 
 
 @dataclass(slots=True)
@@ -24,6 +24,7 @@ class ToolExecutionDecision:
     action_graph_facts: dict[str, Any] = field(default_factory=dict)
     fusion_result: FusionResult | None = None
     repeated_unsafe_action: bool = False
+    decision_metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_audit_event(self) -> dict[str, Any]:
         return {
@@ -41,6 +42,12 @@ class ToolExecutionDecision:
             "ablation_config": self.evidence.get("ablation_config", {}),
             "matched_rules": list(self.reason_codes),
             "matched_invariants": self.evidence.get("matched_invariants", []),
+            "confirmation_mode": self.decision_metadata.get("confirmation_mode"),
+            "confirmation_required": bool(self.decision_metadata.get("confirmation_required", False)),
+            "confirmation_executed": bool(self.decision_metadata.get("confirmation_executed", False)),
+            "decision_metadata": self.decision_metadata,
+            "policy_engines_executed": self.evidence.get("policy_engines_executed", []),
+            "policy_engine_findings": self.evidence.get("policy_engine_findings", []),
         }
 
 
@@ -64,6 +71,7 @@ class AgentDojoToolFirewall:
         enable_task_contract: bool = True,
         enable_invariants: bool = True,
         enable_recovery_guidance: bool = True,
+        confirmation_mode: ConfirmationMode = "strict_eval",
     ) -> None:
         self.taxonomy = taxonomy or AgentDojoToolTaxonomy()
         self.state = state or AgentDojoStateTracker()
@@ -84,6 +92,7 @@ class AgentDojoToolFirewall:
             "enable_recovery_guidance": enable_recovery_guidance,
         }
         self._blocked_tracker = BlockedActionTracker()
+        self.confirmation_mode = confirmation_mode
 
     def guard_before_tool(self, context: ToolCallContext) -> ToolExecutionDecision:
         started = time.perf_counter()
@@ -131,27 +140,49 @@ class AgentDojoToolFirewall:
         evidence.facts["modules_skipped"] = modules_skipped
         evidence.facts["matched_invariants"] = [] if not module_enabled("invariants") else evidence.facts.get("matched_invariants", [])
         fusion = self.fusion.decide(evidence)
-        execute = fusion.decision in {"allow", "allow_in_sandbox"}
+        execute, public_decision, decision_metadata = self._resolve_execution_for_decision(
+            fusion=fusion,
+            context=context,
+            evidence=evidence.facts,
+            action_graph_facts=graph_facts,
+        )
         repeated = False
         safe = None
         if not execute:
-            safe = build_blocked_tool_result(
-                context,
-                fusion,
-                recovery_guidance_enabled=bool(ablation_config.get("enable_recovery_guidance", True)),
-            )
+            if public_decision == "require_confirmation":
+                safe = build_confirmation_required_result(
+                    context,
+                    fusion,
+                    recovery_guidance_enabled=bool(ablation_config.get("enable_recovery_guidance", True)),
+                )
+            else:
+                safe = build_blocked_tool_result(
+                    context,
+                    fusion,
+                    recovery_guidance_enabled=bool(ablation_config.get("enable_recovery_guidance", True)),
+                )
             retry_count = self._blocked_tracker.record(str(safe["same_action_retry_key"]))
             repeated = retry_count > 1
-            if repeated:
+            if repeated and public_decision != "require_confirmation":
                 safe = build_blocked_tool_result(
                     context,
                     fusion,
                     repeated_unsafe_action=True,
                     recovery_guidance_enabled=bool(ablation_config.get("enable_recovery_guidance", True)),
                 )
+            self.state.observe_tool_call(
+                context.tool_name,
+                spec,
+                context.tool_args,
+                event_status="blocked",
+                decision=public_decision,
+                execute=False,
+                reason_codes=fusion.reason_codes,
+                same_action_retry_key=str(safe["same_action_retry_key"]),
+            )
         decision = ToolExecutionDecision(
             execute=execute,
-            decision=fusion.decision,
+            decision=public_decision,
             reason_codes=fusion.reason_codes,
             safe_result=safe,
             evidence=evidence.facts,
@@ -159,15 +190,50 @@ class AgentDojoToolFirewall:
             action_graph_facts=graph_facts,
             fusion_result=fusion,
             repeated_unsafe_action=repeated,
+            decision_metadata=decision_metadata,
         )
         event = decision.to_audit_event()
         event["policy_ms"] = round((time.perf_counter() - started) * 1000.0, 3)
         self.audit_events.append(event)
         return decision
 
+    def _resolve_execution_for_decision(
+        self,
+        *,
+        fusion: FusionResult,
+        context: ToolCallContext,
+        evidence: dict[str, Any],
+        action_graph_facts: dict[str, Any],
+    ) -> tuple[bool, str, dict[str, Any]]:
+        metadata: dict[str, Any] = {
+            "confirmation_mode": self.confirmation_mode,
+            "confirmation_required": fusion.decision == "require_confirmation",
+            "confirmation_executed": False,
+        }
+        if fusion.decision in {"allow", "allow_in_sandbox"}:
+            return True, fusion.decision, metadata
+        if fusion.decision == "require_confirmation":
+            public_decision = "require_confirmation"
+            if self.confirmation_mode == "oracle_user_eval":
+                allow_oracle_confirmation = (
+                    bool(evidence.get("agentdojo.task_authorized"))
+                    and (bool(evidence.get("agentdojo.args_match_user_entity")) or not bool(evidence.get("agentdojo.args_match_untrusted_entity")))
+                    and not bool(action_graph_facts.get("graph.has_private_to_external_edge"))
+                    and not bool(action_graph_facts.get("graph.has_private_to_executed_external_edge"))
+                    and not bool(action_graph_facts.get("graph.has_injection_to_side_effect_edge"))
+                    and not bool(action_graph_facts.get("graph.has_untrusted_to_executed_side_effect_edge"))
+                )
+                metadata["oracle_user_confirmation_allowed"] = allow_oracle_confirmation
+                metadata["confirmation_executed"] = allow_oracle_confirmation
+                return allow_oracle_confirmation, public_decision, metadata
+            metadata["gateway_confirmation_counted_separately"] = self.confirmation_mode == "gateway_eval"
+            return False, public_decision, metadata
+        return False, fusion.decision, metadata
+
     def observe_after_tool(self, context: ToolCallContext, raw_result: Any) -> Any:
         started = time.perf_counter()
         spec = self.taxonomy.classify(context.tool_name, suite=context.suite)
+        self.state.observe_tool_call(context.tool_name, spec, context.tool_args, event_status="executed", decision="allow", execute=True)
         event = self.state.observe_tool_result(context.tool_name, spec, raw_result)
         sanitized = self.state.sanitize_tool_output(raw_result, mode=self.sanitize_mode) if self.sanitize_outputs else raw_result
         self.audit_events.append(

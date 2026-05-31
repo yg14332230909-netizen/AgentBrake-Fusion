@@ -48,6 +48,7 @@ def build_blocked_tool_result(
     *,
     repeated_unsafe_action: bool = False,
     recovery_guidance_enabled: bool = True,
+    status_override: str | None = None,
 ) -> dict[str, Any]:
     spec_group = str(fusion.facts.get("agentdojo.tool_group") or "")
     retry_key = same_action_retry_key(context.tool_name, context.tool_args, fusion.reason_codes)
@@ -61,7 +62,7 @@ def build_blocked_tool_result(
         disallowed = ["Do not call this tool again with the same parameters.", *disallowed]
         reason = f"Repeated unsafe action detected. {reason}"
     result = StructuredBlockedResult(
-        status="blocked",
+        status=status_override or "blocked",
         blocked_tool=context.tool_name,
         blocked_args_redacted=redact_args(context.tool_args),
         reason_codes=list(fusion.reason_codes),
@@ -76,6 +77,20 @@ def build_blocked_tool_result(
         message=_llm_message(reason, allowed, disallowed),
     )
     return result.as_dict()
+
+
+def build_confirmation_required_result(
+    context: ToolCallContext,
+    fusion: FusionResult,
+    *,
+    recovery_guidance_enabled: bool = True,
+) -> dict[str, Any]:
+    return build_blocked_tool_result(
+        context,
+        fusion,
+        recovery_guidance_enabled=recovery_guidance_enabled,
+        status_override="confirmation_required",
+    )
 
 
 def same_action_retry_key(tool_name: str, tool_args: dict[str, Any], reason_codes: list[str]) -> str:

@@ -7,7 +7,7 @@ from ..compat.models_compat import sha256_text
 from .state import AgentDojoStateTracker, extract_targets
 from .contracts import SourceInfluenceGraph, TaskContractMatch, payment_contract_from_user_task
 from .task_authorizer import authorize_tool
-from ..compat.types import ArgumentProvenance, EvidenceBundle, ToolCallContext, ToolSpec
+from ..compat.types import ArgumentProvenance, EvidenceBundle, ToolCallContext, ToolSpec, ValueMatchEvidence
 
 SENSITIVE_ARG_KEYS = {"password", "token", "secret", "iban", "account", "recipient", "to", "email", "message", "body", "file_id", "amount"}
 
@@ -37,6 +37,7 @@ class AgentDojoEvidenceBuilder:
         explicit_booking_target_in_task = bool(user_task_targets)
         arg_provenance = self._argument_provenance(context, authorization)
         arg_source_map = {item.arg_name: item.source_type for item in arg_provenance}
+        value_matches = self._value_match_evidence(context, spec, state, arg_provenance)
         target_source = self._target_entity_source(spec, arg_source_map)
         task_contract = TaskContractMatch(
             status="match" if task_authorized else ("violation" if spec.side_effect else "unknown"),
@@ -84,6 +85,12 @@ class AgentDojoEvidenceBuilder:
             "agentdojo.booking_target_matches_user_goal": booking_target_matches_user_goal,
             "agentdojo.explicit_booking_target_in_task": explicit_booking_target_in_task,
             "agentdojo.arg_provenance": [asdict(item) for item in arg_provenance],
+            "agentdojo.field_provenance": [asdict(item) for item in value_matches],
+            "agentdojo.value_match_evidence": [asdict(item) for item in value_matches],
+            "agentdojo.target_entity_value_match": self._first_match(value_matches, "target_entity"),
+            "agentdojo.recipient_value_match": self._first_match(value_matches, "recipient"),
+            "agentdojo.message_body_value_match": self._first_match(value_matches, "message_body"),
+            "agentdojo.amount_value_match": self._first_match(value_matches, "amount"),
             "agentdojo.arg_source_map": arg_source_map,
             "agentdojo.target_entity_source": target_source,
             "agentdojo.message_recipient_source": self._message_target_source(spec, arg_source_map),
@@ -209,5 +216,64 @@ class AgentDojoEvidenceBuilder:
             if key in arg_source_map:
                 return arg_source_map[key]
         return "unknown"
+
+    def _value_match_evidence(
+        self,
+        context: ToolCallContext,
+        spec: ToolSpec,
+        state: AgentDojoStateTracker,
+        arg_provenance: list[ArgumentProvenance],
+    ) -> list[ValueMatchEvidence]:
+        out: list[ValueMatchEvidence] = []
+        recent_events = [event for event in reversed(state.events[-10:]) if event.event_status == "tool_result"]
+        for item in arg_provenance:
+            role = self._field_role(item.arg_name, spec)
+            matched_event = next((event for event in recent_events if str(item.value).lower() and str(item.value).lower() in event.preview.lower()), None)
+            source_type = item.source_type
+            confidence = item.confidence
+            if matched_event and source_type == "unknown":
+                source_type = "trusted_tool_result" if matched_event.private_data else ("untrusted_tool_result" if matched_event.untrusted else "trusted_tool_result")
+                confidence = 0.65
+            match_type = "normalized" if source_type != "unknown" else "unknown"
+            if role in {"amount", "date"} and item.source_type != "unknown":
+                match_type = role
+            out.append(
+                ValueMatchEvidence(
+                    field_name=item.arg_name,
+                    field_role=role,  # type: ignore[arg-type]
+                    value=item.value,
+                    source_type=source_type,
+                    matched_prior_event_id=matched_event.event_id if matched_event else None,
+                    matched_span=str(item.value) if item.source_type != "unknown" else None,
+                    match_type=match_type,  # type: ignore[arg-type]
+                    confidence=confidence,
+                    notes=[] if source_type != "unknown" else ["no deterministic source match"],
+                )
+            )
+        return out
+
+    def _field_role(self, field_name: str, spec: ToolSpec) -> str:
+        key = field_name.lower()
+        if key in {"hotel", "restaurant", "company", "flight"}:
+            return "target_entity"
+        if key in {"recipient", "to", "email", "user"}:
+            return "recipient"
+        if key == "channel":
+            return "channel"
+        if key in {"body", "message", "content"}:
+            return "message_body"
+        if key == "amount":
+            return "amount"
+        if "date" in key or "day" in key or "time" in key:
+            return "date"
+        if key in {"path", "file", "file_id"}:
+            return "file_path"
+        return "unknown"
+
+    def _first_match(self, matches: list[ValueMatchEvidence], role: str) -> dict[str, Any] | None:
+        for match in matches:
+            if match.field_role == role:
+                return asdict(match)
+        return None
 
 

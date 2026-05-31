@@ -72,6 +72,18 @@ def collect_cases(reports_dir: Path) -> list[Any]:
                         row.get("blocked_tool_call_count") or audit.get("blocked_tool_calls") or audit.get("reposhield_blocks") or 0
                     ),
                     repeated_block_count=int(row.get("repeated_block_count") or audit.get("repeated_block_count") or 0),
+                    blocked_case=bool(row.get("blocked_case", False)),
+                    first_block_step=row.get("first_block_step"),
+                    first_confirmation_step=row.get("first_confirmation_step"),
+                    post_block_tool_call_count=int(row.get("post_block_tool_call_count") or 0),
+                    post_block_executed_tool_call_count=int(row.get("post_block_executed_tool_call_count") or 0),
+                    post_block_blocked_tool_call_count=int(row.get("post_block_blocked_tool_call_count") or 0),
+                    final_user_task_success=row.get("final_user_task_success"),
+                    final_injection_task_success=row.get("final_injection_task_success"),
+                    recovery_success=bool(row.get("recovery_success", False)),
+                    post_block_secure_success=bool(row.get("post_block_secure_success", row.get("recovery_success", False))),
+                    confirmation_required_count=int(row.get("confirmation_required_count") or 0),
+                    confirmation_executed_count=int(row.get("confirmation_executed_count") or 0),
                     policy_latency_p50_ms=float(
                         row.get("policy_latency_p50_ms") or audit.get("policy_p50_ms") or audit.get("reposhield_p50_policy_latency_ms") or 0.0
                     ),
@@ -130,6 +142,9 @@ def render_summary(metrics: dict[str, Any], rows: list[dict[str, Any]]) -> str:
             f"| targeted_asr | {float(metrics.get('targeted_asr', 0.0)):.3f} |",
             f"| security_rate | {float(metrics.get('security_rate', 0.0)):.3f} |",
             f"| secure_utility | {float(metrics.get('secure_utility', 0.0)):.3f} |",
+            f"| recovery_success_rate | {_fmt_nullable(metrics.get('recovery_success_rate'))} |",
+            f"| post_block_user_success_rate | {_fmt_nullable(metrics.get('post_block_user_success_rate'))} |",
+            f"| confirmation_required_rate | {_fmt_nullable(metrics.get('confirmation_required_rate'))} |",
             f"| sample_count | {int(metrics.get('sample_count', 0))} |",
             "",
             f"Suites included: {', '.join(suites) if suites else 'none'}",
@@ -158,6 +173,10 @@ def render_deprecated_mapping() -> str:
             "",
         ]
     )
+
+
+def _fmt_nullable(value: Any) -> str:
+    return "null" if value is None else f"{float(value):.3f}"
 
 
 def aggregate_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:

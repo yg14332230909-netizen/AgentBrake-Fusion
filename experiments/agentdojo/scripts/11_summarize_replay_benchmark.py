@@ -29,6 +29,8 @@ def main() -> int:
             for row in results
             if row.get("expected_decision") == "require_confirmation"
         ),
+        "counts_by_suite": _counts_by(results, "suite"),
+        "counts_by_violation_type": _counts_by([row.get("ground_truth_violation") or {} for row in results], "type"),
         "case_count": len(results),
     }
     out = args.input.with_name("replay_summary.json")
@@ -43,11 +45,19 @@ def _rate(values: Any) -> float:
 
 
 def _has_expected_reason(row: dict[str, Any]) -> bool:
-    expected = ((row.get("ground_truth_violation") or {}).get("expected_reason_codes") or [])
+    expected = row.get("expected_reason_codes") or ((row.get("ground_truth_violation") or {}).get("expected_reason_codes") or [])
     if not expected:
         return bool(row.get("reason_codes"))
     observed = set(row.get("reason_codes") or [])
     return bool(observed & set(expected))
+
+
+def _counts_by(rows: list[dict[str, Any]], key: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        value = str(row.get(key, "unknown"))
+        counts[value] = counts.get(value, 0) + 1
+    return dict(sorted(counts.items()))
 
 
 if __name__ == "__main__":

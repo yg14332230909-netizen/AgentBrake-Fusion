@@ -7,49 +7,93 @@ import json
 import os
 import time
 from functools import partial
+from importlib import import_module
 from pathlib import Path
 from typing import Any
 
-from agentdojo.agent_pipeline import AgentPipeline, PipelineConfig
-from agentdojo.agent_pipeline.agent_pipeline import TOOL_FILTER_PROMPT
-from agentdojo.agent_pipeline.basic_elements import InitQuery, SystemMessage
-from agentdojo.agent_pipeline.llms import openai_llm as agentdojo_openai_llm
-from agentdojo.agent_pipeline.llms.local_llm import LocalLLM
-from agentdojo.agent_pipeline.llms.openai_llm import OpenAILLM
-from agentdojo.agent_pipeline.tool_execution import ToolsExecutionLoop, ToolsExecutor, tool_result_to_str
-from agentdojo.attacks.attack_registry import load_attack
-from agentdojo.attacks.base_attacks import MODEL_NAMES
-from agentdojo.functions_runtime import FunctionCall
-from agentdojo.logging import OutputLogger, TraceLogger
-from agentdojo.task_suite.load_suites import get_suite
-from agentdojo.types import ChatUserMessage, get_text_content_as_str, text_content_block_from_string
-from openai import APIConnectionError, APIStatusError, APITimeoutError, OpenAI, RateLimitError
-
 from ....control_plane import RepoShieldControlPlane
 from ...fast_mode import load_eval_fast_mode_config
-from ..gate.runtime_wrapper import build_agentdojo_firewall_pipeline
 from ..gate.tool_firewall import summarize_agentdojo_firewall_audit
-from ..adapters.pipeline_wrapper import RepoShieldAgentDojoContext, build_reposhield_agentdojo_pipeline
 from .result_exporter import summarize_agentdojo_audit
 from .metrics import compute_agentdojo_metrics, normalize_raw_agentdojo_result
 from ..state_tracker import AgentDojoStateTracker
 from ..tool_taxonomy import classify_agentdojo_tool
+from ..compat.agentdojo_api import require_agentdojo
 
 TRANSIENT_STATUS_CODES = {408, 409, 429, 500, 502, 503, 504}
 _AUTHORIZED_TOOL_CACHE: dict[tuple[str, str], tuple[list[str], list[str]]] = {}
+_AGENTDOJO_DEPS: dict[str, Any] | None = None
+_OPENAI_COMPATIBLE_LLM_CLASS: type[Any] | None = None
+_OPENAI_COMPATIBLE_TOOL_FILTER_CLASS: type[Any] | None = None
+
+
+def _load_agentdojo_deps() -> dict[str, Any]:
+    global _AGENTDOJO_DEPS
+    if _AGENTDOJO_DEPS is not None:
+        return _AGENTDOJO_DEPS
+    require_agentdojo()
+    agent_pipeline = import_module("agentdojo.agent_pipeline")
+    agent_pipeline_module = import_module("agentdojo.agent_pipeline.agent_pipeline")
+    basic_elements = import_module("agentdojo.agent_pipeline.basic_elements")
+    openai_llm_module = import_module("agentdojo.agent_pipeline.llms.openai_llm")
+    local_llm_module = import_module("agentdojo.agent_pipeline.llms.local_llm")
+    agentdojo_openai_llm = import_module("agentdojo.agent_pipeline.llms.openai_llm")
+    tool_execution = import_module("agentdojo.agent_pipeline.tool_execution")
+    attack_registry = import_module("agentdojo.attacks.attack_registry")
+    base_attacks = import_module("agentdojo.attacks.base_attacks")
+    functions_runtime = import_module("agentdojo.functions_runtime")
+    logging_module = import_module("agentdojo.logging")
+    suites_module = import_module("agentdojo.task_suite.load_suites")
+    types_module = import_module("agentdojo.types")
+    openai_module = import_module("openai")
+    _AGENTDOJO_DEPS = {
+        "AgentPipeline": agent_pipeline.AgentPipeline,
+        "PipelineConfig": agent_pipeline.PipelineConfig,
+        "TOOL_FILTER_PROMPT": agent_pipeline_module.TOOL_FILTER_PROMPT,
+        "InitQuery": basic_elements.InitQuery,
+        "SystemMessage": basic_elements.SystemMessage,
+        "agentdojo_openai_llm": agentdojo_openai_llm,
+        "LocalLLM": local_llm_module.LocalLLM,
+        "OpenAILLM": openai_llm_module.OpenAILLM,
+        "ToolsExecutionLoop": tool_execution.ToolsExecutionLoop,
+        "ToolsExecutor": tool_execution.ToolsExecutor,
+        "tool_result_to_str": tool_execution.tool_result_to_str,
+        "load_attack": attack_registry.load_attack,
+        "MODEL_NAMES": base_attacks.MODEL_NAMES,
+        "FunctionCall": functions_runtime.FunctionCall,
+        "OutputLogger": logging_module.OutputLogger,
+        "TraceLogger": logging_module.TraceLogger,
+        "get_suite": suites_module.get_suite,
+        "ChatUserMessage": types_module.ChatUserMessage,
+        "get_text_content_as_str": types_module.get_text_content_as_str,
+        "text_content_block_from_string": types_module.text_content_block_from_string,
+        "OpenAI": openai_module.OpenAI,
+        "APIConnectionError": openai_module.APIConnectionError,
+        "APIStatusError": openai_module.APIStatusError,
+        "APITimeoutError": openai_module.APITimeoutError,
+        "RateLimitError": openai_module.RateLimitError,
+    }
+    return _AGENTDOJO_DEPS
 
 
 def _is_transient_llm_error(exc: BaseException) -> bool:
-    if isinstance(exc, (APIConnectionError, APITimeoutError, RateLimitError)):
+    try:
+        deps = _load_agentdojo_deps()
+        transient_errors = (deps["APIConnectionError"], deps["APITimeoutError"], deps["RateLimitError"])
+        status_error = deps["APIStatusError"]
+    except Exception:
+        transient_errors = ()
+        status_error = None
+    if transient_errors and isinstance(exc, transient_errors):
         return True
-    if isinstance(exc, APIStatusError):
+    if status_error is not None and isinstance(exc, status_error):
         return int(getattr(exc, "status_code", 0) or 0) in TRANSIENT_STATUS_CODES
     text = str(exc).lower()
     return any(marker in text for marker in ["error code: 502", "error code: 503", "timeout", "rate limit"])
 
 
 def _run_agentdojo_task_with_retries(
-    suite: Any, pipeline: AgentPipeline, user_task: Any, injection_task: Any, injections: dict[str, str]
+    suite: Any, pipeline: Any, user_task: Any, injection_task: Any, injections: dict[str, str]
 ) -> tuple[bool, bool]:
     max_attempts = int(os.getenv("AGENTDOJO_LLM_RETRY_ATTEMPTS", "4"))
     delay_sec = float(os.getenv("AGENTDOJO_LLM_RETRY_INITIAL_SEC", "2"))
@@ -71,54 +115,84 @@ def _run_agentdojo_task_with_retries(
     raise last_exc
 
 
-class OpenAICompatibleLLM(OpenAILLM):
-    """OpenAI-compatible LLM that keeps system messages as `system` for DeepSeek-like APIs."""
+def _openai_compatible_llm_class() -> type[Any]:
+    global _OPENAI_COMPATIBLE_LLM_CLASS
+    if _OPENAI_COMPATIBLE_LLM_CLASS is not None:
+        return _OPENAI_COMPATIBLE_LLM_CLASS
+    deps = _load_agentdojo_deps()
+    OpenAILLM = deps["OpenAILLM"]
+    agentdojo_openai_llm = deps["agentdojo_openai_llm"]
 
-    def query(self, query, runtime, env=None, messages=(), extra_args=None):  # type: ignore[override]
-        env = env if env is not None else None
-        extra_args = extra_args or {}
-        openai_messages = [agentdojo_openai_llm._message_to_openai(message, self.model) for message in messages]
-        for msg in openai_messages:
-            if msg.get("role") == "developer":
-                msg["role"] = "system"
-        openai_tools = [agentdojo_openai_llm._function_to_openai(tool) for tool in runtime.functions.values()]
-        completion = agentdojo_openai_llm.chat_completion_request(
-            self.client, self.model, openai_messages, openai_tools, self.reasoning_effort, self.temperature
-        )
-        output = _safe_openai_to_assistant_message(completion.choices[0].message)
-        return query, runtime, env, [*messages, output], extra_args
+    class OpenAICompatibleLLM(OpenAILLM):  # type: ignore[misc, valid-type]
+        """OpenAI-compatible LLM that keeps system messages as `system` for DeepSeek-like APIs."""
 
+        _reposhield_openai_compatible = True
 
-class OpenAICompatibleToolFilter(agentdojo_openai_llm.OpenAILLMToolFilter):
-    """Tool-filter defense that preserves `system` role for OpenAI-compatible APIs."""
+        def query(self, query, runtime, env=None, messages=(), extra_args=None):  # type: ignore[override]
+            env = env if env is not None else None
+            extra_args = extra_args or {}
+            openai_messages = [agentdojo_openai_llm._message_to_openai(message, self.model) for message in messages]
+            for msg in openai_messages:
+                if msg.get("role") == "developer":
+                    msg["role"] = "system"
+            openai_tools = [agentdojo_openai_llm._function_to_openai(tool) for tool in runtime.functions.values()]
+            completion = agentdojo_openai_llm.chat_completion_request(
+                self.client, self.model, openai_messages, openai_tools, self.reasoning_effort, self.temperature
+            )
+            output = _safe_openai_to_assistant_message(completion.choices[0].message)
+            return query, runtime, env, [*messages, output], extra_args
 
-    def query(self, query, runtime, env=None, messages=(), extra_args=None):  # type: ignore[override]
-        env = env if env is not None else None
-        extra_args = extra_args or {}
-        messages = [*messages, ChatUserMessage(role="user", content=[text_content_block_from_string(self.prompt)])]
-        openai_messages = [agentdojo_openai_llm._message_to_openai(message, self.model) for message in messages]
-        for msg in openai_messages:
-            if msg.get("role") == "developer":
-                msg["role"] = "system"
-        openai_tools = [agentdojo_openai_llm._function_to_openai(tool) for tool in runtime.functions.values()]
-        completion = self.client.chat.completions.create(
-            model=self.model,
-            messages=openai_messages,
-            tools=openai_tools or agentdojo_openai_llm.NOT_GIVEN,
-            tool_choice="none",
-            temperature=self.temperature,
-        )
-        output = _safe_openai_to_assistant_message(completion.choices[0].message)
-
-        new_tools = {}
-        for tool_name, tool in runtime.functions.items():
-            if output["content"] is not None and tool_name in get_text_content_as_str(output["content"]):
-                new_tools[tool_name] = tool
-        runtime.update_functions(new_tools)
-        return query, runtime, env, [*messages, output], extra_args
+    _OPENAI_COMPATIBLE_LLM_CLASS = OpenAICompatibleLLM
+    return _OPENAI_COMPATIBLE_LLM_CLASS
 
 
-def build_llm(model: str, model_id: str | None, tool_delimiter: str) -> tuple[OpenAILLM | LocalLLM, str]:
+def _openai_compatible_tool_filter_class() -> type[Any]:
+    global _OPENAI_COMPATIBLE_TOOL_FILTER_CLASS
+    if _OPENAI_COMPATIBLE_TOOL_FILTER_CLASS is not None:
+        return _OPENAI_COMPATIBLE_TOOL_FILTER_CLASS
+    deps = _load_agentdojo_deps()
+    agentdojo_openai_llm = deps["agentdojo_openai_llm"]
+    ChatUserMessage = deps["ChatUserMessage"]
+    get_text_content_as_str = deps["get_text_content_as_str"]
+    text_content_block_from_string = deps["text_content_block_from_string"]
+
+    class OpenAICompatibleToolFilter(agentdojo_openai_llm.OpenAILLMToolFilter):  # type: ignore[misc]
+        """Tool-filter defense that preserves `system` role for OpenAI-compatible APIs."""
+
+        def query(self, query, runtime, env=None, messages=(), extra_args=None):  # type: ignore[override]
+            env = env if env is not None else None
+            extra_args = extra_args or {}
+            messages = [*messages, ChatUserMessage(role="user", content=[text_content_block_from_string(self.prompt)])]
+            openai_messages = [agentdojo_openai_llm._message_to_openai(message, self.model) for message in messages]
+            for msg in openai_messages:
+                if msg.get("role") == "developer":
+                    msg["role"] = "system"
+            openai_tools = [agentdojo_openai_llm._function_to_openai(tool) for tool in runtime.functions.values()]
+            completion = self.client.chat.completions.create(
+                model=self.model,
+                messages=openai_messages,
+                tools=openai_tools or agentdojo_openai_llm.NOT_GIVEN,
+                tool_choice="none",
+                temperature=self.temperature,
+            )
+            output = _safe_openai_to_assistant_message(completion.choices[0].message)
+
+            new_tools = {}
+            for tool_name, tool in runtime.functions.items():
+                if output["content"] is not None and tool_name in get_text_content_as_str(output["content"]):
+                    new_tools[tool_name] = tool
+            runtime.update_functions(new_tools)
+            return query, runtime, env, [*messages, output], extra_args
+
+    _OPENAI_COMPATIBLE_TOOL_FILTER_CLASS = OpenAICompatibleToolFilter
+    return _OPENAI_COMPATIBLE_TOOL_FILTER_CLASS
+
+
+def build_llm(model: str, model_id: str | None, tool_delimiter: str) -> tuple[Any, str]:
+    deps = _load_agentdojo_deps()
+    LocalLLM = deps["LocalLLM"]
+    OpenAILLM = deps["OpenAILLM"]
+    OpenAI = deps["OpenAI"]
     provider = (os.getenv("REPOSHIELD_LLM_PROVIDER") or "").strip().lower()
     model_key = model.lower()
     if provider == "local" or model_key == "local":
@@ -139,12 +213,15 @@ def build_llm(model: str, model_id: str | None, tool_delimiter: str) -> tuple[Op
     api_key = os.getenv("REPOSHIELD_LLM_API_KEY") or os.getenv("OPENAI_API_KEY") or os.getenv("DEEPSEEK_API_KEY") or "EMPTY"
     client = OpenAI(api_key=api_key, base_url=base_url, timeout=float(os.getenv("REPOSHIELD_LLM_TIMEOUT", "300")))
     compat = "deepseek" in base_url.lower() or os.getenv("REPOSHIELD_OPENAI_COMPAT_SYSTEM_ROLE", "").lower() in {"1", "true", "yes"}
-    llm = OpenAICompatibleLLM(client, model) if compat else OpenAILLM(client, model)
+    llm = _openai_compatible_llm_class()(client, model) if compat else OpenAILLM(client, model)
     setattr(llm, "name", _agentdojo_pipeline_name(model))
     return llm, str(getattr(llm, "name"))
 
 
 def _safe_openai_to_assistant_message(message: Any) -> dict[str, Any]:
+    deps = _load_agentdojo_deps()
+    FunctionCall = deps["FunctionCall"]
+    text_content_block_from_string = deps["text_content_block_from_string"]
     content = None
     if getattr(message, "content", None) is not None:
         content = [text_content_block_from_string(str(message.content))]
@@ -202,7 +279,7 @@ def _agentdojo_pipeline_name(model: str) -> str:
     explicit = os.getenv("AGENTDOJO_MODEL_ALIAS")
     if explicit:
         return explicit
-    if any(known in model for known in MODEL_NAMES):
+    if any(known in model for known in _load_agentdojo_deps()["MODEL_NAMES"]):
         return model
     return f"local-{model}"
 
@@ -292,18 +369,32 @@ def _infer_authorized_tools_and_categories(suite_name: str, suite: Any, user_tas
 
 def build_pipeline(
     defense: str,
-    llm: OpenAILLM | LocalLLM,
+    llm: Any,
     control_plane: RepoShieldControlPlane | None,
     *,
     system_message: str,
     max_iters: int,
-) -> AgentPipeline:
+) -> Any:
+    deps = _load_agentdojo_deps()
+    AgentPipeline = deps["AgentPipeline"]
+    PipelineConfig = deps["PipelineConfig"]
+    InitQuery = deps["InitQuery"]
+    SystemMessage = deps["SystemMessage"]
+    TOOL_FILTER_PROMPT = deps["TOOL_FILTER_PROMPT"]
+    ToolsExecutionLoop = deps["ToolsExecutionLoop"]
+    ToolsExecutor = deps["ToolsExecutor"]
+    tool_result_to_str = deps["tool_result_to_str"]
     if defense == "agentdojo_firewall":
+        from ..gate.runtime_wrapper import build_agentdojo_firewall_pipeline
+
         return build_agentdojo_firewall_pipeline(llm, system_message=system_message, max_iters=max_iters)
     if defense == "reposhield_toolgate":
+        from ..adapters.pipeline_wrapper import build_reposhield_agentdojo_pipeline
+
         assert control_plane is not None
         return build_reposhield_agentdojo_pipeline(llm, control_plane, system_message=system_message, max_iters=max_iters)
-    if defense == "tool_filter" and isinstance(llm, OpenAICompatibleLLM):
+    if defense == "tool_filter" and getattr(llm, "_reposhield_openai_compatible", False):
+        OpenAICompatibleToolFilter = _openai_compatible_tool_filter_class()
         formatter = partial(tool_result_to_str, dump_fn=json.dumps) if False else tool_result_to_str
         tools_loop = ToolsExecutionLoop([ToolsExecutor(formatter), llm])
         pipeline = AgentPipeline(
@@ -362,7 +453,15 @@ def run_suite(
     run_name: str | None = None,
     user_task_ids: list[str] | None = None,
     injection_task_ids: list[str] | None = None,
+    confirmation_mode: str = "strict_eval",
 ) -> dict[str, Any]:
+    deps = _load_agentdojo_deps()
+    get_suite = deps["get_suite"]
+    load_attack = deps["load_attack"]
+    OutputLogger = deps["OutputLogger"]
+    TraceLogger = deps["TraceLogger"]
+    from ..adapters.pipeline_wrapper import RepoShieldAgentDojoContext
+
     suite = get_suite(benchmark_version, suite_name)
     llm, llm_name = build_llm(model, model_id, tool_delimiter)
     repo_root = repo_root or Path.cwd()
@@ -378,6 +477,8 @@ def run_suite(
         if disable_invariants:
             control_plane.policy.policygraph.invariants = _NoopInvariantEngine()  # type: ignore[attr-defined]
     pipeline = build_pipeline(defense, llm, control_plane, system_message=system_message, max_iters=max_iters)
+    if hasattr(getattr(pipeline, "firewall", None), "confirmation_mode"):
+        pipeline.firewall.confirmation_mode = confirmation_mode  # type: ignore[attr-defined]
     if defense == "reposhield_toolgate" and disable_taxonomy:
         pipeline.tool_gate.taxonomy = {}  # type: ignore[attr-defined]
     if defense == "reposhield_toolgate" and disable_state_tracker:
@@ -442,7 +543,9 @@ def run_suite(
                     pipeline_name=getattr(pipeline, "name", llm_name),
                     benchmark_version=benchmark_version,
                 ) as logger:
+                    before_audit = list(getattr(getattr(pipeline, "firewall", None), "audit_events", []) or [])
                     utility, security = _run_agentdojo_task_with_retries(suite, pipeline, user_task, None, injections)
+                    after_audit = list(getattr(getattr(pipeline, "firewall", None), "audit_events", []) or [])
                     logger.set_contextarg("utility", utility)
                     logger.set_contextarg("security", security)
                 utility_results[(user_task_id, injection_task_id)] = utility
@@ -458,6 +561,7 @@ def run_suite(
                         "security": security,
                         "raw_agentdojo_user_task_success": bool(utility),
                         "raw_agentdojo_injection_task_success": bool(security),
+                        **recovery_fields_from_audit(after_audit[len(before_audit) :], bool(utility), bool(security)),
                     }
                 )
         else:
@@ -517,7 +621,9 @@ def run_suite(
                         pipeline_name=getattr(pipeline, "name", llm_name),
                         benchmark_version=benchmark_version,
                     ) as logger:
+                        before_audit = list(getattr(getattr(pipeline, "firewall", None), "audit_events", []) or [])
                         utility, security = _run_agentdojo_task_with_retries(suite, pipeline, user_task, injection_task, injections)
+                        after_audit = list(getattr(getattr(pipeline, "firewall", None), "audit_events", []) or [])
                         logger.set_contextarg("utility", utility)
                         logger.set_contextarg("security", security)
                     utility_results[(user_task.ID, injection_task_id)] = utility
@@ -533,6 +639,7 @@ def run_suite(
                             "suite": suite_name,
                             "method": defense,
                             "run_id": run_name or f"{suite_name}_{defense}_{attack_obj.name if attack_obj else 'none'}",
+                            **recovery_fields_from_audit(after_audit[len(before_audit) :], bool(utility), bool(security)),
                             "injections": injections,
                         }
                     )
@@ -547,6 +654,19 @@ def run_suite(
             run_id=run_name or f"{suite_name}_{defense}_{attack_obj.name if attack_obj else 'none'}",
             user_task_id=row.get("user_task_id"),
             injection_task_id=row.get("injection_task_id"),
+            blocked_case=bool(row.get("blocked_case", False)),
+            first_block_step=row.get("first_block_step"),
+            first_confirmation_step=row.get("first_confirmation_step"),
+            post_block_tool_call_count=int(row.get("post_block_tool_call_count", 0) or 0),
+            post_block_executed_tool_call_count=int(row.get("post_block_executed_tool_call_count", 0) or 0),
+            post_block_blocked_tool_call_count=int(row.get("post_block_blocked_tool_call_count", 0) or 0),
+            repeated_block_count=int(row.get("repeated_block_count", 0) or 0),
+            final_user_task_success=bool(row.get("raw_agentdojo_user_task_success", row.get("utility", False))),
+            final_injection_task_success=bool(row.get("raw_agentdojo_injection_task_success", row.get("security", False))),
+            recovery_success=bool(row.get("recovery_success", False)),
+            post_block_secure_success=bool(row.get("post_block_secure_success", False)),
+            confirmation_required_count=int(row.get("confirmation_required_count", 0) or 0),
+            confirmation_executed_count=int(row.get("confirmation_executed_count", 0) or 0),
         )
         for row in per_run
     ]
@@ -594,6 +714,47 @@ def _avg_bool(values: Any) -> float:
     return float(sum(vals) / len(vals)) if vals else 0.0
 
 
+def recovery_fields_from_audit(events: list[dict[str, Any]], user_success: bool, injection_success: bool) -> dict[str, Any]:
+    decisions = [event for event in events if event.get("event_type") == "agentdojo_tool_gate_decision"]
+    first_block_step = None
+    first_confirmation_step = None
+    confirmation_required = 0
+    confirmation_executed = 0
+    repeated = 0
+    for idx, event in enumerate(decisions):
+        decision = event.get("decision")
+        execute = bool(event.get("execute", False))
+        if decision == "require_confirmation":
+            confirmation_required += 1
+            if event.get("confirmation_executed"):
+                confirmation_executed += 1
+            if first_confirmation_step is None:
+                first_confirmation_step = idx
+        if not execute and decision in {"block", "quarantine", "require_confirmation", "sandbox_then_approval"}:
+            if first_block_step is None and not event.get("confirmation_executed"):
+                first_block_step = idx
+        if event.get("repeated_unsafe_action"):
+            repeated += 1
+    post_block = decisions[(first_block_step + 1) :] if first_block_step is not None else []
+    blocked_case = first_block_step is not None
+    recovery_success = bool(blocked_case and user_success and not injection_success)
+    return {
+        "blocked_case": blocked_case,
+        "first_block_step": first_block_step,
+        "first_confirmation_step": first_confirmation_step,
+        "post_block_tool_call_count": len(post_block),
+        "post_block_executed_tool_call_count": sum(1 for event in post_block if event.get("execute")),
+        "post_block_blocked_tool_call_count": sum(1 for event in post_block if not event.get("execute")),
+        "repeated_block_count": repeated,
+        "final_user_task_success": user_success,
+        "final_injection_task_success": injection_success,
+        "recovery_success": recovery_success,
+        "post_block_secure_success": recovery_success,
+        "confirmation_required_count": confirmation_required,
+        "confirmation_executed_count": confirmation_executed,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--suite", required=True)
@@ -619,6 +780,7 @@ def main() -> int:
     parser.add_argument("--run-name", default=None)
     parser.add_argument("--user-tasks", nargs="*", default=None)
     parser.add_argument("--injection-tasks", nargs="*", default=None)
+    parser.add_argument("--confirmation-mode", choices=["strict_eval", "oracle_user_eval", "gateway_eval"], default="strict_eval")
     args = parser.parse_args()
 
     summary = run_suite(
@@ -645,6 +807,7 @@ def main() -> int:
         run_name=args.run_name,
         user_task_ids=args.user_tasks,
         injection_task_ids=args.injection_tasks,
+        confirmation_mode=args.confirmation_mode,
     )
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     return 0

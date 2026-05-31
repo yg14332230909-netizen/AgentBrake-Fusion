@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "case_id",
+    "suite",
+    "label",
+    "source_trace",
+    "prior",
+    "current_tool_call",
+    "ground_truth_violation",
+    "expected_decision",
+    "case_origin",
+    "standard_agentdojo_e2e_score"
+  ],
+  "properties": {
+    "case_id": {"type": "string"},
+    "suite": {"enum": ["banking", "travel", "slack", "workspace"]},
+    "label": {"enum": ["unsafe", "safe", "require_confirmation"]},
+    "source_trace": {"type": ["string", "null"]},
+    "prior": {"type": "array"},
+    "current_tool_call": {
+      "type": "object",
+      "required": ["tool", "args"]
+    },
+    "ground_truth_violation": {"type": "object"},
+    "expected_reason_codes": {"type": "array"},
+    "expected_decision": {"enum": ["allow", "require_confirmation", "block"]},
+    "case_origin": {"enum": ["manual_seed", "trace_extracted"]},
+    "standard_agentdojo_e2e_score": {"const": false}
+  }
+}

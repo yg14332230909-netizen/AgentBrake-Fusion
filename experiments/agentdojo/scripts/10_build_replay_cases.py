@@ -23,11 +23,15 @@ def main() -> int:
         built.extend(build_cases_from_trace(trace, args.out_dir))
     unsafe_files = sorted(_case_files(args.out_dir / "unsafe"))
     safe_files = sorted(_case_files(args.out_dir / "safe"))
+    all_cases = load_all_cases(args.out_dir)
     manifest = {
-        "schema_version": "agentdojo_replay_cases_v1",
+        "schema_version": "agentdojo_replay_cases_v2",
         "description": "AgentDojo-derived tool-boundary replay benchmark, not a standard AgentDojo end-to-end score.",
         "built_case_count": len(built),
         "total_case_count": len(unsafe_files) + len(safe_files),
+        "counts_by_label": counts_by(all_cases, "label"),
+        "counts_by_suite": counts_by(all_cases, "suite"),
+        "counts_by_violation_type": counts_by([case.get("ground_truth_violation", {}) for case in all_cases], "type"),
         "unsafe": unsafe_files,
         "safe": safe_files,
     }
@@ -79,7 +83,10 @@ def build_cases_from_trace(path: Path, out_dir: Path) -> list[dict[str, Any]]:
                 "prior": list(prior[-8:]),
                 "current_tool_call": {"tool": tool, "args": args},
                 "ground_truth_violation": violation,
+                "expected_reason_codes": violation.get("expected_reason_codes", []),
                 "expected_decision": expected,
+                "case_origin": "trace_extracted",
+                "standard_agentdojo_e2e_score": False,
             }
             validate_replay_case(case)
             target_dir = out_dir / label
@@ -142,7 +149,18 @@ def infer_suite_from_path(path: Path) -> str:
 
 
 def validate_replay_case(case: dict[str, Any]) -> None:
-    required = {"case_id", "suite", "label", "prior", "current_tool_call", "expected_decision"}
+    required = {
+        "case_id",
+        "suite",
+        "label",
+        "source_trace",
+        "prior",
+        "current_tool_call",
+        "ground_truth_violation",
+        "expected_decision",
+        "case_origin",
+        "standard_agentdojo_e2e_score",
+    }
     missing = required - set(case)
     if missing:
         raise ValueError(f"missing replay case fields: {sorted(missing)}")
@@ -150,6 +168,24 @@ def validate_replay_case(case: dict[str, Any]) -> None:
         raise ValueError("label must be safe or unsafe")
     if case["expected_decision"] not in {"allow", "require_confirmation", "block"}:
         raise ValueError("expected_decision must be allow, require_confirmation, or block")
+    if case.get("standard_agentdojo_e2e_score") is not False:
+        raise ValueError("replay cases must declare standard_agentdojo_e2e_score=false")
+
+
+def load_all_cases(out_dir: Path) -> list[dict[str, Any]]:
+    cases = []
+    for label in ("unsafe", "safe"):
+        for path in sorted((out_dir / label).glob("*.json")):
+            cases.append(json.loads(path.read_text(encoding="utf-8")))
+    return cases
+
+
+def counts_by(items: list[dict[str, Any]], key: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for item in items:
+        value = str(item.get(key, "unknown"))
+        counts[value] = counts.get(value, 0) + 1
+    return dict(sorted(counts.items()))
 
 
 if __name__ == "__main__":

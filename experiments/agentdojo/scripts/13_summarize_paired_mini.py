@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from reposhield.eval.agentdojo.runner.metrics import compute_recovery_metrics
+
 ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_IN = ROOT / "experiments" / "agentdojo" / "reports" / "paired_mini"
 
@@ -20,6 +22,7 @@ def main() -> int:
         case_ids = sorted(case.get("case_id") for case in row.get("normalized_cases", []) if case.get("case_id"))
         if not case_ids and row.get("per_run"):
             case_ids = sorted(f"{item.get('suite', row.get('suite'))}_user_task_{item.get('user_task_id')}_injection_task_{item.get('injection_task_id')}" for item in row["per_run"])
+        recovery = compute_recovery_metrics(row.get("normalized_cases", []))
         summary["runs"].append(
             {
                 "run_name": row.get("run_name"),
@@ -39,6 +42,7 @@ def main() -> int:
                 "blocked_tool_call_count": audit.get("blocked_tool_calls") or audit.get("reposhield_blocks", 0),
                 "repeated_block_count": audit.get("repeated_block_count", 0),
                 "case_ids": case_ids,
+                **recovery,
             }
         )
     baseline_by_suite = {

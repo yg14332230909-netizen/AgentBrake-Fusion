@@ -6,7 +6,22 @@ from typing import Any, Literal
 Risk = Literal["low", "medium", "high", "critical"]
 Decision = Literal["allow", "allow_in_sandbox", "sandbox_then_approval", "require_confirmation", "quarantine", "block"]
 AgentDojoDefenseMode = Literal["fair", "oracle_user", "oracle_full"]
+ConfirmationMode = Literal["strict_eval", "oracle_user_eval", "gateway_eval"]
 SanitizeMode = Literal["off", "label", "soft", "hard"]
+EventStatus = Literal["proposed", "executed", "blocked", "tool_result", "sanitized_result"]
+FieldRole = Literal[
+    "target_entity",
+    "target_attribute",
+    "decision_condition",
+    "recipient",
+    "channel",
+    "message_body",
+    "amount",
+    "date",
+    "file_path",
+    "unknown",
+]
+MatchType = Literal["exact", "normalized", "entity_alias", "numeric", "date", "unknown"]
 ToolGroup = Literal[
     "read_only",
     "private_read",
@@ -103,6 +118,19 @@ class ArgumentProvenance:
     ]
     confidence: float
     evidence_refs: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True, slots=True)
+class ValueMatchEvidence:
+    field_name: str
+    field_role: FieldRole
+    value: Any
+    source_type: str
+    matched_prior_event_id: str | None = None
+    matched_span: str | None = None
+    match_type: MatchType = "unknown"
+    confidence: float = 0.0
+    notes: list[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True, slots=True)

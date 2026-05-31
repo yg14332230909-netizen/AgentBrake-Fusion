@@ -17,9 +17,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run AgentDojo-derived dangerous-action replay benchmark")
     parser.add_argument("--cases-dir", type=Path, default=DEFAULT_CASES)
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT)
+    parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     args.out_dir.mkdir(parents=True, exist_ok=True)
     cases = load_cases(args.cases_dir)
+    if args.dry_run:
+        print(json.dumps({"case_count": len(cases), "cases_dir": str(args.cases_dir)}, indent=2))
+        return 0
     results = [run_case(case) for case in cases]
     report = {
         "benchmark_type": "agentdojo_derived_tool_boundary_replay",
@@ -71,6 +75,8 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
         "observed_decision": observed,
         "passed": observed == case.get("expected_decision"),
         "reason_codes": decision.reason_codes,
+        "ground_truth_violation": case.get("ground_truth_violation", {}),
+        "expected_reason_codes": case.get("expected_reason_codes", []),
         "blocked_result": decision.safe_result,
         "audit": fw.audit_events,
     }

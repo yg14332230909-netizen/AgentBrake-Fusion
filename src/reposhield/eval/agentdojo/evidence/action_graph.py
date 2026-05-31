@@ -43,15 +43,20 @@ class AgentDojoActionGraphBuilder:
             "graph.current_tool_node": current.node_id,
             "graph.sequence_depth": len(state.events),
             "graph.has_untrusted_to_side_effect_edge": False,
+            "graph.has_untrusted_to_proposed_side_effect_edge": False,
+            "graph.has_untrusted_to_executed_side_effect_edge": False,
             "graph.has_injection_to_side_effect_edge": False,
             "graph.has_private_to_external_edge": False,
+            "graph.has_private_to_proposed_external_edge": False,
+            "graph.has_private_to_executed_external_edge": False,
             "graph.has_private_to_financial_edge": False,
             "graph.has_attack_goal_to_action_edge": False,
+            "graph.has_blocked_attempt_edge": any(event.event_status == "blocked" for event in state.events),
             "graph.has_unknown_side_effect_node": spec.group == "unknown" and spec.side_effect,
             "graph.attack_goal_evidence_source": "none",
         }
 
-        previous = self._last_event(state, kind="tool_call")
+        previous = self._last_event(state, kind="tool_call", statuses={"executed", "blocked"})
         if previous is not None:
             prev_node = self._event_node(previous, context, risk="low")
             nodes.append(prev_node)
@@ -75,6 +80,7 @@ class AgentDojoActionGraphBuilder:
                     )
                 )
                 facts["graph.has_untrusted_to_side_effect_edge"] = True
+                facts["graph.has_untrusted_to_proposed_side_effect_edge"] = True
                 if event.injection_like:
                     facts["graph.has_injection_to_side_effect_edge"] = True
 
@@ -84,6 +90,7 @@ class AgentDojoActionGraphBuilder:
             if spec.external_sink:
                 edges.append(self._edge(ev_node.node_id, current.node_id, "dataflow", 0.78, "possible private data to external sink"))
                 facts["graph.has_private_to_external_edge"] = True
+                facts["graph.has_private_to_proposed_external_edge"] = True
             if spec.group == "financial_commit":
                 edges.append(
                     self._edge(ev_node.node_id, current.node_id, "dataflow", 0.7, "private financial data may influence financial commit")
@@ -168,6 +175,7 @@ class AgentDojoActionGraphBuilder:
             confidence=0.85,
             metadata={
                 "event_kind": event.kind,
+                "event_status": event.event_status,
                 "tool_group": event.tool_group,
                 "output_hash": event.output_hash,
                 "untrusted": event.untrusted,
@@ -211,9 +219,9 @@ class AgentDojoActionGraphBuilder:
                 break
         return list(reversed(out))
 
-    def _last_event(self, state: AgentDojoStateTracker, *, kind: str) -> ToolEvent | None:
+    def _last_event(self, state: AgentDojoStateTracker, *, kind: str, statuses: set[str] | None = None) -> ToolEvent | None:
         for event in reversed(state.events):
-            if event.kind == kind:
+            if event.kind == kind and (statuses is None or event.event_status in statuses):
                 return event
         return None
 

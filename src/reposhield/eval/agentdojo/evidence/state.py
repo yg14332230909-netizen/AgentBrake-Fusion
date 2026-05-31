@@ -8,7 +8,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from .entity_extractor import EntitySet, extract_entities
-from ..compat.types import SanitizeMode, ToolSpec
+from ..compat.types import EventStatus, SanitizeMode, ToolSpec
 
 INJECTION_MARKERS = (
     "important instructions",
@@ -88,6 +88,11 @@ class ToolEvent:
     injection_like: bool = False
     private_data: bool = False
     preview: str = ""
+    event_status: EventStatus = "proposed"
+    decision: str | None = None
+    execute: bool | None = None
+    reason_codes: list[str] = field(default_factory=list)
+    same_action_retry_key: str | None = None
 
 
 @dataclass(slots=True)
@@ -118,20 +123,45 @@ class AgentDojoStateTracker:
         if value:
             self.suspicious_targets.add(value[:200])
 
-    def observe_tool_call(self, tool_name: str, spec: ToolSpec, tool_args: dict[str, Any]) -> None:
-        if spec.group == "unknown" and spec.side_effect:
+    def observe_tool_call(
+        self,
+        tool_name: str,
+        spec: ToolSpec,
+        tool_args: dict[str, Any],
+        *,
+        event_status: EventStatus = "proposed",
+        decision: str | None = None,
+        execute: bool | None = None,
+        reason_codes: list[str] | None = None,
+        same_action_retry_key: str | None = None,
+    ) -> None:
+        mutates_state = event_status == "executed"
+        if mutates_state and spec.group == "unknown" and spec.side_effect:
             self.unknown_tool_seen = True
-        if spec.external_sink:
+        if mutates_state and spec.external_sink:
             self.external_send_attempted = True
-        if spec.group == "financial_commit":
+        if mutates_state and spec.group == "financial_commit":
             self.financial_commit_attempted = True
-        if spec.group == "booking_commit":
+        if mutates_state and spec.group == "booking_commit":
             self.booking_commit_attempted = True
-        if spec.group in {"destructive_update", "membership_mutation", "calendar_mutation", "workspace_mutation"}:
+        if mutates_state and spec.group in {"destructive_update", "membership_mutation", "calendar_mutation", "workspace_mutation"}:
             self.destructive_update_attempted = True
-        if spec.group == "credential_change":
+        if mutates_state and spec.group == "credential_change":
             self.credential_change_attempted = True
-        self.events.append(ToolEvent(event_id=_event_id("call", tool_name), kind="tool_call", tool_name=tool_name, tool_group=spec.group))
+        self.events.append(
+            ToolEvent(
+                event_id=_event_id(event_status, tool_name),
+                kind="tool_call",
+                tool_name=tool_name,
+                tool_group=spec.group,
+                event_status=event_status,
+                decision=decision,
+                execute=execute,
+                reason_codes=list(reason_codes or []),
+                same_action_retry_key=same_action_retry_key,
+                preview=sanitize_text(_to_text(tool_args), max_len=260, mode="soft", mark_untrusted=False),
+            )
+        )
         self.events = self.events[-200:]
 
     def observe_tool_result(self, tool_name: str, spec: ToolSpec, result: Any) -> ToolEvent:
@@ -169,6 +199,7 @@ class AgentDojoStateTracker:
             injection_like=injection_like,
             private_data=private_like,
             preview=sanitize_text(text, max_len=260, mode="soft", mark_untrusted=False),
+            event_status="tool_result",
         )
         self.events.append(event)
         self.events = self.events[-200:]
