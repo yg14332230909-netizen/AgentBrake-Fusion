@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import time
 from functools import partial
 from importlib import import_module
@@ -25,6 +26,9 @@ _AUTHORIZED_TOOL_CACHE: dict[tuple[str, str], tuple[list[str], list[str]]] = {}
 _AGENTDOJO_DEPS: dict[str, Any] | None = None
 _OPENAI_COMPATIBLE_LLM_CLASS: type[Any] | None = None
 _OPENAI_COMPATIBLE_TOOL_FILTER_CLASS: type[Any] | None = None
+SECRET_RE = re.compile(
+    r"(?i)(sk-[A-Za-z0-9_-]{12,}|api[_-]?key\s*[:=]\s*['\"]?[^'\"\s,}]+|authorization\s*[:=]\s*['\"]?[^'\"\s,}]+|password\s*[:=]\s*['\"]?[^'\"\s,}]+|token\s*[:=]\s*['\"]?[^'\"\s,}]+|secret\s*[:=]\s*['\"]?[^'\"\s,}]+)"
+)
 
 
 def _load_agentdojo_deps() -> dict[str, Any]:
@@ -379,6 +383,116 @@ def _task_id_matches(actual: Any, requested: set[str], prefix: str) -> bool:
     return bool(aliases & requested)
 
 
+def _redact_trace_value(value: Any) -> Any:
+    if isinstance(value, str):
+        redacted = SECRET_RE.sub("<redacted>", value)
+        if redacted != value:
+            return {"redacted": True, "redaction_reason": "secret_pattern", "value": redacted}
+        return value
+    if isinstance(value, list):
+        return [_redact_trace_value(item) for item in value]
+    if isinstance(value, tuple):
+        return [_redact_trace_value(item) for item in value]
+    if isinstance(value, dict):
+        out: dict[str, Any] = {}
+        for key, item in value.items():
+            if str(key).lower() in {"api_key", "apikey", "authorization", "password", "token", "secret"}:
+                out[str(key)] = {"redacted": True, "redaction_reason": "secret_key"}
+            else:
+                out[str(key)] = _redact_trace_value(item)
+        return out
+    return value
+
+
+def _message_to_plain_dict(message: Any) -> dict[str, Any]:
+    if hasattr(message, "model_dump"):
+        message = message.model_dump()
+    if not isinstance(message, dict):
+        return {"value": _redact_trace_value(str(message))}
+    return _redact_trace_value(message)
+
+
+def _extract_tool_trace(messages: list[Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    calls: list[dict[str, Any]] = []
+    results: list[dict[str, Any]] = []
+    for step, message in enumerate(messages):
+        msg = _message_to_plain_dict(message)
+        if msg.get("role") == "assistant":
+            for call in msg.get("tool_calls") or []:
+                if hasattr(call, "model_dump"):
+                    call = call.model_dump()
+                if not isinstance(call, dict):
+                    continue
+                function = call.get("function") or call.get("name") or {}
+                tool_name = function.get("name") if isinstance(function, dict) else function
+                args = call.get("args")
+                if args is None and isinstance(function, dict):
+                    args = function.get("arguments")
+                calls.append(
+                    {
+                        "step": step,
+                        "tool": str(tool_name or "unknown_tool"),
+                        "args": _redact_trace_value(_repair_json_arguments(args) if isinstance(args, str) else (args or {})),
+                        "call_id": call.get("id"),
+                    }
+                )
+        if msg.get("role") == "tool":
+            tool_call = msg.get("tool_call") or {}
+            tool_name = tool_call.get("function") if isinstance(tool_call, dict) else None
+            results.append(
+                {
+                    "step": step,
+                    "tool": str(tool_name or msg.get("name") or "unknown_tool"),
+                    "content": _redact_trace_value(msg.get("content")),
+                }
+            )
+    return calls, results
+
+
+def save_case_trace(
+    *,
+    trace_dir: Path,
+    suite_name: str,
+    method: str,
+    model: str,
+    attack: str,
+    user_task_id: str,
+    injection_task_id: str | None,
+    user_success: bool,
+    injection_success: bool,
+    logger: Any,
+    audit_events: list[dict[str, Any]] | None = None,
+    final_state: dict[str, Any] | None = None,
+) -> Path:
+    messages = [_message_to_plain_dict(message) for message in list(getattr(logger, "messages", []) or [])]
+    tool_calls, tool_results = _extract_tool_trace(messages)
+    payload = {
+        "trace_schema_version": "agentdojo_trace_v1",
+        "suite": suite_name,
+        "method": method,
+        "model": model,
+        "attack": attack,
+        "user_task_id": user_task_id,
+        "injection_task_id": injection_task_id,
+        "raw_agentdojo_user_task_success": bool(user_success),
+        "raw_agentdojo_injection_task_success": bool(injection_success),
+        "messages": messages,
+        "tool_calls": tool_calls,
+        "tool_results": tool_results,
+        "audit_events": _redact_trace_value(audit_events or []),
+        "final_state": _redact_trace_value(final_state or {}),
+        "checker_results": {
+            "utility": bool(user_success),
+            "security": bool(injection_success),
+        },
+    }
+    safe_injection = injection_task_id or "none"
+    out = trace_dir / suite_name / method / str(user_task_id) / f"{safe_injection}.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(payload, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
+    return out
+
+
 def build_pipeline(
     defense: str,
     llm: Any,
@@ -466,6 +580,8 @@ def run_suite(
     user_task_ids: list[str] | None = None,
     injection_task_ids: list[str] | None = None,
     confirmation_mode: str = "strict_eval",
+    save_full_trace: bool = False,
+    trace_dir: Path | None = None,
 ) -> dict[str, Any]:
     deps = _load_agentdojo_deps()
     get_suite = deps["get_suite"]
@@ -478,6 +594,7 @@ def run_suite(
     llm, llm_name = build_llm(model, model_id, tool_delimiter)
     repo_root = repo_root or Path.cwd()
     fast_mode = load_eval_fast_mode_config()
+    trace_dir = trace_dir or ((report_dir / "traces") if report_dir else (repo_root / "experiments" / "agentdojo" / "reports" / "traces"))
     control_plane = None
     if defense == "reposhield_toolgate":
         control_plane = RepoShieldControlPlane(
@@ -560,10 +677,24 @@ def run_suite(
                     after_audit = list(getattr(getattr(pipeline, "firewall", None), "audit_events", []) or [])
                     logger.set_contextarg("utility", utility)
                     logger.set_contextarg("security", security)
+                    trace_file = None
+                    if save_full_trace:
+                        trace_file = save_case_trace(
+                            trace_dir=trace_dir,
+                            suite_name=suite_name,
+                            method=defense,
+                            model=model,
+                            attack=attack_name,
+                            user_task_id=str(user_task_id),
+                            injection_task_id=None,
+                            user_success=bool(utility),
+                            injection_success=bool(security),
+                            logger=logger,
+                            audit_events=after_audit[len(before_audit) :],
+                        )
                 utility_results[(user_task_id, injection_task_id)] = utility
                 security_results[(user_task_id, injection_task_id)] = security
-                per_run.append(
-                    {
+                row = {
                         "suite": suite_name,
                         "method": defense,
                         "run_id": run_name or f"{suite_name}_{defense}_none",
@@ -575,7 +706,9 @@ def run_suite(
                         "raw_agentdojo_injection_task_success": bool(security),
                         **recovery_fields_from_audit(after_audit[len(before_audit) :], bool(utility), bool(security)),
                     }
-                )
+                if trace_file is not None:
+                    row["trace_file"] = str(trace_file)
+                per_run.append(row)
         else:
             requested_injection_task_ids = {str(item) for item in injection_task_ids or []}
             if attack_obj.is_dos_attack:
@@ -638,10 +771,24 @@ def run_suite(
                         after_audit = list(getattr(getattr(pipeline, "firewall", None), "audit_events", []) or [])
                         logger.set_contextarg("utility", utility)
                         logger.set_contextarg("security", security)
+                        trace_file = None
+                        if save_full_trace:
+                            trace_file = save_case_trace(
+                                trace_dir=trace_dir,
+                                suite_name=suite_name,
+                                method=defense,
+                                model=model,
+                                attack=attack_obj.name,
+                                user_task_id=str(user_task.ID),
+                                injection_task_id=str(injection_task_id),
+                                user_success=bool(utility),
+                                injection_success=bool(security),
+                                logger=logger,
+                                audit_events=after_audit[len(before_audit) :],
+                            )
                     utility_results[(user_task.ID, injection_task_id)] = utility
                     security_results[(user_task.ID, injection_task_id)] = security
-                    per_run.append(
-                        {
+                    row = {
                             "user_task_id": user_task.ID,
                             "injection_task_id": injection_task_id,
                             "utility": utility,
@@ -654,7 +801,9 @@ def run_suite(
                             **recovery_fields_from_audit(after_audit[len(before_audit) :], bool(utility), bool(security)),
                             "injections": injections,
                         }
-                    )
+                    if trace_file is not None:
+                        row["trace_file"] = str(trace_file)
+                    per_run.append(row)
 
     duration_sec = time.perf_counter() - start
     normalized_cases = [
@@ -793,6 +942,8 @@ def main() -> int:
     parser.add_argument("--user-tasks", nargs="*", default=None)
     parser.add_argument("--injection-tasks", nargs="*", default=None)
     parser.add_argument("--confirmation-mode", choices=["strict_eval", "oracle_user_eval", "gateway_eval"], default="strict_eval")
+    parser.add_argument("--save-full-trace", action="store_true")
+    parser.add_argument("--trace-dir", type=Path, default=None)
     args = parser.parse_args()
 
     summary = run_suite(
@@ -820,6 +971,8 @@ def main() -> int:
         user_task_ids=args.user_tasks,
         injection_task_ids=args.injection_tasks,
         confirmation_mode=args.confirmation_mode,
+        save_full_trace=args.save_full_trace,
+        trace_dir=args.trace_dir,
     )
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     return 0

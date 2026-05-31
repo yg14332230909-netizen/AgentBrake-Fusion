@@ -4,7 +4,7 @@ import argparse
 import csv
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 from reposhield.eval.agentdojo.runner.metrics import (
     METRIC_SCHEMA_VERSION,
@@ -25,7 +25,7 @@ def main() -> int:
     args = parser.parse_args()
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
-    cases = collect_cases(args.reports_dir, method_filter=args.method)
+    cases, run_aggregates = collect_report_data(args.reports_dir, method_filter=args.method)
     metrics = compute_agentdojo_metrics(cases)
     normalized_rows = [case.as_normalized_dict() for case in cases]
 
@@ -39,15 +39,33 @@ def main() -> int:
     )
     (args.out_dir / "corrected_summary.md").write_text(render_summary(metrics, normalized_rows), encoding="utf-8")
     (args.out_dir / "deprecated_report_mapping.md").write_text(render_deprecated_mapping(), encoding="utf-8")
-    write_csv(args.out_dir / "aggregate.csv", aggregate_rows(normalized_rows))
-    write_csv(args.out_dir / "leaderboard.csv", leaderboard_rows(normalized_rows))
+    aggregate = aggregate_rows(normalized_rows, run_aggregates)
+    write_csv(args.out_dir / "aggregate.csv", aggregate)
+    write_csv(args.out_dir / "leaderboard.csv", leaderboard_rows(aggregate))
     ensure_metric_schema(args.out_dir)
     print(args.out_dir / "corrected_summary.md")
     return 0
 
 
+class RunAggregate(NamedTuple):
+    suite: str
+    method: str
+    run_id: str
+    tool_call_count: int = 0
+    blocked_tool_call_count: int = 0
+    repeated_block_count: int = 0
+    policy_latency_p50_ms: float = 0.0
+    policy_latency_p95_ms: float = 0.0
+
+
 def collect_cases(reports_dir: Path, *, method_filter: str | None = None) -> list[Any]:
+    cases, _aggregates = collect_report_data(reports_dir, method_filter=method_filter)
+    return cases
+
+
+def collect_report_data(reports_dir: Path, *, method_filter: str | None = None) -> tuple[list[Any], list[RunAggregate]]:
     cases = []
+    run_aggregates: list[RunAggregate] = []
     for path in sorted(reports_dir.rglob("*.json")):
         if "normalized" in path.parts:
             continue
@@ -60,6 +78,25 @@ def collect_cases(reports_dir: Path, *, method_filter: str | None = None) -> lis
         if not looks_like_summary(data):
             continue
         audit = data.get("agentdojo_firewall_audit_summary") or data.get("reposhield_audit_summary") or {}
+        summary_method = data.get("defense")
+        if method_filter is None or str(summary_method) == str(method_filter):
+            run_aggregates.append(
+                RunAggregate(
+                    suite=str(data.get("suite") or "unknown"),
+                    method=str(summary_method or "unknown"),
+                    run_id=str(data.get("run_name") or path.stem),
+                    tool_call_count=int(
+                        audit.get("total_tool_calls_gated")
+                        or audit.get("tool_gate_decision_count")
+                        or audit.get("reposhield_checked_calls")
+                        or 0
+                    ),
+                    blocked_tool_call_count=int(audit.get("blocked_tool_calls") or audit.get("reposhield_blocks") or 0),
+                    repeated_block_count=int(audit.get("repeated_block_count") or 0),
+                    policy_latency_p50_ms=float(audit.get("policy_p50_ms") or audit.get("reposhield_p50_policy_latency_ms") or 0.0),
+                    policy_latency_p95_ms=float(audit.get("policy_p95_ms") or audit.get("reposhield_p95_policy_latency_ms") or 0.0),
+                )
+            )
         for row in data.get("normalized_cases") or build_cases_from_legacy_summary(data):
             method = row.get("method") or data.get("defense")
             if method_filter is not None and str(method) != str(method_filter):
@@ -75,7 +112,7 @@ def collect_cases(reports_dir: Path, *, method_filter: str | None = None) -> lis
                     injection_task_id=row.get("injection_task_id"),
                     tool_call_count=int(row.get("tool_call_count") or 0),
                     blocked_tool_call_count=int(row.get("blocked_tool_call_count") or 0),
-                    repeated_block_count=int(row.get("repeated_block_count") or audit.get("repeated_block_count") or 0),
+                    repeated_block_count=int(row.get("repeated_block_count") or 0),
                     blocked_case=bool(row.get("blocked_case", False)),
                     first_block_step=row.get("first_block_step"),
                     first_confirmation_step=row.get("first_confirmation_step"),
@@ -97,7 +134,7 @@ def collect_cases(reports_dir: Path, *, method_filter: str | None = None) -> lis
                     source_raw_file=str(path),
                 )
             )
-    return cases
+    return cases, run_aggregates
 
 
 def looks_like_summary(data: dict[str, Any]) -> bool:
@@ -183,7 +220,7 @@ def _fmt_nullable(value: Any) -> str:
     return "null" if value is None else f"{float(value):.3f}"
 
 
-def aggregate_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def aggregate_rows(rows: list[dict[str, Any]], run_aggregates: list[RunAggregate] | None = None) -> list[dict[str, Any]]:
     groups: dict[tuple[str, str], list[dict[str, Any]]] = {}
     for row in rows:
         key = (str(row.get("suite") or "unknown"), str(row.get("method") or "unknown"))
@@ -192,6 +229,14 @@ def aggregate_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     for (suite, method), items in sorted(groups.items()):
         targeted_asr = _mean(item.get("raw_agentdojo_injection_task_success") for item in items)
         user_utility = _mean(item.get("raw_agentdojo_user_task_success") for item in items)
+        run_counts = [agg for agg in run_aggregates or [] if agg.suite == suite and agg.method == method]
+        tool_call_count = sum(agg.tool_call_count for agg in run_counts)
+        blocked_tool_call_count = sum(agg.blocked_tool_call_count for agg in run_counts)
+        repeated_block_count = sum(agg.repeated_block_count for agg in run_counts)
+        if not run_counts:
+            tool_call_count = sum(int(item.get("tool_call_count") or 0) for item in items)
+            blocked_tool_call_count = sum(int(item.get("blocked_tool_call_count") or 0) for item in items)
+            repeated_block_count = sum(int(item.get("repeated_block_count") or 0) for item in items)
         out.append(
             {
                 "suite": suite,
@@ -201,18 +246,17 @@ def aggregate_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "targeted_asr": f"{targeted_asr:.6f}",
                 "security_rate": f"{1.0 - targeted_asr:.6f}",
                 "secure_utility": f"{_mean(item.get('secure_utility_contribution') for item in items):.6f}",
-                "tool_call_count": sum(int(item.get("tool_call_count") or 0) for item in items),
-                "blocked_tool_call_count": sum(int(item.get("blocked_tool_call_count") or 0) for item in items),
-                "repeated_block_count": sum(int(item.get("repeated_block_count") or 0) for item in items),
+                "tool_call_count": tool_call_count,
+                "blocked_tool_call_count": blocked_tool_call_count,
+                "repeated_block_count": repeated_block_count,
             }
         )
     return out
 
 
 def leaderboard_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    aggregate = aggregate_rows(rows)
     return sorted(
-        aggregate,
+        rows,
         key=lambda row: (
             -float(row["secure_utility"]),
             float(row["targeted_asr"]),
@@ -222,6 +266,7 @@ def leaderboard_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     if not rows:
         path.write_text("", encoding="utf-8")
         return

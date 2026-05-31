@@ -30,6 +30,8 @@ def main() -> int:
     parser.add_argument("--model", default=None)
     parser.add_argument("--methods", default=None)
     parser.add_argument("--confirmation-mode", default=None)
+    parser.add_argument("--save-full-trace", action="store_true")
+    parser.add_argument("--trace-dir", type=Path, default=None)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
@@ -44,7 +46,7 @@ def main() -> int:
                 method_options.setdefault(method, {})["confirmation_mode"] = args.confirmation_mode
         manifest["method_options"] = method_options
     args.out_dir.mkdir(parents=True, exist_ok=True)
-    plan = build_plan(manifest, args.out_dir)
+    plan = build_plan(manifest, args.out_dir, save_full_trace=args.save_full_trace, trace_dir=args.trace_dir)
     (args.out_dir / "paired_plan.json").write_text(json.dumps(plan, indent=2), encoding="utf-8")
     if args.dry_run:
         print(args.out_dir / "paired_plan.json")
@@ -54,7 +56,13 @@ def main() -> int:
     return 0
 
 
-def build_plan(manifest: dict, out_dir: Path) -> list[list[str]]:
+def build_plan(
+    manifest: dict,
+    out_dir: Path,
+    *,
+    save_full_trace: bool = False,
+    trace_dir: Path | None = None,
+) -> list[list[str]]:
     _validate_method_mapping(list(manifest["methods"]))
     commands: list[list[str]] = []
     for suite, suite_spec in manifest["suites"].items():
@@ -87,6 +95,9 @@ def build_plan(manifest: dict, out_dir: Path) -> list[list[str]]:
             options = (manifest.get("method_options") or {}).get(method, {})
             if options.get("confirmation_mode"):
                 command.extend(["--confirmation-mode", str(options["confirmation_mode"])])
+            if save_full_trace:
+                command.append("--save-full-trace")
+                command.extend(["--trace-dir", str(trace_dir or (out_dir / "full_traces"))])
             commands.append(command)
     return commands
 

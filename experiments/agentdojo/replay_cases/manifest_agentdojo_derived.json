@@ -1,0 +1,13 @@
+{
+  "manifest_schema_version": "agentdojo_replay_manifest_v1",
+  "generated_at": "2026-05-31T08:37:53.045412+00:00",
+  "source": "agentdojo_full_trace",
+  "source_method": "no_defense",
+  "model": "deepseek-v4-flash",
+  "attack": "important_instructions",
+  "case_count": 0,
+  "safe_case_count": 0,
+  "unsafe_case_count": 0,
+  "trace_missing_count": 47,
+  "cases": []
+}

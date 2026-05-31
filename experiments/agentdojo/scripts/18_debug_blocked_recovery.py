@@ -1,0 +1,254 @@
+from __future__ import annotations
+
+import argparse
+import json
+from collections import Counter
+from pathlib import Path
+from typing import Any
+
+
+DEFAULT_CASES = [
+    "banking:user_task_2:injection_task_0",
+    "banking:user_task_2:injection_task_1",
+    "banking:user_task_2:injection_task_2",
+    "banking:user_task_2:injection_task_3",
+    "slack:user_task_1:injection_task_1",
+    "slack:user_task_1:injection_task_2",
+    "slack:user_task_2:injection_task_1",
+    "slack:user_task_2:injection_task_2",
+    "travel:user_task_1:injection_task_0",
+    "travel:user_task_1:injection_task_2",
+    "travel:user_task_3:injection_task_0",
+    "travel:user_task_3:injection_task_1",
+    "travel:user_task_3:injection_task_2",
+    "travel:user_task_3:injection_task_3",
+]
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Debug RepoShield blocked recovery cases from AgentDojo paired raw reports")
+    parser.add_argument("--reports-dir", type=Path, required=True)
+    parser.add_argument("--out-dir", type=Path, required=True)
+    parser.add_argument("--case", action="append", default=None)
+    args = parser.parse_args()
+    analyses = analyze_blocked_cases(args.reports_dir, selectors=args.case or DEFAULT_CASES)
+    args.out_dir.mkdir(parents=True, exist_ok=True)
+    write_jsonl(args.out_dir / "blocked_case_analysis.jsonl", analyses)
+    (args.out_dir / "blocked_case_analysis.md").write_text(render_markdown(analyses), encoding="utf-8")
+    write_json(args.out_dir / "recovery_failure_taxonomy.json", taxonomy(analyses))
+    write_jsonl(args.out_dir / "trace_missing_cases.jsonl", [row for row in analyses if row["failure_category"] == "missing_trace"])
+    print(args.out_dir / "blocked_case_analysis.md")
+    return 0
+
+
+def analyze_blocked_cases(reports_dir: Path, *, selectors: list[str]) -> list[dict[str, Any]]:
+    patterns = [parse_selector(selector) for selector in selectors]
+    analyses: list[dict[str, Any]] = []
+    for summary_path, summary in iter_summaries(reports_dir):
+        for row in summary.get("per_run") or summary.get("normalized_cases") or []:
+            if not isinstance(row, dict) or not bool(row.get("blocked_case")):
+                continue
+            suite = str(row.get("suite") or summary.get("suite") or "")
+            user_task_id = str(row.get("user_task_id") or "")
+            injection_task_id = str(row.get("injection_task_id") or "")
+            if not matches_any(patterns, suite, user_task_id, injection_task_id):
+                continue
+            trace_path = resolve_trace_path(row.get("trace_file"), summary_path)
+            trace = load_trace(trace_path)
+            if not has_full_trace(trace):
+                analyses.append(base_analysis(summary_path, row, suite, user_task_id, injection_task_id, trace_path, "missing_trace"))
+                continue
+            analyses.append(analyze_with_trace(summary_path, row, suite, user_task_id, injection_task_id, trace_path, trace))
+    return analyses
+
+
+def analyze_with_trace(
+    summary_path: Path,
+    row: dict[str, Any],
+    suite: str,
+    user_task_id: str,
+    injection_task_id: str,
+    trace_path: Path | None,
+    trace: dict[str, Any],
+) -> dict[str, Any]:
+    events = [event for event in trace.get("audit_events") or [] if isinstance(event, dict)]
+    blocked = first_block_event(events)
+    post_block_calls = post_block_tool_calls(trace.get("tool_calls") or [], row.get("first_block_step"))
+    category = classify_failure(row, blocked, post_block_calls)
+    result = base_analysis(summary_path, row, suite, user_task_id, injection_task_id, trace_path, category)
+    result.update(
+        {
+            "trace_status": "full_trace_available",
+            "first_block_event": summarize_event(blocked),
+            "post_block_tool_call_count_from_trace": len(post_block_calls),
+            "next_tool_call_after_block": post_block_calls[0] if post_block_calls else None,
+        }
+    )
+    return result
+
+
+def classify_failure(row: dict[str, Any], blocked: dict[str, Any] | None, post_block_calls: list[dict[str, Any]]) -> str:
+    if int(row.get("repeated_block_count") or 0) > 0:
+        return "repeated_same_blocked_action"
+    if int(row.get("confirmation_required_count") or 0) and not int(row.get("confirmation_executed_count") or 0):
+        return "confirmation_not_executed"
+    safe_result = blocked.get("safe_result") if isinstance(blocked, dict) else None
+    if isinstance(safe_result, dict) and not safe_result.get("allowed_next_steps"):
+        return "guidance_too_generic"
+    if not post_block_calls:
+        return "model_stopped_after_block"
+    if row.get("final_user_task_success") is False and row.get("final_injection_task_success") is False:
+        return "policy_overblocked_user_authorized_action"
+    return "blocked_recovery_needs_review"
+
+
+def first_block_event(events: list[dict[str, Any]]) -> dict[str, Any] | None:
+    for event in events:
+        if event.get("event_type") != "agentdojo_tool_gate_decision":
+            continue
+        if not bool(event.get("execute")) and event.get("decision") in {"block", "quarantine", "require_confirmation", "sandbox_then_approval"}:
+            return event
+    return None
+
+
+def post_block_tool_calls(tool_calls: list[Any], first_block_step: Any) -> list[dict[str, Any]]:
+    try:
+        step = int(first_block_step)
+    except Exception:
+        return [call for call in tool_calls if isinstance(call, dict)]
+    return [call for call in tool_calls if isinstance(call, dict) and int(call.get("step") or 0) > step]
+
+
+def base_analysis(
+    summary_path: Path,
+    row: dict[str, Any],
+    suite: str,
+    user_task_id: str,
+    injection_task_id: str,
+    trace_path: Path | None,
+    failure_category: str,
+) -> dict[str, Any]:
+    return {
+        "source_raw_file": str(summary_path),
+        "suite": suite,
+        "method": row.get("method"),
+        "user_task_id": user_task_id,
+        "injection_task_id": injection_task_id,
+        "trace_file": str(trace_path) if trace_path else None,
+        "trace_status": "missing_full_trace" if failure_category == "missing_trace" else "unknown",
+        "failure_category": failure_category,
+        "raw_agentdojo_user_task_success": bool(row.get("raw_agentdojo_user_task_success", row.get("utility", False))),
+        "raw_agentdojo_injection_task_success": bool(row.get("raw_agentdojo_injection_task_success", row.get("security", False))),
+        "first_block_step": row.get("first_block_step"),
+        "repeated_block_count": int(row.get("repeated_block_count") or 0),
+        "confirmation_required_count": int(row.get("confirmation_required_count") or 0),
+        "confirmation_executed_count": int(row.get("confirmation_executed_count") or 0),
+        "required_action": required_action(failure_category),
+    }
+
+
+def required_action(category: str) -> str:
+    return {
+        "missing_trace": "rerun with --save-full-trace and re-run this debugger",
+        "repeated_same_blocked_action": "strengthen blocked-result do-not-retry guidance and model recovery prompt",
+        "confirmation_not_executed": "use oracle_user_eval for user-authorized confirmation or make confirmation routing explicit",
+        "guidance_too_generic": "add concrete trusted-data recovery steps to safe_result",
+        "model_stopped_after_block": "inspect final assistant behavior and add continuation guidance",
+        "policy_overblocked_user_authorized_action": "adjust suite policy to require confirmation rather than hard block",
+    }.get(category, "manual review")
+
+
+def taxonomy(analyses: list[dict[str, Any]]) -> dict[str, Any]:
+    counts = Counter(row["failure_category"] for row in analyses)
+    return {"case_count": len(analyses), "categories": dict(sorted(counts.items()))}
+
+
+def render_markdown(analyses: list[dict[str, Any]]) -> str:
+    lines = [
+        "# Blocked Recovery Analysis",
+        "",
+        "| suite | user_task_id | injection_task_id | category | required_action |",
+        "|---|---|---|---|---|",
+    ]
+    for row in analyses:
+        lines.append(
+            f"| {row['suite']} | {row['user_task_id']} | {row['injection_task_id']} | {row['failure_category']} | {row['required_action']} |"
+        )
+    if not analyses:
+        lines.extend(["", "No matching blocked cases were found."])
+    return "\n".join(lines) + "\n"
+
+
+def summarize_event(event: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not event:
+        return None
+    return {
+        "tool_name": event.get("tool_name"),
+        "decision": event.get("decision"),
+        "execute": event.get("execute"),
+        "reason_codes": event.get("reason_codes"),
+        "confirmation_required": event.get("confirmation_required"),
+        "confirmation_executed": event.get("confirmation_executed"),
+    }
+
+
+def parse_selector(selector: str) -> tuple[str, str, str]:
+    parts = selector.split(":")
+    if len(parts) != 3:
+        raise ValueError(f"case selector must be suite:user_task_id:injection_task_id, got {selector!r}")
+    return parts[0], parts[1], parts[2]
+
+
+def matches_any(patterns: list[tuple[str, str, str]], suite: str, user: str, injection: str) -> bool:
+    return any(part_matches(a, suite) and part_matches(u, user) and part_matches(i, injection) for a, u, i in patterns)
+
+
+def part_matches(pattern: str, value: str) -> bool:
+    if pattern == "*":
+        return True
+    return pattern == value or value.endswith(pattern) or pattern.endswith(value)
+
+
+def iter_summaries(reports_dir: Path) -> Any:
+    for path in sorted(reports_dir.rglob("*.json")):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if isinstance(data, dict) and (data.get("per_run") or data.get("normalized_cases")):
+            yield path, data
+
+
+def resolve_trace_path(raw: Any, summary_path: Path) -> Path | None:
+    if not raw:
+        return None
+    path = Path(str(raw))
+    return path if path.is_absolute() else summary_path.parent / path
+
+
+def load_trace(path: Path | None) -> dict[str, Any] | None:
+    if path is None or not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def has_full_trace(trace: dict[str, Any] | None) -> bool:
+    return bool(isinstance(trace, dict) and isinstance(trace.get("messages"), list) and isinstance(trace.get("tool_calls"), list) and isinstance(trace.get("tool_results"), list))
+
+
+def write_json(path: Path, data: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(json.dumps(row, ensure_ascii=False, sort_keys=True) for row in rows) + ("\n" if rows else ""), encoding="utf-8")
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

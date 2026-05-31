@@ -35,7 +35,10 @@ def test_generate_normalized_reports_from_legacy_summary(tmp_path):
     assert metrics["targeted_asr"] == 0.5
     assert metrics["security_rate"] == 0.5
     assert rows[0]["metric_schema_version"] == "agentdojo_metrics_v2"
-    aggregate = generator.aggregate_rows(rows)
+    _cases, run_aggregates = generator.collect_report_data(reports)
+    aggregate = generator.aggregate_rows(rows, run_aggregates)
     assert aggregate[0]["suite"] == "banking"
     assert aggregate[0]["method"] == "agentdojo_firewall"
     assert aggregate[0]["targeted_asr"] == "0.500000"
+    assert aggregate[0]["tool_call_count"] == 4
+    assert aggregate[0]["blocked_tool_call_count"] == 1
