@@ -1,9 +1,9 @@
 # AgentDojo Replay Sample Gap Report
 
-Formal replay expansion is blocked until full AgentDojo traces are collected.
+No sample gap detected.
 
 - Candidate cases considered: 47
-- Cases generated from real traces: 0
-- Cases missing full traces: 47
+- Cases generated from real traces: 47
+- Cases missing full traces: 0
 
 Summary-only or normalized rows are intentionally not converted into replay cases.

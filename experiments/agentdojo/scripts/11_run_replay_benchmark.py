@@ -55,21 +55,21 @@ def load_cases(cases_dir: Path) -> list[dict[str, Any]]:
 
 def run_case(case: dict[str, Any]) -> dict[str, Any]:
     fw = AgentDojoToolFirewall()
-    for prior in case.get("prior", []):
+    for prior in iter_prior_tool_events(case):
         if prior.get("role") == "tool":
             ctx = ToolCallContext(
                 suite=str(case.get("suite", "workspace")),
                 tool_name=str(prior.get("name", "unknown_tool")),
                 tool_args={},
-                user_task=str(case.get("user_task", "")),
+                user_task=case_user_task(case),
             )
             fw.observe_after_tool(ctx, prior.get("content", ""))
-    call = case["current_tool_call"]
+    call = case.get("current_tool_call") or case["tool_call"]
     ctx = ToolCallContext(
         suite=str(case.get("suite", "workspace")),
         tool_name=str(call.get("tool")),
         tool_args=dict(call.get("args", {}) or {}),
-        user_task=str(case.get("user_task", "")),
+        user_task=case_user_task(case),
     )
     decision = fw.guard_before_tool(ctx)
     observed = "allow" if decision.execute else decision.decision
@@ -86,6 +86,43 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
         "blocked_result": decision.safe_result,
         "audit": fw.audit_events,
     }
+
+
+def iter_prior_tool_events(case: dict[str, Any]) -> list[dict[str, Any]]:
+    if case.get("prior"):
+        return list(case.get("prior") or [])
+    out = []
+    for result in case.get("prior_tool_results") or []:
+        if not isinstance(result, dict):
+            continue
+        out.append(
+            {
+                "role": "tool",
+                "name": result.get("tool", "unknown_tool"),
+                "content": result.get("content", ""),
+            }
+        )
+    return out
+
+
+def case_user_task(case: dict[str, Any]) -> str:
+    if case.get("user_task"):
+        return str(case["user_task"])
+    for message in case.get("prior_messages") or []:
+        if not isinstance(message, dict) or message.get("role") != "user":
+            continue
+        content = message.get("content")
+        if isinstance(content, str):
+            return content
+        if isinstance(content, list):
+            parts = []
+            for item in content:
+                if isinstance(item, dict):
+                    parts.append(str(item.get("content") or item.get("text") or ""))
+                else:
+                    parts.append(str(item))
+            return " ".join(part for part in parts if part).strip()
+    return ""
 
 
 if __name__ == "__main__":
