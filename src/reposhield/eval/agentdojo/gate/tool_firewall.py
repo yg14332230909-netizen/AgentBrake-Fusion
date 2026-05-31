@@ -214,7 +214,23 @@ class AgentDojoToolFirewall:
             return True, fusion.decision, metadata
         if fusion.decision == "require_confirmation":
             public_decision = "require_confirmation"
-            allow_user_confirmation = (
+            membership_confirmation = (
+                evidence.get("agentdojo.tool_group") == "membership_mutation"
+                and bool(evidence.get("agentdojo.task_authorized"))
+                and bool(evidence.get("agentdojo.args_match_user_entity"))
+                and not bool(action_graph_facts.get("graph.has_private_to_external_edge"))
+                and not bool(action_graph_facts.get("graph.has_private_to_executed_external_edge"))
+            )
+            external_send_confirmation = (
+                evidence.get("agentdojo.tool_group") == "external_send"
+                and bool(evidence.get("agentdojo.task_authorized"))
+                and bool(evidence.get("agentdojo.args_match_user_entity"))
+                and not bool(evidence.get("agentdojo.args_match_untrusted_entity"))
+                and not bool(evidence.get("agentdojo.attack_goal_overlap"))
+                and not bool(action_graph_facts.get("graph.has_private_to_executed_external_edge"))
+                and not bool(action_graph_facts.get("graph.has_untrusted_to_executed_side_effect_edge"))
+            )
+            allow_user_confirmation = membership_confirmation or external_send_confirmation or (
                 bool(evidence.get("agentdojo.task_authorized"))
                 and not bool(evidence.get("agentdojo.args_match_untrusted_entity"))
                 and not bool(evidence.get("agentdojo.attack_goal_overlap"))

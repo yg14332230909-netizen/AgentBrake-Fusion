@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 from collections import Counter
 from pathlib import Path
@@ -77,17 +78,13 @@ def analyze_with_trace(
     post_block_calls = post_block_tool_calls(trace.get("tool_calls") or [], row.get("first_block_step"))
     next_assistant = next_assistant_message_after(trace.get("messages") or [], blocked)
     category = classify_failure(row, blocked, post_block_calls)
-    safe_result = blocked.get("safe_result") if isinstance(blocked, dict) else None
-    if not isinstance(safe_result, dict):
-        safe_result = blocked.get("safe_blocked_result") if isinstance(blocked, dict) else None
-    if not isinstance(safe_result, dict):
-        safe_result = {}
+    safe_result = blocked_safe_result(blocked, trace.get("tool_results") or [], row.get("first_block_step"))
     result = base_analysis(summary_path, row, suite, user_task_id, injection_task_id, trace_path, category)
     result.update(
         {
             "trace_status": "full_trace_available",
             "first_block_event": summarize_event(blocked),
-            "blocked_tool": (blocked.get("evidence") or {}).get("agentdojo.tool_name") if isinstance(blocked, dict) else None,
+            "blocked_tool": safe_result.get("blocked_tool") or ((blocked.get("evidence") or {}).get("agentdojo.tool_name") if isinstance(blocked, dict) else None),
             "decision": blocked.get("decision") if isinstance(blocked, dict) else None,
             "reason_codes": blocked.get("reason_codes") if isinstance(blocked, dict) else [],
             "blocked_result_text": safe_result.get("message") or safe_result.get("human_readable_reason"),
@@ -117,6 +114,69 @@ def classify_failure(row: dict[str, Any], blocked: dict[str, Any] | None, post_b
     if row.get("final_user_task_success") is False and row.get("final_injection_task_success") is False:
         return "policy_overblocked_user_authorized_action"
     return "blocked_recovery_needs_review"
+
+
+def blocked_safe_result(blocked: dict[str, Any] | None, tool_results: list[Any], first_block_step: Any) -> dict[str, Any]:
+    if isinstance(blocked, dict):
+        for key in ("safe_result", "safe_blocked_result", "blocked_result"):
+            value = blocked.get(key)
+            if isinstance(value, dict):
+                return value
+        metadata = blocked.get("decision_metadata")
+        if isinstance(metadata, dict):
+            for key in ("safe_result", "safe_blocked_result", "blocked_result"):
+                value = metadata.get(key)
+                if isinstance(value, dict):
+                    return value
+    try:
+        min_step = int(first_block_step)
+    except Exception:
+        min_step = -1
+    candidates = []
+    for result in tool_results:
+        if not isinstance(result, dict):
+            continue
+        try:
+            step = int(result.get("step") or -1)
+        except Exception:
+            step = -1
+        if min_step >= 0 and step < min_step:
+            continue
+        parsed = parse_blocked_tool_result(result.get("content"))
+        if parsed:
+            candidates.append((step, parsed))
+    if candidates:
+        return sorted(candidates, key=lambda item: item[0])[0][1]
+    return {}
+
+
+def parse_blocked_tool_result(content: Any) -> dict[str, Any]:
+    texts: list[str] = []
+    if isinstance(content, str):
+        texts.append(content)
+    elif isinstance(content, list):
+        for item in content:
+            if isinstance(item, dict):
+                value = item.get("content") or item.get("text")
+                if isinstance(value, str):
+                    texts.append(value)
+            elif isinstance(item, str):
+                texts.append(item)
+    elif isinstance(content, dict):
+        value = content.get("content") or content.get("text")
+        if isinstance(value, str):
+            texts.append(value)
+    for text in texts:
+        if "blocked_tool" not in text and "allowed_next_steps" not in text:
+            continue
+        for loader in (json.loads, ast.literal_eval):
+            try:
+                parsed = loader(text)
+            except Exception:
+                continue
+            if isinstance(parsed, dict) and (parsed.get("blocked_tool") or parsed.get("allowed_next_steps")):
+                return parsed
+    return {}
 
 
 def is_injected_or_private_block(blocked: dict[str, Any] | None) -> bool:
@@ -220,15 +280,64 @@ def render_markdown(analyses: list[dict[str, Any]]) -> str:
     lines = [
         "# Blocked Recovery Analysis",
         "",
-        "| suite | user_task_id | injection_task_id | category | required_action |",
-        "|---|---|---|---|---|",
+        "## Taxonomy Summary",
+        "",
+        "| failure_category | count |",
+        "|---|---:|",
     ]
+    counts = Counter(row["failure_category"] for row in analyses)
+    for category, count in sorted(counts.items()):
+        lines.append(f"| {category} | {count} |")
+    lines.extend(["", "## Per-Suite Failure Table", "", "| suite | failure_category | count |", "|---|---|---:|"])
+    suite_counts = Counter((str(row["suite"]), str(row["failure_category"])) for row in analyses)
+    for (suite, category), count in sorted(suite_counts.items()):
+        lines.append(f"| {suite} | {category} | {count} |")
+    lines.extend(
+        [
+            "",
+            "## Case Details",
+            "",
+            "| suite | user_task_id | injection_task_id | blocked_tool | decision | reason_codes | next_behavior | category | required_action |",
+            "|---|---|---|---|---|---|---|---|---|",
+        ]
+    )
     for row in analyses:
+        next_behavior = row.get("next_assistant_message") or row.get("next_tool_call_after_block") or "none"
+        if not isinstance(next_behavior, str):
+            next_behavior = json.dumps(next_behavior, ensure_ascii=False, default=str)
+        next_behavior = next_behavior.replace("|", "\\|").replace("\n", " ")[:180]
+        reason_codes = ", ".join(str(code) for code in row.get("reason_codes") or [])
         lines.append(
-            f"| {row['suite']} | {row['user_task_id']} | {row['injection_task_id']} | {row['failure_category']} | {row['required_action']} |"
+            f"| {row['suite']} | {row['user_task_id']} | {row['injection_task_id']} | {row.get('blocked_tool')} | {row.get('decision')} | {reason_codes} | {next_behavior} | {row['failure_category']} | {row['required_action']} |"
         )
     if not analyses:
         lines.extend(["", "No matching blocked cases were found."])
+    else:
+        lines.extend(["", "## Per-Suite Repair Recommendations", ""])
+        for suite in sorted({str(row["suite"]) for row in analyses}):
+            suite_rows = [row for row in analyses if row["suite"] == suite]
+            categories = Counter(row["failure_category"] for row in suite_rows)
+            actions = []
+            for row in suite_rows:
+                action = str(row.get("required_action") or "manual review")
+                if action not in actions:
+                    actions.append(action)
+            lines.append(f"- {suite}: {', '.join(f'{k}={v}' for k, v in sorted(categories.items()))}. Recommended: {'; '.join(actions)}.")
+        missing = [row for row in analyses if row.get("trace_status") == "missing_full_trace"]
+        lines.extend(["", "## Trace Missing List", ""])
+        if missing:
+            for row in missing:
+                lines.append(f"- {row['suite']}:{row['user_task_id']}:{row['injection_task_id']} -> rerun with --save-full-trace")
+        else:
+            lines.append("- None; trace_missing_cases.jsonl is present and empty.")
+        lines.extend(
+            [
+                "",
+                "## Current Recovery Status",
+                "",
+                "This debug report identifies remaining recovery failure categories in the full paired-mini traces; it does not by itself claim full paired-mini recovery is fixed.",
+            ]
+        )
     return "\n".join(lines) + "\n"
 
 

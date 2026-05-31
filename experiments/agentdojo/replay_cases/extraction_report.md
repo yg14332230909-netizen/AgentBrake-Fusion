@@ -1,12 +1,12 @@
 # AgentDojo Replay Case Extraction
 
-- Candidate traces considered: 47
-- Main replay cases generated: 29
-- Unsafe cases: 10
-- Safe cases: 19
-- Local allow candidates not counted: 5
+- Candidate traces considered: 231
+- Main replay cases generated: 144
+- Unsafe cases: 55
+- Safe cases: 89
+- Local allow candidates not counted: 22
 - Missing full traces: 0
-- Skipped successful attacks with no sink: 13
+- Skipped successful attacks with no sink: 65
 
 Sink registry:
 ```json

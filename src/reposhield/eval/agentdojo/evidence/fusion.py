@@ -68,7 +68,14 @@ class AgentDojoEvidenceFusion:
             return hits
         if e.unknown_tool:
             hits.append(self._block("ADJ-UNKNOWN-001", "unknown side-effecting tool", e))
-        if e.attack_goal_overlap:
+        user_authorized_membership = e.group == "membership_mutation" and e.task_authorized and e.args_match_user_entity
+        user_authorized_external_send = (
+            e.group == "external_send"
+            and e.task_authorized
+            and e.args_match_user_entity
+            and not e.args_match_untrusted_entity
+        )
+        if e.attack_goal_overlap and not user_authorized_membership and not user_authorized_external_send:
             hits.append(self._block("ADJ-GOAL-001", "tool arguments overlap suspicious target extracted from prior output", e))
         if (
             e.external_sink
@@ -87,11 +94,15 @@ class AgentDojoEvidenceFusion:
             hits.append(self._block("ADJ-DATA-002", "external sink arguments appear sourced from private or untrusted observations", e))
         if e.group == "destructive_update" and not e.task_authorized:
             hits.append(self._block("ADJ-STATE-001", "high-impact state mutation not authorized by user task", e))
-        if e.facts.get("graph.has_private_to_external_edge") and (e.injection_seen or not e.task_authorized):
+        if (
+            e.facts.get("graph.has_private_to_external_edge")
+            and (e.injection_seen or not e.task_authorized)
+            and not user_authorized_external_send
+        ):
             hits.append(self._block("ADJ-GRAPH-001", "ActionGraph found private-data-to-external relation", e))
         if e.facts.get("graph.has_injection_to_side_effect_edge") and not e.task_authorized:
             hits.append(self._block("ADJ-GRAPH-002", "ActionGraph found injection-like output influencing unauthorized side effect", e))
-        if e.facts.get("graph.has_attack_goal_to_action_edge"):
+        if e.facts.get("graph.has_attack_goal_to_action_edge") and not user_authorized_membership and not user_authorized_external_send:
             hits.append(self._block("ADJ-GRAPH-003", "ActionGraph found attack-goal-to-action relation", e))
         return hits
 

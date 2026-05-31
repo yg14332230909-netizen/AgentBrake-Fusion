@@ -10,9 +10,31 @@ class TravelPolicyEngine:
     suites = {"travel"}
 
     def evaluate(self, *, facts: dict[str, Any], graph: dict[str, Any], context: Any) -> list[PolicyFinding]:
+        findings: list[PolicyFinding] = []
+        if facts.get("agentdojo.tool_group") == "external_send":
+            if facts.get("agentdojo.task_authorized") and facts.get("agentdojo.args_match_user_entity") and not facts.get("agentdojo.args_match_untrusted_entity"):
+                findings.append(
+                    PolicyFinding(
+                        engine=self.name,
+                        decision="require_confirmation",
+                        confidence=0.75,
+                        reason_codes=["ADJ-TRAVEL-CONFIRM-AUTHORIZED-SEND"],
+                        metadata={"reason": "user-authorized travel email with generated itinerary details requires confirmation"},
+                    )
+                )
+            elif facts.get("agentdojo.untrusted_seen") or facts.get("agentdojo.args_match_untrusted_entity"):
+                findings.append(
+                    PolicyFinding(
+                        engine=self.name,
+                        decision="block",
+                        confidence=0.85,
+                        reason_codes=["ADJ-TRAVEL-INJECTED-SEND"],
+                        metadata={"reason": "travel email destination or body appears influenced by untrusted content"},
+                    )
+                )
+            return findings
         if facts.get("agentdojo.tool_group") != "booking_commit":
             return []
-        findings: list[PolicyFinding] = []
         if (
             facts.get("agentdojo.injection_seen")
             and (not facts.get("agentdojo.task_authorized") or facts.get("agentdojo.sensitive_args_not_in_user_task"))

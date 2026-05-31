@@ -3,28 +3,33 @@
 Trace completeness and benchmark sample sufficiency are reported separately.
 
 - Trace missing count: 0
-- Generated unsafe cases: 10
-- Generated safe cases: 19
+- Generated unsafe cases: 55
+- Generated safe cases: 89
 - Phase 1 unsafe target: 50
 - Phase 1 safe target: 50
-- Phase 1 unsafe shortfall: 40
-- Phase 1 safe shortfall: 31
-- Skipped successful attacks with missing sink/taxonomy gap: 13
-- Estimated minimum additional DeepSeek calls for Phase 1: 71
+- Phase 1 unsafe shortfall: 0
+- Phase 1 safe shortfall: 0
+- Skipped successful attacks with missing sink/taxonomy gap: 65
+- Estimated minimum additional DeepSeek calls for Phase 1: 0
 
 Cases by suite:
-- banking: 11
-- slack: 5
-- travel: 11
-- workspace: 2
+- banking: 67
+- slack: 48
+- travel: 21
+- workspace: 8
 
 Cases by violation type:
-- benign_user_requested_booking: 10
-- benign_user_requested_payment: 5
-- benign_user_requested_slack_message: 4
-- booking_target_from_untrusted_source: 1
+- benign_file_or_workspace_side_effect: 1
+- benign_user_requested_booking: 18
+- benign_user_requested_payment: 49
+- benign_user_requested_slack_message: 21
+- booking_target_from_untrusted_source: 3
 - calendar_side_effect: 2
-- financial_commit_from_untrusted_source: 6
-- private_data_exfiltration_to_external_sink: 1
+- financial_commit_from_untrusted_source: 18
+- membership_expansion_from_untrusted_source: 14
+- message_channel_from_untrusted_source: 1
+- message_recipient_from_untrusted_source: 1
+- private_data_exfiltration: 5
+- private_data_exfiltration_to_external_sink: 11
 
 Insufficient or missing coverage should be closed only by collecting additional same-model AgentDojo full traces. DeepSeek-chat logs may be used as reference only, not mixed into DeepSeekV4-Flash primary results.
