@@ -66,8 +66,8 @@ def render_main_results(runs: list[dict[str, Any]]) -> list[str]:
     lines = [
         "## Table 1: AgentDojo Main Results",
         "",
-        "| Method | Utility Under Attack 鈫?| Security 鈫?| Targeted ASR 鈫?| Total Time | Notes |",
-        "|---|---:|---:|---:|---:|---|",
+        "| Method | User Utility | Targeted ASR | Security Rate | Secure Utility | Total Time | Notes |",
+        "|---|---:|---:|---:|---:|---:|---|",
     ]
     labels = {
         "none": "No Defense",
@@ -79,28 +79,60 @@ def render_main_results(runs: list[dict[str, Any]]) -> list[str]:
     rows = runs or []
     if not rows:
         rows = [
-            {"defense": key, "utility_under_attack": 0, "security": 0, "targeted_asr": 0, "total_runtime_min": 0, "mode": ""}
+            {"defense": key, "user_utility": 0, "security_rate": 0, "secure_utility": 0, "targeted_asr": 0, "total_runtime_min": 0, "mode": ""}
             for key in ["none", "tool_filter", "gateway_only", "agentdojo_firewall"]
         ]
         rows.append(
             {
                 "defense": "agentdojo_firewall",
-                "utility_under_attack": 0,
-                "security": 0,
+                "user_utility": 0,
+                "security_rate": 0,
+                "secure_utility": 0,
                 "targeted_asr": 0,
                 "total_runtime_min": 0,
                 "mode": "oracle_full",
             }
         )
     for run in rows:
+        metrics = normalized_metrics_for_run(run)
         defense = str(run.get("defense", "unknown"))
         mode = str(run.get("mode", ""))
         label = "AgentDojo Firewall Oracle Upper Bound" if mode == "oracle_full" else labels.get(defense, defense)
         lines.append(
-            f"| {label} | {float(run.get('utility_under_attack', 0.0)):.3f} | {float(run.get('security', 0.0)):.3f} | {float(run.get('targeted_asr', 0.0)):.3f} | {float(run.get('total_runtime_min', 0.0)):.2f} | suite={run.get('suite', '')} mode={mode or 'n/a'} |"
+            f"| {label} | {metrics['user_utility']:.3f} | {metrics['targeted_asr']:.3f} | {metrics['security_rate']:.3f} | {metrics['secure_utility']:.3f} | {float(run.get('total_runtime_min', 0.0)):.2f} | suite={run.get('suite', '')} mode={mode or 'n/a'} |"
         )
     lines.append("")
     return lines
+
+
+def normalized_metrics_for_run(run: dict[str, Any]) -> dict[str, float]:
+    if "user_utility" in run or "utility_under_attack" in run:
+        user_utility = float(run.get("user_utility", run.get("utility_under_attack", 0.0)) or 0.0)
+    else:
+        user_utility = _avg_bool((run.get("utility_results") or {}).values())
+    if "targeted_asr" in run:
+        targeted_asr = float(run.get("targeted_asr", 0.0) or 0.0)
+    else:
+        security_results = list((run.get("security_results") or {}).values())
+        targeted_asr = _avg_bool(security_results)
+    security_rate = float(run.get("security_rate", 1.0 - targeted_asr) or 0.0)
+    if "secure_utility" in run:
+        secure_utility = float(run.get("secure_utility", 0.0) or 0.0)
+    else:
+        utility_results = run.get("utility_results") or {}
+        security_results = run.get("security_results") or {}
+        secure_utility = _avg_bool(bool(value) and not bool(security_results.get(key, False)) for key, value in utility_results.items())
+    return {
+        "user_utility": user_utility,
+        "targeted_asr": targeted_asr,
+        "security_rate": security_rate,
+        "secure_utility": secure_utility,
+    }
+
+
+def _avg_bool(values: Any) -> float:
+    rows = list(values)
+    return sum(1.0 for value in rows if value) / len(rows) if rows else 0.0
 
 
 def render_tool_coverage(coverage: dict[str, Any]) -> list[str]:

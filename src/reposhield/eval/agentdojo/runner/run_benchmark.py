@@ -173,7 +173,11 @@ def run_benchmark(
 
     runtime_sec = time.perf_counter() - started
     utility_score = _avg_bool(utility_results.values())
-    security_score = _avg_bool(security_results.values())
+    targeted_asr = _avg_bool(security_results.values())
+    security_score = 1.0 - targeted_asr
+    secure_utility = _avg_bool(
+        bool(utility_results.get(key)) and not bool(security_results.get(key)) for key in utility_results
+    )
     audit = summarize_agentdojo_firewall_audit(getattr(getattr(pipeline, "firewall", None), "audit_events", []) or [])
     summary = {
         "run_name": out_dir.name,
@@ -189,9 +193,13 @@ def run_benchmark(
         "total_runtime_min": runtime_sec / 60.0,
         "utility_results": utility_results,
         "security_results": security_results,
+        "metric_schema_version": "agentdojo_metrics_v2",
         "utility_under_attack": utility_score,
+        "user_utility": utility_score,
         "security": security_score,
-        "targeted_asr": 1.0 - security_score,
+        "security_rate": security_score,
+        "targeted_asr": targeted_asr,
+        "secure_utility": secure_utility,
         "per_run": per_run,
         "agentdojo_firewall_audit_summary": audit,
         "tool_gate_decision_count": audit.get("tool_gate_decision_count", 0),

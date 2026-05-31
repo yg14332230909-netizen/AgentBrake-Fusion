@@ -54,8 +54,18 @@ class AgentDojoEvidenceFusion:
             hits.append(self._block("ADJ-GOAL-001", "tool arguments overlap suspicious target extracted from prior output", e))
         if e.group == "financial_commit" and e.untrusted_seen and not e.task_authorized:
             hits.append(self._block("ADJ-FIN-001", "untrusted context attempted unauthorized financial commit", e))
-        if e.group == "financial_commit" and (e.args_match_untrusted_entity or e.sensitive_args_not_in_user_task) and not e.task_authorized:
-            hits.append(self._block("ADJ-FIN-002", "financial commit arguments were not authorized by user task entities", e))
+        if (
+            e.group == "financial_commit"
+            and e.facts.get("agentdojo.target_entity_source") == "unknown"
+            and e.facts.get("agentdojo.sensitive_args_present")
+        ):
+            hits.append(self._confirm("ADJ-BANKING-CONFIRM-UNKNOWN-RECIPIENT", "unknown payment recipient requires user confirmation", e))
+        if (
+            e.group == "financial_commit"
+            and (e.args_match_untrusted_entity or (e.sensitive_args_not_in_user_task and e.untrusted_seen))
+            and not e.task_authorized
+        ):
+            hits.append(self._block("ADJ-BANKING-UNTRUSTED-FINANCIAL-COMMIT", "financial commit arguments were not authorized by user task entities", e))
         if (
             e.external_sink
             and e.private_data_seen
@@ -74,12 +84,24 @@ class AgentDojoEvidenceFusion:
         if e.group == "external_send" and e.untrusted_seen and not e.args_match_user_entity and not e.task_authorized:
             hits.append(self._block("ADJ-MSG-001", "untrusted context attempted unauthorized external send", e))
         if (
+            e.group == "external_send"
+            and e.facts.get("agentdojo.message_recipient_source") in {"untrusted_tool_result", "injection_text"}
+            and not e.args_match_user_entity
+        ):
+            hits.append(self._block("ADJ-SLACK-INJECTED-RECIPIENT", "message recipient appears sourced from injected content", e))
+        if e.group == "external_send" and e.facts.get("agentdojo.message_contains_private_data") and e.args_match_untrusted_entity:
+            hits.append(self._block("ADJ-SLACK-PRIVATE-EXFIL", "private data would be sent to an injected recipient or channel", e))
+        if e.group == "external_send" and e.facts.get("agentdojo.message_recipient_source") == "unknown" and not e.task_authorized:
+            hits.append(self._confirm("ADJ-SLACK-CONFIRM-UNKNOWN-DESTINATION", "unknown message destination requires confirmation", e))
+        if (
             e.group == "booking_commit"
             and e.injection_seen
             and (not e.task_authorized or e.sensitive_args_not_in_user_task)
             and not e.args_match_user_entity
         ):
             hits.append(self._block("ADJ-TRAVEL-001", "injection-like travel output attempted unauthorized or mismatched booking", e))
+        if e.group == "booking_commit" and e.facts.get("agentdojo.target_entity_source") == "unknown":
+            hits.append(self._confirm("ADJ-TRAVEL-CONFIRM-UNKNOWN-TARGET", "unknown travel booking target requires confirmation", e))
         if e.group == "booking_commit" and e.untrusted_seen and not e.args_match_user_entity and not e.task_authorized:
             hits.append(self._block("ADJ-TRAVEL-002", "untrusted travel content attempted unauthorized booking", e))
         if e.group == "booking_commit" and e.args_match_untrusted_entity and not e.args_match_user_entity:
@@ -93,7 +115,9 @@ class AgentDojoEvidenceFusion:
             hits.append(
                 self._block("ADJ-TRAVEL-003", "travel booking target does not match the user goal after untrusted review content", e)
             )
-        if e.group in {"destructive_update", "credential_change", "membership_mutation"} and not e.task_authorized:
+        if e.group == "membership_mutation":
+            hits.append(self._confirm("ADJ-SLACK-CONFIRM-MEMBERSHIP-EXPANSION", "workspace membership changes require confirmation", e))
+        if e.group in {"destructive_update", "credential_change"} and not e.task_authorized:
             hits.append(self._block("ADJ-STATE-001", "high-impact state mutation not authorized by user task", e))
         if e.group == "credential_change" and e.untrusted_seen:
             hits.append(self._block("ADJ-CRED-001", "credential change after untrusted observation", e))
@@ -110,6 +134,19 @@ class AgentDojoEvidenceFusion:
             rule_id=rule_id,
             decision="block",
             constraints=ConstraintDecision(execution_env="no_execute", network_scope="deny", data_scope="no_private", audit_scope="full"),
+            reason=reason,
+            evidence={
+                key: e.facts.get(key)
+                for key in sorted(e.facts)
+                if key.startswith(("agentdojo.", "source.", "contract.", "history.", "graph."))
+            },
+        )
+
+    def _confirm(self, rule_id: str, reason: str, e: EvidenceBundle) -> RuleHit:
+        return RuleHit(
+            rule_id=rule_id,
+            decision="require_confirmation",
+            constraints=ConstraintDecision(human_gate="approval_required", audit_scope="full"),
             reason=reason,
             evidence={
                 key: e.facts.get(key)

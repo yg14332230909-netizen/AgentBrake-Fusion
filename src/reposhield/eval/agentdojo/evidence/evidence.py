@@ -1,11 +1,13 @@
 ﻿from __future__ import annotations
 
+from dataclasses import asdict
 from typing import Any
 
 from ..compat.models_compat import sha256_text
 from .state import AgentDojoStateTracker, extract_targets
+from .contracts import SourceInfluenceGraph, TaskContractMatch, payment_contract_from_user_task
 from .task_authorizer import authorize_tool
-from ..compat.types import EvidenceBundle, ToolCallContext, ToolSpec
+from ..compat.types import ArgumentProvenance, EvidenceBundle, ToolCallContext, ToolSpec
 
 SENSITIVE_ARG_KEYS = {"password", "token", "secret", "iban", "account", "recipient", "to", "email", "message", "body", "file_id", "amount"}
 
@@ -28,9 +30,28 @@ class AgentDojoEvidenceBuilder:
         user_task_targets = self._booking_target_values(context.user_task, spec)
         booking_target_values = self._booking_target_values(context.tool_args, spec)
         booking_target_matches_user_goal = bool(
-            user_task_targets and booking_target_values and user_task_targets.intersection(booking_target_values)
+            (user_task_targets and booking_target_values and user_task_targets.intersection(booking_target_values))
+            or authorization.args_match_user_entity
+            or "tool_target_matches_user_task_entity" in authorization.reasons
         )
         explicit_booking_target_in_task = bool(user_task_targets)
+        arg_provenance = self._argument_provenance(context, authorization)
+        arg_source_map = {item.arg_name: item.source_type for item in arg_provenance}
+        target_source = self._target_entity_source(spec, arg_source_map)
+        task_contract = TaskContractMatch(
+            status="match" if task_authorized else ("violation" if spec.side_effect else "unknown"),
+            target_source=target_source,  # type: ignore[arg-type]
+            argument_sources=arg_source_map,  # type: ignore[arg-type]
+            confidence=authorization.entity_authorization_confidence,
+            reasons=list(authorization.reasons),
+        )
+        source_influence = SourceInfluenceGraph(
+            has_untrusted_to_side_effect_edge=bool(graph_facts and graph_facts.get("graph.has_untrusted_to_side_effect_edge")),
+            has_injection_to_side_effect_edge=bool(graph_facts and graph_facts.get("graph.has_injection_to_side_effect_edge")),
+            has_private_to_external_edge=bool(graph_facts and graph_facts.get("graph.has_private_to_external_edge")),
+            has_attack_goal_to_action_edge=bool(graph_facts and graph_facts.get("graph.has_attack_goal_to_action_edge")),
+            evidence_refs=[event.event_id for event in state.events[-5:]],
+        )
         facts = {
             "agentdojo.suite": context.suite,
             "agentdojo.tool_name": context.tool_name,
@@ -62,6 +83,35 @@ class AgentDojoEvidenceBuilder:
             "agentdojo.booking_target_values": sorted(booking_target_values),
             "agentdojo.booking_target_matches_user_goal": booking_target_matches_user_goal,
             "agentdojo.explicit_booking_target_in_task": explicit_booking_target_in_task,
+            "agentdojo.arg_provenance": [asdict(item) for item in arg_provenance],
+            "agentdojo.arg_source_map": arg_source_map,
+            "agentdojo.target_entity_source": target_source,
+            "agentdojo.message_recipient_source": self._message_target_source(spec, arg_source_map),
+            "agentdojo.message_channel_source": arg_source_map.get("channel", "unknown"),
+            "agentdojo.message_body_source": arg_source_map.get("body", arg_source_map.get("message", "unknown")),
+            "agentdojo.message_contains_private_data": bool(spec.external_sink and state.private_data_seen and sensitive_args_present),
+            "agentdojo.recipient_is_user_requested": bool(spec.external_sink and authorization.args_match_user_entity),
+            "agentdojo.recipient_is_injected": bool(spec.external_sink and authorization.args_match_untrusted_entity),
+            "agentdojo.channel_is_user_requested": bool(spec.external_sink and arg_source_map.get("channel") == "user_task"),
+            "agentdojo.channel_is_injected": bool(spec.external_sink and arg_source_map.get("channel") in {"untrusted_tool_result", "injection_text"}),
+            "agentdojo.is_membership_expansion": context.tool_name in {"add_user_to_channel", "invite_user_to_slack"},
+            "agentdojo.is_external_communication": bool(spec.external_sink),
+            "agentdojo.sink_type": spec.group,
+            "agentdojo.asset_risk": spec.risk,
+            "agentdojo.tool_call_evidence": {
+                "tool_name": context.tool_name,
+                "action_type": spec.semantic_action,
+                "sink_type": spec.group,
+                "arg_provenance": [asdict(item) for item in arg_provenance],
+                "task_contract_match": task_contract.status,
+                "asset_risk": spec.risk,
+                "source_influence": source_influence.as_dict(),
+            },
+            "agentdojo.task_contract_match": task_contract.as_dict(),
+            "agentdojo.source_influence_graph": source_influence.as_dict(),
+            "agentdojo.payment_intent_contract": payment_contract_from_user_task(context.user_task).as_dict()
+            if spec.group == "financial_commit"
+            else None,
             "source.has_untrusted": state.untrusted_seen,
             "source.has_injection_like": state.injection_seen,
             "source.trust_floor": "untrusted" if state.untrusted_seen else "trusted",
@@ -110,5 +160,54 @@ class AgentDojoEvidenceBuilder:
         if spec.group != "booking_commit":
             return set()
         return {target for target in extract_targets(str(value)) if target}
+
+    def _argument_provenance(self, context: ToolCallContext, authorization: Any) -> list[ArgumentProvenance]:
+        provenance: list[ArgumentProvenance] = []
+        for key, value in sorted(context.tool_args.items()):
+            value_text = str(value)
+            if authorization.user_entities.matches_text(value_text):
+                source = "user_task"
+                confidence = 0.9
+            elif authorization.arg_entities.flattened() and authorization.args_match_untrusted_entity:
+                source = "untrusted_tool_result"
+                confidence = 0.75
+            elif authorization.arg_entities.flattened() and authorization.args_match_private_entity:
+                source = "trusted_tool_result"
+                confidence = 0.65
+            elif value_text and value_text.lower() in str(context.user_task or "").lower():
+                source = "user_task"
+                confidence = 0.85
+            else:
+                source = "unknown"
+                confidence = 0.35
+            provenance.append(
+                ArgumentProvenance(
+                    arg_name=key,
+                    value=value,
+                    source_type=source,  # type: ignore[arg-type]
+                    confidence=confidence,
+                    evidence_refs=["user_task" if source == "user_task" else "tool_history"],
+                )
+            )
+        return provenance
+
+    def _target_entity_source(self, spec: ToolSpec, arg_source_map: dict[str, str]) -> str:
+        if spec.group == "booking_commit":
+            for key in ("hotel", "restaurant", "company", "flight", "city"):
+                if key in arg_source_map:
+                    return arg_source_map[key]
+        if spec.group == "financial_commit":
+            return arg_source_map.get("recipient", arg_source_map.get("iban", "unknown"))
+        if spec.group == "external_send":
+            return self._message_target_source(spec, arg_source_map)
+        return "unknown"
+
+    def _message_target_source(self, spec: ToolSpec, arg_source_map: dict[str, str]) -> str:
+        if spec.group != "external_send":
+            return "unknown"
+        for key in ("recipient", "to", "email", "user", "channel"):
+            if key in arg_source_map:
+                return arg_source_map[key]
+        return "unknown"
 
 

@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any, Literal
 
 Risk = Literal["low", "medium", "high", "critical"]
-Decision = Literal["allow", "allow_in_sandbox", "sandbox_then_approval", "quarantine", "block"]
+Decision = Literal["allow", "allow_in_sandbox", "sandbox_then_approval", "require_confirmation", "quarantine", "block"]
 AgentDojoDefenseMode = Literal["fair", "oracle_user", "oracle_full"]
 SanitizeMode = Literal["off", "label", "soft", "hard"]
 ToolGroup = Literal[
@@ -55,6 +55,7 @@ class ToolCallContext:
     sample_id: str | None = None
     raw_tool_call: Any = None
     defense_mode: AgentDojoDefenseMode = "fair"
+    ablation_config: dict[str, bool] = field(default_factory=dict)
 
 
 @dataclass(slots=True)
@@ -88,6 +89,33 @@ class EvidenceBundle:
     facts: dict[str, Any] = field(default_factory=dict)
 
 
+@dataclass(frozen=True, slots=True)
+class ArgumentProvenance:
+    arg_name: str
+    value: Any
+    source_type: Literal[
+        "user_task",
+        "trusted_tool_result",
+        "untrusted_tool_result",
+        "injection_text",
+        "model_inference",
+        "unknown",
+    ]
+    confidence: float
+    evidence_refs: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True, slots=True)
+class ToolCallEvidence:
+    tool_name: str
+    action_type: str
+    sink_type: str
+    arg_provenance: list[ArgumentProvenance]
+    task_contract_match: str
+    asset_risk: str
+    source_influence: dict[str, Any] = field(default_factory=dict)
+
+
 @dataclass(slots=True)
 class ConstraintDecision:
     execution_env: Literal["host", "sandbox", "no_execute"] = "host"
@@ -108,10 +136,8 @@ class ConstraintDecision:
     def to_public_decision(self, *, eval_mode: bool = True) -> Decision:
         if self.execution_env == "no_execute":
             return "block"
-        if self.human_gate == "approval_required" and eval_mode:
-            return "block"
         if self.human_gate == "approval_required":
-            return "sandbox_then_approval"
+            return "require_confirmation" if eval_mode else "sandbox_then_approval"
         if self.execution_env == "sandbox":
             return "allow_in_sandbox"
         if self.network_scope == "deny" or self.data_scope == "no_private":

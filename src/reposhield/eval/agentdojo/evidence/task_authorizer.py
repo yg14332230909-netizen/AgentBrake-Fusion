@@ -106,7 +106,9 @@ def authorize_tool(
             )
         elif spec.group == "booking_commit":
             task_authorized = (
-                group_authorized and (target_match_user or args_match_user or not arg_entities.flattened()) and not args_match_untrusted
+                group_authorized
+                and (target_match_user or args_match_user or not arg_entities.flattened())
+                and (target_match_user or not args_match_untrusted)
             )
         elif spec.group == "calendar_mutation":
             task_authorized = group_authorized and (

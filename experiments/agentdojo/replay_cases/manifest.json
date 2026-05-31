@@ -1,0 +1,15 @@
+{
+  "schema_version": "agentdojo_replay_cases_v1",
+  "description": "AgentDojo-derived tool-boundary replay benchmark, not a standard AgentDojo end-to-end score.",
+  "built_case_count": 0,
+  "total_case_count": 5,
+  "unsafe": [
+    "unsafe\\banking_injected_recipient_001.json"
+  ],
+  "safe": [
+    "safe\\travel_injection_task_0_13_0_reserve_hotel.json",
+    "safe\\travel_injection_task_0_17_0_reserve_hotel.json",
+    "safe\\travel_injection_task_0_5_0_reserve_hotel.json",
+    "safe\\workspace_user_requested_email_001.json"
+  ]
+}

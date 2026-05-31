@@ -21,7 +21,7 @@ DATE_RE = re.compile(
 TIME_RE = re.compile(r"\b\d{1,2}:\d{2}\s*(?:am|pm)?\b|\b\d{1,2}\s*(?:am|pm)\b", re.I)
 CHANNEL_RE = re.compile(r"(?i)(?:#|channel\s+)([a-z0-9_-]{2,40})")
 FILE_RE = re.compile(r"(?i)\b[\w .-]+\.(?:txt|md|pdf|docx|xlsx|csv|json|py)\b")
-QUOTED_RE = re.compile(r"['\"]([^'\"]{3,80})['\"]")
+QUOTED_RE = re.compile(r"\"([^\"]{3,80})\"|(?<!\w)'([^']{3,80})'(?!\w)")
 BOOKING_RE = re.compile(r"(?i)\b(?:reserve|book|booking|hotel|restaurant)\s+([A-Z][A-Za-z0-9 _.-]{2,60})")
 
 ENTITY_KEYS = {
@@ -107,7 +107,8 @@ def extract_entities(value: Any) -> EntitySet:
         entities.add("channel", item)
     for item in FILE_RE.findall(text):
         entities.add("filename", item)
-    for item in QUOTED_RE.findall(text):
+    for match in QUOTED_RE.findall(text):
+        item = next((part for part in match if part), "")
         entities.add("quoted", item)
         entities.add("hotel", item)
         entities.add("restaurant", item)

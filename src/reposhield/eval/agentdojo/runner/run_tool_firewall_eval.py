@@ -31,6 +31,7 @@ from ..gate.runtime_wrapper import build_agentdojo_firewall_pipeline
 from ..gate.tool_firewall import summarize_agentdojo_firewall_audit
 from ..adapters.pipeline_wrapper import RepoShieldAgentDojoContext, build_reposhield_agentdojo_pipeline
 from .result_exporter import summarize_agentdojo_audit
+from .metrics import compute_agentdojo_metrics, normalize_raw_agentdojo_result
 from ..state_tracker import AgentDojoStateTracker
 from ..tool_taxonomy import classify_agentdojo_tool
 
@@ -352,10 +353,15 @@ def run_suite(
     repo_root: Path | None = None,
     disable_taxonomy: bool = False,
     disable_state_tracker: bool = False,
+    disable_action_graph: bool = False,
+    disable_task_contract: bool = False,
     disable_invariants: bool = False,
+    disable_recovery_guidance: bool = False,
     policy_config: Path | None = None,
     max_iters: int = 15,
     run_name: str | None = None,
+    user_task_ids: list[str] | None = None,
+    injection_task_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     suite = get_suite(benchmark_version, suite_name)
     llm, llm_name = build_llm(model, model_id, tool_delimiter)
@@ -380,6 +386,9 @@ def run_suite(
 
     attack_obj = None if attack in {None, "", "none"} else load_attack(attack, suite, pipeline)
     user_tasks = list(suite.user_tasks.values())
+    if user_task_ids:
+        selected_user_ids = {str(item) for item in user_task_ids}
+        user_tasks = [task for task in user_tasks if str(getattr(task, "ID", "")) in selected_user_ids]
     if limit is not None:
         user_tasks = user_tasks[:limit]
 
@@ -410,7 +419,17 @@ def run_suite(
                             allowed_tools=allowed_tools,
                             allowed_tool_categories=allowed_categories,
                             run_id=f"{suite_name}-{user_task_id}-benign",
-                            metadata={"disable_state_tracker": disable_state_tracker},
+                            metadata={
+                                "disable_state_tracker": disable_state_tracker,
+                                "ablation_config": {
+                                    "enable_taxonomy": not disable_taxonomy,
+                                    "enable_state_tracker": not disable_state_tracker,
+                                    "enable_action_graph": not disable_action_graph,
+                                    "enable_task_contract": not disable_task_contract,
+                                    "enable_invariants": not disable_invariants,
+                                    "enable_recovery_guidance": not disable_recovery_guidance,
+                                },
+                            },
                         )
                     )
                 with TraceLogger(
@@ -428,14 +447,31 @@ def run_suite(
                     logger.set_contextarg("security", security)
                 utility_results[(user_task_id, injection_task_id)] = utility
                 security_results[(user_task_id, injection_task_id)] = security
-                per_run.append({"user_task_id": user_task_id, "injection_task_id": None, "utility": utility, "security": security})
+                per_run.append(
+                    {
+                        "suite": suite_name,
+                        "method": defense,
+                        "run_id": run_name or f"{suite_name}_{defense}_none",
+                        "user_task_id": user_task_id,
+                        "injection_task_id": None,
+                        "utility": utility,
+                        "security": security,
+                        "raw_agentdojo_user_task_success": bool(utility),
+                        "raw_agentdojo_injection_task_success": bool(security),
+                    }
+                )
         else:
+            requested_injection_task_ids = {str(item) for item in injection_task_ids or []}
             if attack_obj.is_dos_attack:
-                injection_task_ids = [next(iter(suite.injection_tasks.keys()))]
+                selected_injection_task_ids = [next(iter(suite.injection_tasks.keys()))]
             else:
-                injection_task_ids = list(suite.injection_tasks.keys())
+                selected_injection_task_ids = list(suite.injection_tasks.keys())
+            if requested_injection_task_ids:
+                selected_injection_task_ids = [
+                    item for item in selected_injection_task_ids if str(item) in requested_injection_task_ids
+                ]
             for user_task in user_tasks:
-                for injection_task_id in injection_task_ids:
+                for injection_task_id in selected_injection_task_ids:
                     injection_task = suite.get_injection_task_by_id(injection_task_id)
                     injections = attack_obj.attack(user_task, injection_task)
                     allowed_tools, allowed_categories = _infer_authorized_tools_and_categories(suite_name, suite, user_task)
@@ -457,10 +493,20 @@ def run_suite(
                                 untrusted_observation_seen=bool(injections),
                                 allowed_tools=allowed_tools,
                                 allowed_tool_categories=allowed_categories,
-                                run_id=f"{suite_name}-{user_task.ID}-{injection_task_id}",
-                                metadata={"disable_state_tracker": disable_state_tracker},
-                            )
+                            run_id=f"{suite_name}-{user_task.ID}-{injection_task_id}",
+                            metadata={
+                                "disable_state_tracker": disable_state_tracker,
+                                "ablation_config": {
+                                    "enable_taxonomy": not disable_taxonomy,
+                                    "enable_state_tracker": not disable_state_tracker,
+                                    "enable_action_graph": not disable_action_graph,
+                                    "enable_task_contract": not disable_task_contract,
+                                    "enable_invariants": not disable_invariants,
+                                    "enable_recovery_guidance": not disable_recovery_guidance,
+                                },
+                            },
                         )
+                    )
                     with TraceLogger(
                         delegate=OutputLogger(str(logdir) if logdir else None),
                         suite_name=suite.name,
@@ -482,11 +528,29 @@ def run_suite(
                             "injection_task_id": injection_task_id,
                             "utility": utility,
                             "security": security,
+                            "raw_agentdojo_user_task_success": bool(utility),
+                            "raw_agentdojo_injection_task_success": bool(security),
+                            "suite": suite_name,
+                            "method": defense,
+                            "run_id": run_name or f"{suite_name}_{defense}_{attack_obj.name if attack_obj else 'none'}",
                             "injections": injections,
                         }
                     )
 
     duration_sec = time.perf_counter() - start
+    normalized_cases = [
+        normalize_raw_agentdojo_result(
+            user_task_success=row.get("raw_agentdojo_user_task_success", row.get("utility", False)),
+            injection_task_success=row.get("raw_agentdojo_injection_task_success", row.get("security", False)),
+            suite=suite_name,
+            method=defense,
+            run_id=run_name or f"{suite_name}_{defense}_{attack_obj.name if attack_obj else 'none'}",
+            user_task_id=row.get("user_task_id"),
+            injection_task_id=row.get("injection_task_id"),
+        )
+        for row in per_run
+    ]
+    metrics = compute_agentdojo_metrics(normalized_cases)
     run_summary = {
         "run_name": run_name or f"{suite_name}_{defense}_{attack_obj.name if attack_obj else 'none'}",
         "suite": suite_name,
@@ -499,10 +563,15 @@ def run_suite(
         "total_runtime_min": duration_sec / 60.0,
         "utility_results": {f"{u}::{i}": v for (u, i), v in utility_results.items()},
         "security_results": {f"{u}::{i}": v for (u, i), v in security_results.items()},
-        "utility_under_attack": _avg_bool(utility_results.values()),
-        "security": _avg_bool(security_results.values()) if security_results else 1.0,
-        "targeted_asr": 1.0 - _avg_bool(security_results.values()) if security_results else 0.0,
+        "metric_schema_version": metrics["metric_schema_version"],
+        "utility_under_attack": metrics["utility_under_attack"],
+        "user_utility": metrics["user_utility"],
+        "targeted_asr": metrics["targeted_asr"],
+        "security_rate": metrics["security_rate"],
+        "security": metrics["security_rate"],
+        "secure_utility": metrics["secure_utility"],
         "per_run": per_run,
+        "normalized_cases": [case.as_normalized_dict() for case in normalized_cases],
     }
     if control_plane is not None:
         run_summary["reposhield_audit_summary"] = summarize_agentdojo_audit(control_plane.audit.read_events())
@@ -542,9 +611,14 @@ def main() -> int:
     parser.add_argument("--policy-config", type=Path, default=None)
     parser.add_argument("--disable-taxonomy", action="store_true")
     parser.add_argument("--disable-state-tracker", action="store_true")
+    parser.add_argument("--disable-action-graph", action="store_true")
+    parser.add_argument("--disable-task-contract", action="store_true")
     parser.add_argument("--disable-invariants", action="store_true")
+    parser.add_argument("--disable-recovery-guidance", action="store_true")
     parser.add_argument("--max-iters", type=int, default=15)
     parser.add_argument("--run-name", default=None)
+    parser.add_argument("--user-tasks", nargs="*", default=None)
+    parser.add_argument("--injection-tasks", nargs="*", default=None)
     args = parser.parse_args()
 
     summary = run_suite(
@@ -563,9 +637,14 @@ def main() -> int:
         policy_config=args.policy_config,
         disable_taxonomy=args.disable_taxonomy,
         disable_state_tracker=args.disable_state_tracker,
+        disable_action_graph=args.disable_action_graph,
+        disable_task_contract=args.disable_task_contract,
         disable_invariants=args.disable_invariants,
+        disable_recovery_guidance=args.disable_recovery_guidance,
         max_iters=args.max_iters,
         run_name=args.run_name,
+        user_task_ids=args.user_tasks,
+        injection_task_ids=args.injection_tasks,
     )
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     return 0

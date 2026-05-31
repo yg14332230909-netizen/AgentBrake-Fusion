@@ -40,6 +40,7 @@ class AgentDojoFirewallTaskContext:
     sample_id: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
     defense_mode: AgentDojoDefenseMode = "fair"
+    ablation_config: dict[str, bool] = field(default_factory=dict)
 
     @classmethod
     def from_mapping(cls, mapping: Mapping[str, Any] | None, *, suite: str | None = None) -> "AgentDojoFirewallTaskContext":
@@ -77,9 +78,11 @@ class AgentDojoFirewallTaskContext:
                     "attack_goal_signatures",
                     "run_id",
                     "sample_id",
+                    "ablation_config",
                 }
             },
             defense_mode=str(data.get("defense_mode", "fair")),  # type: ignore[arg-type]
+            ablation_config=dict(data.get("ablation_config", {}) or {}),
         )
 
     def to_tool_context(self, *, tool_name: str, tool_args: dict[str, Any]) -> ToolCallContext:
@@ -96,6 +99,7 @@ class AgentDojoFirewallTaskContext:
             run_id=self.run_id,
             sample_id=self.sample_id,
             defense_mode=self.defense_mode,
+            ablation_config=dict(self.ablation_config),
         )
 
 

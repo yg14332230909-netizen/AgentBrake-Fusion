@@ -186,9 +186,9 @@ def run_specs(
                     pipeline_name=getattr(pipeline, "name", llm_name),
                     benchmark_version=suite_version,
                 ) as logger:
-                    utility, security = _run_agentdojo_task_with_retries(suite, pipeline, user_task, injection_task, injections)
+                    utility, injection_success = _run_agentdojo_task_with_retries(suite, pipeline, user_task, injection_task, injections)
                     logger.set_contextarg("utility", utility)
-                    logger.set_contextarg("security", security)
+                    logger.set_contextarg("security", injection_success)
                 audit = summarize_agentdojo_firewall_audit(getattr(getattr(pipeline, "firewall", None), "audit_events", [])[before:])
                 overall_audit.append(audit)
                 results.append(
@@ -197,20 +197,28 @@ def run_specs(
                         "user_task_id": spec.user_task_id,
                         "injection_task_id": spec.injection_task_id,
                         "utility": bool(utility),
-                        "security": bool(security),
+                        "security": bool(injection_success),
+                        "raw_agentdojo_user_task_success": bool(utility),
+                        "raw_agentdojo_injection_task_success": bool(injection_success),
                         "audit": audit,
                     }
                 )
 
     utility_under_attack = _avg_bool([row["utility"] for row in results])
-    security = _avg_bool([row["security"] for row in results])
+    targeted_asr = _avg_bool([row["security"] for row in results])
+    security_rate = 1.0 - targeted_asr if results else 0.0
+    secure_utility = _avg_bool([row["utility"] and not row["security"] for row in results])
     audit = aggregate_audits(overall_audit)
     return {
+        "metric_schema_version": "agentdojo_metrics_v2",
         "mode": mode,
         "sample_count": len(results),
         "utility_under_attack": utility_under_attack,
-        "security": security,
-        "targeted_asr": 1.0 - security if results else 0.0,
+        "user_utility": utility_under_attack,
+        "security": security_rate,
+        "security_rate": security_rate,
+        "targeted_asr": targeted_asr,
+        "secure_utility": secure_utility,
         "runtime_sec": time.perf_counter() - started,
         "audit": audit,
         "results": results,
