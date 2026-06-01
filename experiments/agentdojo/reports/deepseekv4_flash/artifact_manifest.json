@@ -5,34 +5,34 @@
   "branch": "main",
   "model": "deepseek-v4-flash",
   "benchmark_type": "agentdojo_derived_tool_boundary_replay",
-  "case_count": 144,
-  "unsafe_case_count": 55,
-  "safe_case_count": 89,
-  "local_allow_candidate_count": 22,
+  "case_count": 200,
+  "unsafe_case_count": 69,
+  "safe_case_count": 131,
+  "local_allow_candidate_count": 42,
   "trace_missing_count": 0,
   "phase1_shortfall": {
     "unsafe": 0,
     "safe": 0
   },
   "metrics": {
-    "unsafe_interception_rate": 1.0,
-    "safe_pass_rate": 0.7865168539325843,
-    "false_positive_rate": 0.20224719101123595,
+    "unsafe_interception_rate": 0.9855072463768116,
+    "safe_pass_rate": 0.9389312977099237,
+    "false_positive_rate": 0.05343511450381679,
     "block_reason_accuracy": 1.0
   },
   "acceptance": {
     "structural_acceptance": "PASS",
-    "effectiveness_acceptance": "WARN",
+    "effectiveness_acceptance": "PASS",
     "overall_status": "WARN",
     "allowed_warnings": [
-      "workspace.safe sample_count < 10"
+      "summary_only artifact mode; public full ZIP unavailable"
     ],
     "warnings": [
       {
-        "name": "domain_workspace_safe_sample_count",
-        "category": "domain",
+        "name": "release_url_reachable_or_summary_only_declared",
+        "category": "artifact",
         "status": "WARN",
-        "detail": "workspace.safe sample_count=1 < 10"
+        "detail": "summary_only mode declared; public full ZIP is unavailable, canonical committed summaries are the review path"
       }
     ]
   },
@@ -54,9 +54,16 @@
     "python experiments/agentdojo/scripts/11_run_replay_benchmark.py --cases-dir experiments/agentdojo/replay_cases/agentdojo_derived --out-dir experiments/agentdojo/reports/deepseekv4_flash/replay",
     "python experiments/agentdojo/scripts/19_final_acceptance_check.py --replay-cases-dir experiments/agentdojo/replay_cases --reports-dir experiments/agentdojo/reports/deepseekv4_flash"
   ],
-  "generated_at": "2026-05-31T16:41:01.697253+00:00",
+  "generated_at": "2026-06-01T07:52:23.493401+00:00",
   "artifact_name": "reposhield_agentdojo_phase1_1_deepseekv4_flash_de6b73b.zip",
-  "artifact_path": "E:\\project\\reposhield_plugin_v0.3\\experiments\\agentdojo\\artifacts\\reposhield_agentdojo_phase1_1_deepseekv4_flash_de6b73b.zip",
   "artifact_sha256": "ac4b0aebd4013cc078df5179cde5aab755d1e78e261a60e9c248e29700783cc2",
-  "artifact_sha256_scope": "authoritative external ZIP hash; embedded artifact manifest uses a non-hash placeholder to avoid self-referential ZIP hashing"
+  "artifact_sha256_scope": "local retained ZIP hash for integrity reference; public review is summary_only unless a GitHub Release is published",
+  "artifact_distribution": "summary_only",
+  "release_tag": null,
+  "release_url": null,
+  "artifact_url": null,
+  "public_full_zip_available": false,
+  "review_mode": "committed_summary_artifacts_only",
+  "summary_only_reason": "Full raw ZIP is retained locally; public review uses committed canonical summaries, replay cases, manifest, final acceptance output, and artifact_manifest.json.",
+  "phase1_2_workspace_safe_sample_count": 43
 }

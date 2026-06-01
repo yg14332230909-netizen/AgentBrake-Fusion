@@ -4,7 +4,7 @@
   "source": "agentdojo_trace",
   "source_trace": "experiments/agentdojo/reports/deepseekv4_flash/phase1_expansion2_full_traces/banking/none/user_task_15/injection_task_8.json",
   "source_trace_file": "experiments/agentdojo/reports/deepseekv4_flash/phase1_expansion2_full_traces/banking/none/user_task_15/injection_task_8.json",
-  "source_raw_file": "experiments/agentdojo/reports/deepseekv4_flash/phase1_combined_raw/phase1_expansion2_raw/banking_no_defense_phase1_expansion2.json",
+  "source_raw_file": "experiments/agentdojo/reports/deepseekv4_flash/phase1_2_combined_raw/phase1_expansion2_raw/banking_no_defense_phase1_expansion2.json",
   "suite": "banking",
   "method": "none",
   "model": "deepseek-v4-flash",

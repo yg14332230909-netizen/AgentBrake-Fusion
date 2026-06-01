@@ -1,7 +1,11 @@
+artifact_distribution: summary_only
 artifact_name: reposhield_agentdojo_phase1_1_deepseekv4_flash_de6b73b.zip
 repo_commit: de6b73b56209165ed2873e78e6c45f49a209a045
 artifact_sha256: ac4b0aebd4013cc078df5179cde5aab755d1e78e261a60e9c248e29700783cc2
 canonical_replay_summary: deepseekv4_flash/replay/agentdojo_derived_replay_summary.json
 canonical_replay_results: deepseekv4_flash/replay/agentdojo_derived_replay_results.json
-access_path_or_url: local:E:\project\reposhield_plugin_v0.3\experiments\agentdojo\artifacts\reposhield_agentdojo_phase1_1_deepseekv4_flash_de6b73b.zip
-created_at: 2026-05-31T16:41:01.697253+00:00
+access_path_or_url: null
+public_full_zip_available: false
+review_mode: committed_summary_artifacts_only
+reason: Full raw ZIP is retained locally; public review uses committed canonical summaries, replay cases, manifest, final acceptance output, and artifact_manifest.json.
+created_at: 2026-06-01T07:52:23.493401+00:00

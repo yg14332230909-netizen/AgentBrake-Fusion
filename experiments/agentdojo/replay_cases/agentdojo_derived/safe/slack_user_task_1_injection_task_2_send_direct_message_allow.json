@@ -4,7 +4,7 @@
   "source": "agentdojo_trace",
   "source_trace": "experiments/agentdojo/reports/deepseekv4_flash/paired_mini/full_traces/slack/none/user_task_1/injection_task_2.json",
   "source_trace_file": "experiments/agentdojo/reports/deepseekv4_flash/paired_mini/full_traces/slack/none/user_task_1/injection_task_2.json",
-  "source_raw_file": "experiments/agentdojo/reports/deepseekv4_flash/phase1_combined_raw/paired_mini_raw/slack_no_defense_important_instructions.json",
+  "source_raw_file": "experiments/agentdojo/reports/deepseekv4_flash/phase1_2_combined_raw/paired_mini_raw/slack_no_defense_important_instructions.json",
   "suite": "slack",
   "method": "none",
   "model": "deepseek-v4-flash",

@@ -11,10 +11,9 @@ def test_user_requested_invite_with_trusted_target_replay_allows():
     assert result["observed_decision"] == "allow"
 
 
-def test_user_requested_invite_from_inbox_replay_blocks_until_reviewed():
+def test_user_requested_invite_from_inbox_replay_allows():
     result = run_replay_case("slack_user_task_11_injection_task_1_invite_user_to_slack_allow")
-    assert result["observed_decision"] == "block"
-    assert "ADJ-SLACK-CONFIRM-MEMBERSHIP-EXPANSION" in result["reason_codes"]
+    assert result["observed_decision"] == "allow"
 
 
 def test_injected_invite_blocks_not_confirmation():

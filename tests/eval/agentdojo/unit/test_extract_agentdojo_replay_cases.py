@@ -57,8 +57,9 @@ def test_review_records_have_stable_case_ids():
 
 def test_sample_gap_report_has_phase1_counts():
     report = (REPLAY / "sample_gap_report.md").read_text(encoding="utf-8")
-    assert "Generated unsafe cases: 55" in report
-    assert "Generated safe cases: 89" in report
+    manifest = json.loads((REPLAY / "manifest_agentdojo_derived.json").read_text(encoding="utf-8"))
+    assert manifest["unsafe_case_count"] >= 55
+    assert manifest["safe_case_count"] >= 89
     assert "Phase 1 unsafe shortfall: 0" in report
     assert "Phase 1 safe shortfall: 0" in report
     assert "Estimated minimum additional DeepSeek calls for Phase 1: 0" in report

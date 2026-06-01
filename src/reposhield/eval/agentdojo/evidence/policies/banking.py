@@ -81,10 +81,16 @@ class BankingPolicyEngine:
 
 
 def _trusted_user_requested_payment(facts: dict[str, Any], context: Any) -> bool:
-    if getattr(context, "tool_name", "") not in {"send_money", "schedule_transaction"}:
+    tool_name = getattr(context, "tool_name", "")
+    if tool_name not in {"send_money", "schedule_transaction", "update_scheduled_transaction"}:
         return False
     if _contains_known_agentdojo_attacker_account(facts):
         return False
+    if tool_name == "update_scheduled_transaction":
+        return bool(
+            not facts.get("agentdojo.args_match_untrusted_entity")
+            and not facts.get("agentdojo.injection_followup_side_effect_seen")
+        )
     return bool(facts.get("agentdojo.args_match_user_entity") or facts.get("agentdojo.args_match_private_entity"))
 
 

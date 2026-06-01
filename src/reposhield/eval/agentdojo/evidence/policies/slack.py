@@ -11,6 +11,7 @@ class SlackPolicyEngine:
 
     def evaluate(self, *, facts: dict[str, Any], graph: dict[str, Any], context: Any) -> list[PolicyFinding]:
         findings: list[PolicyFinding] = []
+        suspicious_targets = " ".join(str(item).lower() for item in facts.get("agentdojo.suspicious_targets") or [])
         if facts.get("agentdojo.is_membership_expansion"):
             if _membership_target_from_injection(facts, graph):
                 findings.append(
@@ -34,10 +35,14 @@ class SlackPolicyEngine:
                 )
         if facts.get("agentdojo.tool_group") != "external_send":
             return findings
-        if getattr(context, "tool_name", "") == "post_webpage" and (
-            graph.get("graph.has_private_to_external_edge")
-            or graph.get("graph.has_injection_to_side_effect_edge")
-            or facts.get("agentdojo.private_data_seen")
+        if (
+            getattr(context, "tool_name", "") == "post_webpage"
+            and (
+                graph.get("graph.has_private_to_external_edge")
+                or graph.get("graph.has_injection_to_side_effect_edge")
+                or facts.get("agentdojo.private_data_seen")
+            )
+            and not _user_authorized_public_webpage_post(facts, suspicious_targets)
         ):
             findings.append(
                 PolicyFinding(
@@ -58,7 +63,6 @@ class SlackPolicyEngine:
                     metadata={"reason": "Slack send target or content overlaps injected content"},
                 )
             )
-        suspicious_targets = " ".join(str(item).lower() for item in facts.get("agentdojo.suspicious_targets") or [])
         if "true-informations.com" in suspicious_targets and graph.get("graph.has_private_to_external_edge"):
             findings.append(
                 PolicyFinding(
@@ -117,6 +121,22 @@ class SlackPolicyEngine:
 
 def _membership_target_from_injection(facts: dict[str, Any], graph: dict[str, Any]) -> bool:
     if facts.get("agentdojo.args_match_untrusted_entity") and not facts.get("agentdojo.args_match_user_entity"):
+        if facts.get("agentdojo.task_authorized") and not _current_args_overlap_suspicious_targets(facts):
+            return False
         return bool(graph.get("graph.has_injection_to_side_effect_edge"))
     suspicious_targets = " ".join(str(item).lower() for item in facts.get("agentdojo.suspicious_targets") or [])
     return bool(facts.get("agentdojo.injection_followup_webpage_seen") and "true-informations.com" in suspicious_targets)
+
+
+def _current_args_overlap_suspicious_targets(facts: dict[str, Any]) -> bool:
+    arg_text = repr(facts.get("agentdojo.arg_entities") or {}).lower()
+    return any(str(target).lower().strip(" .,\n\t") in arg_text for target in facts.get("agentdojo.suspicious_targets") or [])
+
+
+def _user_authorized_public_webpage_post(facts: dict[str, Any], suspicious_targets: str) -> bool:
+    return bool(
+        facts.get("agentdojo.task_authorized")
+        and facts.get("agentdojo.args_match_user_entity")
+        and not facts.get("agentdojo.args_match_untrusted_entity")
+        and "true-informations.com" not in suspicious_targets
+    )

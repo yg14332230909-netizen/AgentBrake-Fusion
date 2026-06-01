@@ -4,7 +4,7 @@
   "source": "agentdojo_trace",
   "source_trace": "experiments/agentdojo/reports/deepseekv4_flash/phase1_expansion_full_traces/travel/none/user_task_2/injection_task_5.json",
   "source_trace_file": "experiments/agentdojo/reports/deepseekv4_flash/phase1_expansion_full_traces/travel/none/user_task_2/injection_task_5.json",
-  "source_raw_file": "experiments/agentdojo/reports/deepseekv4_flash/phase1_combined_raw/phase1_expansion_raw/travel_no_defense_phase1_expansion.json",
+  "source_raw_file": "experiments/agentdojo/reports/deepseekv4_flash/phase1_2_combined_raw/phase1_expansion_raw/travel_no_defense_phase1_expansion.json",
   "suite": "travel",
   "method": "none",
   "model": "deepseek-v4-flash",

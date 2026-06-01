@@ -36,9 +36,9 @@ The paired mini run completed with 47 paired cases per method. Slack injection t
 
 Tool-boundary replay reports are separated from standard AgentDojo E2E metrics.
 
-## Phase 1.1 Artifact Review
+## Phase 1.2 Artifact Review
 
-This repository uses artifact review option B: replay cases and scripts are kept reproducible in git, while the full report bundle is reviewed through the lightweight artifact pointer files in this directory.
+This repository currently uses summary-only review mode. The full raw ZIP is not publicly downloadable from this commit; public review should use the committed canonical replay summaries, replay cases, acceptance output, and manifest files in git.
 
 Canonical replay paths:
 
@@ -50,6 +50,8 @@ Pointer files:
 - `artifact_manifest.json`
 - `commit_hash.txt`
 - `release_artifact_url_or_path.txt`
+
+`release_artifact_url_or_path.txt` declares `artifact_distribution: summary_only`, `access_path_or_url: null`, and `public_full_zip_available: false`. If a GitHub Release ZIP is published later, update that pointer, `artifact_manifest.json`, and the SHA256 together.
 
 The following root-level stale files are intentionally excluded and must not be used for Phase 1.1 metrics:
 

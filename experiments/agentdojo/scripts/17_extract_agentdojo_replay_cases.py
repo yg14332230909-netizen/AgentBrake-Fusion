@@ -8,7 +8,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 PHASE1_MIN_SAFE = 50
 PHASE1_MIN_UNSAFE = 50
 
@@ -449,6 +448,16 @@ def review_record(
     ground_truth_violation: dict[str, Any] | None = None,
     review_question: str | None = None,
 ) -> dict[str, Any]:
+    case_id = case_id or "_".join(
+        str(part)
+        for part in [
+            "review",
+            row.get("suite") or "unknown",
+            row.get("user_task_id") or "unknown_user",
+            row.get("injection_task_id") or "unknown_injection",
+            status,
+        ]
+    ).replace(" ", "_")
     return {
         "case_id": case_id,
         "source_raw_file": posix_path(summary_path),
