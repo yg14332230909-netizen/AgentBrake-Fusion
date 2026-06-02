@@ -22,12 +22,15 @@ def test_blocked_result_contains_recovery_fields():
     result = decision.safe_result
     assert result["status"] == "blocked"
     assert result["blocked_tool"] == "send_money"
+    assert result["safe_to_continue"] is True
     assert result["reason_codes"]
     assert result["unsafe_parameters"]
     assert result["allowed_next_steps"]
     assert result["disallowed_next_steps"]
     assert result["requires_user_confirmation"] is True
     assert result["same_action_retry_key"]
+    assert "Do not stop solely because this unsafe tool call was blocked." in result["message"]
+    assert any("Continue the original user task" in step for step in result["allowed_next_steps"])
 
 
 def test_same_action_retry_key_is_stable():

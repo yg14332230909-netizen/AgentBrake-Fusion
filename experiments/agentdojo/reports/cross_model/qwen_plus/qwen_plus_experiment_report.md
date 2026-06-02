@@ -1,54 +1,62 @@
-# Qwen-Plus Cross-Model Experiment Report
+﻿# Qwen-Plus Cross-Model Experiment Report
 
-## Purpose
-Evaluate whether RepoShield AgentDojo defenses transfer from DeepSeekV4-Flash to Qwen-Plus without mixing replay cases across models.
+## Scope
 
-## Model
-- model_key: qwen_plus
-- model_id: qwen-plus
-- provider: alibaba_dashscope
-- adapter: openai_compatible_chat
-- API key: environment variable only
+Evaluate whether RepoShield AgentDojo defenses transfer to Qwen-Plus with Qwen-derived replay cases only. DeepSeek artifacts are reference baselines and are not mixed into Qwen replay extraction.
 
 ## Adapter Smoke
-- status: PASS
-- tool_call_parse_success: true
-- trace_saved: true
 
-## Sample Source
-Formal E2E uses the same frozen 105-case plan as DeepSeek. Replay cases are derived only from Qwen-Plus no_defense traces.
+- adapter_status: PASS
+- api_call_success: True
+- tool_call_parse_success: True
+- json_args_parse_success: True
+- secret_scan: PASS
 
-## Formal 105 E2E
-- case_count: 105
-- per_case_rows: 525
+## Formal 105 Before Recovery Fix
+
+- rows/raw_runs/full_traces: 525 / 525 / 525
 - no_defense targeted_asr: 0.5238095238095238
 - reposhield_strict targeted_asr: 0.0
 - reposhield_strict secure_utility: 0.5428571428571428
-- tool_filter user_utility: 0.047619047619047616
-- attack_active_suppression_rate: 1.0
+- effectiveness status before fix: WARN because strict secure_utility was below 0.60.
 
-## Qwen-Derived Replay
-- case_count: 70
-- unsafe_count: 44
-- safe_count: 26
-- trace_missing: 0
-- unsafe_interception_rate: 0.9318181818181818
-- safe_pass_rate: 0.7307692307692307
-- false_positive_rate: 0.15384615384615385
+## Replay Gap Closure
 
-## Full AgentDojo
-Status: SKIPPED in this stage. Reasons: Qwen formal strict secure_utility is below the recommended 0.60 threshold, and Qwen-derived replay sample coverage has shortfalls (unsafe 6, safe 24). Full run should proceed only after accepting this utility/replay coverage risk and the larger cost envelope.
+- qwen_derived case_count: 164
+- unsafe_count: 107
+- safe_count: 57
+- trace_missing_count: 0
+- sample_gap_shortfall unsafe/safe: 0 / 0
+- unsafe_interception_rate: 0.9439252336448598
+- safe_pass_rate: 0.6491228070175439
+- false_positive_rate: 0.2982456140350877
+- block_reason_accuracy: 0.9801980198019802
 
-## Tool-Filter Baseline
-tool_filter user_utility: 0.047619047619047616
+## Utility Forensics And Fix
 
-## Failure Clusters
-See `e2e_formal_105/failure_clusters.json` and `replay/agentdojo_derived_replay_summary.json`.
+Utility analysis separated Qwen baseline failures from RepoShield policy/recovery gaps. The implemented fix is model-agnostic: clearer blocked-result continuation guidance plus travel email authorization handling for user-authorized destinations. No Qwen-specific safety relaxation was added.
 
-## Limitations
-- Formal secure utility is below the recommended Qwen threshold.
-- Replay cases from formal traces do not meet the 50/50 safe/unsafe target.
-- Full AgentDojo Qwen is not run in this stage.
+## Formal 105 After Recovery Fix
 
-## Recommendation
-Proceed to a larger Qwen run only if the utility shortfall is acceptable or after recovery tuning is planned.
+- rows/raw_runs/full_traces: 525 / 525 / 525
+- no_defense targeted_asr: 0.5523809523809524
+- reposhield_strict targeted_asr: 0.0
+- reposhield_strict secure_utility: 0.6
+- reposhield_gateway_eval secure_utility: 0.5904761904761905
+- reposhield_oracle_user_eval secure_utility: 0.5428571428571428
+- attack-active suppression: 1
+- final structural_acceptance: PASS
+- final effectiveness_acceptance: PASS
+- final overall_status: PASS
+
+## Canonical Files
+
+- canonical acceptance: final_acceptance_qwen_formal.json
+- canonical after-fix formal dir: formal_105_after_recovery_fix
+- replay manifest: replay_cases/manifest_qwen_derived.json
+- replay summary: replay/qwen_derived_replay_summary.json
+- utility forensics: utility_forensics/qwen_utility_gap_summary.json
+
+## Notes
+
+The final strict secure_utility equals the minimum target 0.60. This should be treated as passing the stated threshold, not as comfortable margin. Further work should target Slack and Banking recovery false positives without relaxing injected recipient, private exfiltration, or injected booking-target blocking.

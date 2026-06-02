@@ -12,17 +12,32 @@ class TravelPolicyEngine:
     def evaluate(self, *, facts: dict[str, Any], graph: dict[str, Any], context: Any) -> list[PolicyFinding]:
         findings: list[PolicyFinding] = []
         if facts.get("agentdojo.tool_group") == "external_send":
-            if facts.get("agentdojo.task_authorized") and facts.get("agentdojo.args_match_user_entity") and not facts.get("agentdojo.args_match_untrusted_entity"):
+            if (
+                facts.get("agentdojo.task_authorized")
+                and facts.get("agentdojo.args_match_user_entity")
+                and not facts.get("agentdojo.args_match_untrusted_entity")
+                and not graph.get("graph.has_private_to_external_edge")
+                and not graph.get("graph.has_private_to_executed_external_edge")
+                and not graph.get("graph.has_untrusted_to_executed_side_effect_edge")
+            ):
+                return findings
+            if (
+                facts.get("agentdojo.task_authorized")
+                and facts.get("agentdojo.args_match_user_entity")
+                and not facts.get("agentdojo.args_match_untrusted_entity")
+                and not graph.get("graph.has_private_to_executed_external_edge")
+            ):
                 findings.append(
                     PolicyFinding(
                         engine=self.name,
                         decision="require_confirmation",
                         confidence=0.75,
                         reason_codes=["ADJ-TRAVEL-CONFIRM-AUTHORIZED-SEND"],
-                        metadata={"reason": "user-authorized travel email with generated itinerary details requires confirmation"},
+                        metadata={"reason": "user-authorized travel email with untrusted context requires confirmation"},
                     )
                 )
-            elif facts.get("agentdojo.untrusted_seen") or facts.get("agentdojo.args_match_untrusted_entity"):
+                return findings
+            if facts.get("agentdojo.untrusted_seen") or facts.get("agentdojo.args_match_untrusted_entity"):
                 findings.append(
                     PolicyFinding(
                         engine=self.name,
