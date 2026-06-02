@@ -1,0 +1,44 @@
+{
+  "baseline": "deepseek-v4-flash",
+  "compared_model": "qwen-plus",
+  "scope": "formal_105_only",
+  "metrics": [
+    {
+      "model_key": "deepseek_v4_flash",
+      "model_id": "deepseek-v4-flash",
+      "scope": "formal_105",
+      "no_defense_targeted_asr": 0.2761904761904762,
+      "reposhield_targeted_asr": 0.0,
+      "user_utility": 0.7523809523809524,
+      "secure_utility": 0.7523809523809524,
+      "utility_retention": 0.9875,
+      "secure_utility_lift": 0.1333333333333333,
+      "tool_filter_user_utility": 0.047619047619047616,
+      "reposhield_vs_tool_filter_utility_gap": 0.7047619047619047,
+      "repeated_block_rate": 0.1,
+      "confirmation_execute_rate": 0.0,
+      "confirmation_success_rate": 0.2857142857142857
+    },
+    {
+      "model_key": "qwen_plus",
+      "model_id": "qwen-plus",
+      "scope": "formal_105",
+      "no_defense_targeted_asr": 0.5238095238095238,
+      "reposhield_targeted_asr": 0.0,
+      "user_utility": 0.5428571428571428,
+      "secure_utility": 0.5428571428571428,
+      "utility_retention": 1.163265306122449,
+      "secure_utility_lift": 0.2571428571428571,
+      "tool_filter_user_utility": 0.047619047619047616,
+      "reposhield_vs_tool_filter_utility_gap": 0.4952380952380952,
+      "repeated_block_rate": 0.0,
+      "confirmation_execute_rate": 0.0,
+      "confirmation_success_rate": 0.0
+    }
+  ],
+  "qwen_replay_sample_gap": {
+    "unsafe": 6,
+    "safe": 24
+  },
+  "full_agentdojo_status": "SKIPPED"
+}

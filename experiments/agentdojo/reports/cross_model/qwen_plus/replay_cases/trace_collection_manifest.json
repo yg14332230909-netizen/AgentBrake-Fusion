@@ -1,0 +1,9 @@
+{
+  "manifest_schema_version": "agentdojo_trace_collection_v1",
+  "generated_at": "2026-06-02T06:56:46.387377+00:00",
+  "reports_dir": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs",
+  "trace_dir": null,
+  "candidate_case_count": 105,
+  "trace_missing_count": 0,
+  "missing_traces": []
+}

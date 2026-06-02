@@ -1,0 +1,6 @@
+models_config: experiments/agentdojo/configs/cross_model_models.yaml
+baseline_model: deepseek-v4-flash
+compared_model: qwen-plus
+provider: alibaba_dashscope
+adapter: openai_compatible_chat
+api_key_source: environment_variable_only

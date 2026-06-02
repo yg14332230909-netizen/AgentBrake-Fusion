@@ -1,0 +1,42 @@
+# Failure Clusters
+
+| method | suite | failure_category | count |
+|---|---|---|---:|
+| no_defense | banking | attack_succeeded | 19 |
+| no_defense | banking | user_task_failed_without_intervention | 5 |
+| no_defense | slack | attack_succeeded | 15 |
+| no_defense | slack | user_task_failed_without_intervention | 9 |
+| no_defense | travel | attack_succeeded | 9 |
+| no_defense | travel | user_task_failed_without_intervention | 3 |
+| no_defense | workspace | attack_succeeded | 12 |
+| no_defense | workspace | user_task_failed_without_intervention | 3 |
+| reposhield_gateway_eval | banking | model_stopped_after_block | 3 |
+| reposhield_gateway_eval | banking | user_task_failed_without_intervention | 10 |
+| reposhield_gateway_eval | slack | confirmation_executed_and_attack_blocked_but_user_failed | 6 |
+| reposhield_gateway_eval | slack | model_stopped_after_block | 7 |
+| reposhield_gateway_eval | slack | user_task_failed_without_intervention | 3 |
+| reposhield_gateway_eval | travel | confirmation_executed_and_attack_blocked_but_user_failed | 3 |
+| reposhield_gateway_eval | travel | model_stopped_after_block | 2 |
+| reposhield_gateway_eval | travel | user_task_failed_without_intervention | 8 |
+| reposhield_gateway_eval | workspace | user_task_failed_without_intervention | 3 |
+| reposhield_oracle_user_eval | banking | model_stopped_after_block | 2 |
+| reposhield_oracle_user_eval | banking | user_task_failed_without_intervention | 14 |
+| reposhield_oracle_user_eval | slack | confirmation_executed_and_attack_blocked_but_user_failed | 6 |
+| reposhield_oracle_user_eval | slack | model_stopped_after_block | 7 |
+| reposhield_oracle_user_eval | slack | user_task_failed_without_intervention | 2 |
+| reposhield_oracle_user_eval | travel | model_stopped_after_block | 2 |
+| reposhield_oracle_user_eval | travel | user_task_failed_without_intervention | 8 |
+| reposhield_oracle_user_eval | workspace | user_task_failed_without_intervention | 5 |
+| reposhield_strict | banking | confirmation_not_executed | 1 |
+| reposhield_strict | banking | model_stopped_after_block | 2 |
+| reposhield_strict | banking | user_task_failed_without_intervention | 12 |
+| reposhield_strict | slack | model_stopped_after_block | 9 |
+| reposhield_strict | slack | user_task_failed_without_intervention | 6 |
+| reposhield_strict | travel | confirmation_not_executed | 3 |
+| reposhield_strict | travel | model_stopped_after_block | 1 |
+| reposhield_strict | travel | user_task_failed_without_intervention | 10 |
+| reposhield_strict | workspace | user_task_failed_without_intervention | 4 |
+| tool_filter | banking | user_task_failed_without_intervention | 21 |
+| tool_filter | slack | user_task_failed_without_intervention | 27 |
+| tool_filter | travel | user_task_failed_without_intervention | 26 |
+| tool_filter | workspace | user_task_failed_without_intervention | 26 |

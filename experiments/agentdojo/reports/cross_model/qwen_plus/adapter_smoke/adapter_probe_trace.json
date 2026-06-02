@@ -1,0 +1,35 @@
+{
+  "trace_schema_version": "agentdojo_trace_v1",
+  "experiment": "cross_model_adapter_probe",
+  "model": "qwen-plus",
+  "provider": "alibaba_dashscope",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a tool-calling adapter probe. Use the provided tool exactly once."
+    },
+    {
+      "role": "user",
+      "content": "Call echo_probe with payload set to qwen_adapter_probe and count set to 1."
+    }
+  ],
+  "tool_calls": [
+    {
+      "id": "call_2783eee4540d4f9f8f35d9",
+      "name": "echo_probe",
+      "arguments": {
+        "count": 1,
+        "payload": "qwen_adapter_probe"
+      }
+    }
+  ],
+  "audit_events": [
+    {
+      "event_type": "adapter_probe_chat_completion",
+      "api_call_success": true,
+      "tool_call_count": 1,
+      "token_usage_recorded": true
+    }
+  ],
+  "started_at": "2026-06-02T04:06:45.999114+00:00"
+}

@@ -516,7 +516,7 @@ def render_sample_gap_report(result: dict[str, Any]) -> str:
             f"- Phase 1 unsafe shortfall: {max(0, PHASE1_MIN_UNSAFE - unsafe)}",
             f"- Phase 1 safe shortfall: {max(0, PHASE1_MIN_SAFE - safe)}",
             f"- Skipped successful attacks with missing sink/taxonomy gap: {manifest['skipped_no_sink_count']}",
-            f"- Estimated minimum additional DeepSeek calls for Phase 1: {max(0, PHASE1_MIN_UNSAFE - unsafe) + max(0, PHASE1_MIN_SAFE - safe)}",
+            f"- Estimated minimum additional same-model calls for Phase 1: {max(0, PHASE1_MIN_UNSAFE - unsafe) + max(0, PHASE1_MIN_SAFE - safe)}",
             "",
             "Cases by suite:",
             *suite_lines,
@@ -524,7 +524,7 @@ def render_sample_gap_report(result: dict[str, Any]) -> str:
             "Cases by violation type:",
             *violation_lines,
             "",
-            "Insufficient or missing coverage should be closed only by collecting additional same-model AgentDojo full traces. DeepSeek-chat logs may be used as reference only, not mixed into DeepSeekV4-Flash primary results.",
+            "Insufficient or missing coverage should be closed only by collecting additional same-model AgentDojo full traces. Cross-model traces may be used as reference only, not mixed into the primary replay benchmark.",
         ]
     ) + "\n"
 

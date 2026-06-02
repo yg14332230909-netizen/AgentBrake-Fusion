@@ -1,0 +1,37 @@
+Qwen adapter smoke: PASS
+  api_call_success=true
+  tool_call_parse_success=true
+  trace_saved=true
+  secret_scan=PASS
+
+Qwen formal 105 E2E:
+  raw_runs=525
+  full_traces=525
+  per_case_rows=525
+  full_trace_missing=0
+  trace_schema_version=agentdojo_trace_v1
+  structural_acceptance=PASS
+  effectiveness_acceptance=WARN
+  reason=strict secure_utility below recommended 0.60
+
+Qwen-derived replay:
+  replay cases valid
+  case_count=70
+  unsafe_count=44
+  safe_count=26
+  trace_missing=0
+  unsafe_interception_rate=0.9318181818181818
+  safe_pass_rate=0.7307692307692307
+  false_positive_rate=0.15384615384615385
+  sample_gap=unsafe_shortfall=6,safe_shortfall=24
+
+Full AgentDojo E2E:
+  status=SKIPPED
+  reason=formal secure utility below recommended threshold and replay sample coverage shortfall; full run deferred to explicit larger-scale pass
+
+Validation:
+  python -m ruff check experiments/agentdojo/scripts tests: PASS
+  python -m pytest tests/eval/agentdojo/unit tests/policy_engine: 230 passed in 6.92s
+  python -m pytest: 407 passed in 33.88s
+  secret scan: PASS
+  local path scan: PASS

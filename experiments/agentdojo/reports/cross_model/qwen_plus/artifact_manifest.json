@@ -1,0 +1,19 @@
+{
+  "experiment": "RepoShield AgentDojo Cross-Model Qwen-Plus",
+  "model_key": "qwen_plus",
+  "model_id": "qwen-plus",
+  "provider": "alibaba_dashscope",
+  "adapter": "openai_compatible_chat",
+  "adapter_smoke": "adapter_smoke/adapter_probe_results.json",
+  "formal_105": "e2e_formal_105/e2e_summary.json",
+  "formal_acceptance": "e2e_formal_105/final_acceptance_qwen_formal.json",
+  "replay_cases_manifest": "replay_cases/manifest_agentdojo_derived.json",
+  "replay_summary": "replay/agentdojo_derived_replay_summary.json",
+  "full_agentdojo_status": "SKIPPED",
+  "known_warnings": [
+    "formal_strict_secure_utility_below_recommended_0.60",
+    "replay_sample_shortfall",
+    "full_agentdojo_skipped"
+  ],
+  "generated_at": "2026-06-02T06:58:46.390828+00:00"
+}

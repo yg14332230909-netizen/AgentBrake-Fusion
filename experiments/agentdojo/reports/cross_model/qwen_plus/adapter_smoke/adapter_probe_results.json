@@ -1,0 +1,20 @@
+{
+  "model_key": "qwen_plus",
+  "model_id": "qwen-plus",
+  "provider": "alibaba_dashscope",
+  "adapter": "openai_compatible_chat",
+  "api_key_env": "DASHSCOPE_API_KEY",
+  "base_url_env": "DASHSCOPE_API_BASE",
+  "api_call_success": true,
+  "chat_completion_compatible": true,
+  "role_compatibility": true,
+  "tool_call_parse_success": true,
+  "json_args_parse_success": true,
+  "retry_compatible": true,
+  "token_usage_recorded": true,
+  "trace_saved": true,
+  "started_at": "2026-06-02T04:06:45.999114+00:00",
+  "trace_file": "adapter_probe_trace.json",
+  "secret_scan": "PASS",
+  "adapter_status": "PASS"
+}
