@@ -33,9 +33,14 @@ def build_report(reports_dir: Path) -> dict[str, Any]:
     checks: list[dict[str, Any]] = []
     plan_path = reports_dir / "full_agentdojo_case_plan.json"
     sha_path = reports_dir / "full_agentdojo_case_plan.sha256"
+    frozen_plan_path = reports_dir / "full_agentdojo_case_plan_frozen.json"
+    frozen_sha_path = reports_dir / "full_agentdojo_case_plan_frozen.sha256"
+    manifest_path = reports_dir / "full_run_manifest.json"
     summary_path = reports_dir / "e2e_full_summary.json"
     rows_path = reports_dir / "per_case_results.jsonl"
     plan = load_json(plan_path)
+    frozen_plan = load_json(frozen_plan_path)
+    manifest = load_json(manifest_path)
     summary = load_json(summary_path)
     rows = load_jsonl(rows_path)
     methods = summary.get("methods") or {}
@@ -43,8 +48,15 @@ def build_report(reports_dir: Path) -> dict[str, Any]:
 
     add(checks, "plan_exists", plan_path.exists(), "full_agentdojo_case_plan.json")
     add(checks, "plan_frozen", bool(plan.get("plan_frozen")), "plan_frozen must be true")
+    add(checks, "plan_model_attack_present", bool(plan.get("model") and plan.get("attack")), "plan requires model and attack")
     add(checks, "plan_sha256_exists", sha_path.exists(), "full_agentdojo_case_plan.sha256")
     add(checks, "plan_sha256_matches", sha_matches(plan_path, sha_path), "sha256 must match frozen plan")
+    add(checks, "frozen_plan_exists", frozen_plan_path.exists(), "full_agentdojo_case_plan_frozen.json")
+    add(checks, "frozen_plan_sha256_exists", frozen_sha_path.exists(), "full_agentdojo_case_plan_frozen.sha256")
+    add(checks, "frozen_plan_matches_current_plan", frozen_plan == plan and bool(frozen_plan), "frozen plan must match counted full_agentdojo_case_plan.json")
+    add(checks, "frozen_plan_sha256_matches", sha_matches(frozen_plan_path, frozen_sha_path), "frozen plan sha256 must match")
+    add(checks, "full_run_manifest_exists", manifest_path.exists(), "full_run_manifest.json")
+    add(checks, "full_run_manifest_counts_match", manifest_counts_match(manifest, summary, rows, reports_dir), "manifest counts must match files and summary")
     add(checks, "per_rows_match_plan_methods", len(rows) == int(plan.get("case_count") or 0) * len(plan.get("methods") or METHODS), "per-case rows must equal case_count x methods")
     add(checks, "method_case_counts_consistent", method_case_counts_match(methods, int(plan.get("case_count") or 0)), "each method must cover the frozen plan")
     add(checks, "trace_files_exist", missing_trace_count(rows, reports_dir) == 0, f"missing={missing_trace_count(rows, reports_dir)}")
@@ -52,6 +64,8 @@ def build_report(reports_dir: Path) -> dict[str, Any]:
     add(checks, "raw_full_counts_match_or_manifest", raw_full_counts_match_or_manifest(reports_dir, rows), "extra raw/full files require excluded_runs_manifest.json")
     add(checks, "no_api_key_or_local_path", no_secrets_or_local_paths(reports_dir), "reports must not contain API keys or local absolute paths")
     add(checks, "artifact_manifest_exists", (reports_dir / "artifact_manifest.json").exists(), "artifact_manifest.json")
+    add(checks, "artifact_manifest_summary_only", artifact_manifest_summary_only(reports_dir), "artifact_manifest must declare summary_only and raw_full_traces_committed=false")
+    add(checks, "release_pointer_exists", (reports_dir / "release_artifact_url_or_path.txt").exists(), "release_artifact_url_or_path.txt")
     add(checks, "attack_active_summary_exists", (reports_dir / "attack_active_subset_summary.json").exists(), "attack_active_subset_summary.json")
     add(checks, "failure_clusters_exist", (reports_dir / "failure_clusters.json").exists() and (reports_dir / "failure_clusters.md").exists(), "failure_clusters json/md")
     add(checks, "confirmation_summary_exists", (reports_dir / "confirmation_summary.json").exists() and (reports_dir / "confirmation_summary.md").exists(), "confirmation_summary json/md")
@@ -103,6 +117,37 @@ def method_case_counts_match(methods: dict[str, Any], expected: int) -> bool:
     return expected > 0 and all(int((methods.get(method) or {}).get("case_count") or 0) == expected for method in METHODS)
 
 
+def manifest_counts_match(manifest: dict[str, Any], summary: dict[str, Any], rows: list[dict[str, Any]], reports_dir: Path) -> bool:
+    if not manifest:
+        return False
+    raw_count = len(list((reports_dir / "raw_runs").glob("*.json")))
+    full_count = len(list((reports_dir / "full_traces").glob("**/*.json")))
+    case_count = int(summary.get("case_count") or 0)
+    method_count = len(METHODS)
+    row_count = len(rows)
+    return bool(
+        int(manifest.get("case_count") or 0) == case_count
+        and int(manifest.get("method_count") or 0) == method_count
+        and int(manifest.get("per_case_rows") or 0) == row_count
+        and row_count == case_count * method_count
+        and int(manifest.get("raw_runs_count") or 0) == raw_count
+        and int(manifest.get("full_traces_count") or 0) == full_count
+        and int(manifest.get("trace_missing_count") or 0) == missing_trace_count(rows, reports_dir)
+        and str(manifest.get("plan_sha256") or "") == sha256_file(reports_dir / "full_agentdojo_case_plan_frozen.json")
+    )
+
+
+def artifact_manifest_summary_only(reports_dir: Path) -> bool:
+    manifest = load_json(reports_dir / "artifact_manifest.json")
+    return bool(
+        manifest.get("artifact_distribution") == "summary_only"
+        and manifest.get("summary_files_committed") is True
+        and manifest.get("raw_full_traces_committed") is False
+        and manifest.get("canonical_summary") == "e2e_full_summary.json"
+        and manifest.get("canonical_acceptance") == "final_acceptance_full_agentdojo.json"
+    )
+
+
 def missing_trace_count(rows: list[dict[str, Any]], reports_dir: Path) -> int:
     return sum(1 for row in rows if not trace_path(row, reports_dir).exists())
 
@@ -143,6 +188,14 @@ def sha_matches(plan_path: Path, sha_path: Path) -> bool:
     expected = sha_path.read_text(encoding="utf-8").split()[0]
     digest = hashlib.sha256(plan_path.read_bytes()).hexdigest()
     return digest == expected
+
+
+def sha256_file(path: Path) -> str:
+    if not path.exists():
+        return ""
+    digest = hashlib.sha256()
+    digest.update(path.read_bytes())
+    return digest.hexdigest()
 
 
 def trace_path(row: dict[str, Any], reports_dir: Path) -> Path:

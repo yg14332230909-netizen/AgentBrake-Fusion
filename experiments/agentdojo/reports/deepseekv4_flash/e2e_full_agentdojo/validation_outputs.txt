@@ -1,0 +1,30 @@
+python -m ruff check experiments/agentdojo/scripts tests
+All checks passed!
+
+python -m pytest tests/eval/agentdojo/unit tests/policy_engine
+230 passed in 5.71s
+
+python -m pytest
+407 passed in 36.61s
+
+python experiments/agentdojo/scripts/25_plan_full_agentdojo_e2e.py --help
+PASS
+
+python experiments/agentdojo/scripts/26_summarize_full_agentdojo_e2e.py --help
+PASS
+
+python experiments/agentdojo/scripts/27_check_full_agentdojo_acceptance.py --help
+PASS
+
+python experiments/agentdojo/scripts/26_summarize_full_agentdojo_e2e.py --reports-dir experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo
+PASS, regenerated summary-only artifacts, frozen plan, and full_run_manifest
+
+python experiments/agentdojo/scripts/27_check_full_agentdojo_acceptance.py --reports-dir experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo
+PASS, overall_status=PASS
+
+local path scan over experiments/agentdojo/reports/deepseekv4_flash
+LOCAL_PATH_SCAN_PASS
+
+summary-only artifact distribution
+artifact_manifest.json: artifact_distribution=summary_only, raw_full_traces_committed=false
+release_artifact_url_or_path.txt: full_zip_public_url=null

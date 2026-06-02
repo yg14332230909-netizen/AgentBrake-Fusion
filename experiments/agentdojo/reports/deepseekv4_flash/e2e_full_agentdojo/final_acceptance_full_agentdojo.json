@@ -1,0 +1,318 @@
+{
+  "structural_acceptance": "PASS",
+  "effectiveness_acceptance": "PASS",
+  "overall_status": "PASS",
+  "checks": [
+    {
+      "name": "plan_exists",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "full_agentdojo_case_plan.json"
+    },
+    {
+      "name": "plan_frozen",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "plan_frozen must be true"
+    },
+    {
+      "name": "plan_model_attack_present",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "plan requires model and attack"
+    },
+    {
+      "name": "plan_sha256_exists",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "full_agentdojo_case_plan.sha256"
+    },
+    {
+      "name": "plan_sha256_matches",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "sha256 must match frozen plan"
+    },
+    {
+      "name": "frozen_plan_exists",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "full_agentdojo_case_plan_frozen.json"
+    },
+    {
+      "name": "frozen_plan_sha256_exists",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "full_agentdojo_case_plan_frozen.sha256"
+    },
+    {
+      "name": "frozen_plan_matches_current_plan",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "frozen plan must match counted full_agentdojo_case_plan.json"
+    },
+    {
+      "name": "frozen_plan_sha256_matches",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "frozen plan sha256 must match"
+    },
+    {
+      "name": "full_run_manifest_exists",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "full_run_manifest.json"
+    },
+    {
+      "name": "full_run_manifest_counts_match",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "manifest counts must match files and summary"
+    },
+    {
+      "name": "per_rows_match_plan_methods",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "per-case rows must equal case_count x methods"
+    },
+    {
+      "name": "method_case_counts_consistent",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "each method must cover the frozen plan"
+    },
+    {
+      "name": "trace_files_exist",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "missing=0"
+    },
+    {
+      "name": "trace_schema_valid",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "full traces require agentdojo_trace_v1"
+    },
+    {
+      "name": "raw_full_counts_match_or_manifest",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "extra raw/full files require excluded_runs_manifest.json"
+    },
+    {
+      "name": "no_api_key_or_local_path",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "reports must not contain API keys or local absolute paths"
+    },
+    {
+      "name": "artifact_manifest_exists",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "artifact_manifest.json"
+    },
+    {
+      "name": "artifact_manifest_summary_only",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "artifact_manifest must declare summary_only and raw_full_traces_committed=false"
+    },
+    {
+      "name": "release_pointer_exists",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "release_artifact_url_or_path.txt"
+    },
+    {
+      "name": "attack_active_summary_exists",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "attack_active_subset_summary.json"
+    },
+    {
+      "name": "failure_clusters_exist",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "failure_clusters json/md"
+    },
+    {
+      "name": "confirmation_summary_exists",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "confirmation_summary json/md"
+    },
+    {
+      "name": "blocked_recovery_summary_exists",
+      "category": "structural",
+      "status": "PASS",
+      "detail": "blocked_recovery_summary json/md"
+    },
+    {
+      "name": "effectiveness_thresholds",
+      "category": "effectiveness",
+      "status": "PASS",
+      "detail": "RepoShield full E2E thresholds"
+    },
+    {
+      "name": "attack_active_thresholds",
+      "category": "effectiveness",
+      "status": "PASS",
+      "detail": "attack-active subset thresholds"
+    }
+  ],
+  "failures": [],
+  "warnings": [],
+  "metrics": {
+    "no_defense": {
+      "case_count": 949,
+      "targeted_asr": 0.1612223393045311,
+      "security_rate": 0.8387776606954689,
+      "user_utility": 0.6859852476290832,
+      "secure_utility": 0.6301369863013698,
+      "tool_call_count": 5555,
+      "blocked_case_rate": 0.0,
+      "confirmation_case_rate": 0.0,
+      "intervention_rate": 0.0,
+      "post_block_user_success_rate": null,
+      "recovery_success_rate": null,
+      "recovery_status": "WARN_NO_DENOMINATOR",
+      "confirmation_execute_rate": null,
+      "confirmation_success_rate": null,
+      "confirmation_status": "WARN_NO_DENOMINATOR",
+      "repeated_block_rate": null,
+      "policy_latency_p50_ms": null,
+      "policy_latency_p95_ms": null,
+      "latency_status": "missing"
+    },
+    "reposhield_gateway_eval": {
+      "case_count": 949,
+      "targeted_asr": 0.0,
+      "security_rate": 1.0,
+      "user_utility": 0.7407797681770284,
+      "secure_utility": 0.7407797681770284,
+      "tool_call_count": 4439,
+      "blocked_case_rate": 0.10853530031612224,
+      "confirmation_case_rate": 0.05584826132771338,
+      "intervention_rate": 0.15384615384615385,
+      "post_block_user_success_rate": 0.009708737864077669,
+      "recovery_success_rate": 0.1506849315068493,
+      "recovery_status": "ok",
+      "confirmation_execute_rate": 1.0,
+      "confirmation_success_rate": 0.39622641509433965,
+      "confirmation_status": "ok",
+      "repeated_block_rate": 0.02912621359223301,
+      "policy_latency_p50_ms": 0.917,
+      "policy_latency_p95_ms": 2.132,
+      "latency_status": "present"
+    },
+    "reposhield_oracle_user_eval": {
+      "case_count": 949,
+      "targeted_asr": 0.0,
+      "security_rate": 1.0,
+      "user_utility": 0.7502634351949421,
+      "secure_utility": 0.7502634351949421,
+      "tool_call_count": 4374,
+      "blocked_case_rate": 0.11380400421496312,
+      "confirmation_case_rate": 0.05584826132771338,
+      "intervention_rate": 0.15489989462592202,
+      "post_block_user_success_rate": 0.027777777777777776,
+      "recovery_success_rate": 0.1564625850340136,
+      "recovery_status": "ok",
+      "confirmation_execute_rate": 1.0,
+      "confirmation_success_rate": 0.37735849056603776,
+      "confirmation_status": "ok",
+      "repeated_block_rate": 0.027777777777777776,
+      "policy_latency_p50_ms": 0.919,
+      "policy_latency_p95_ms": 2.278,
+      "latency_status": "present"
+    },
+    "reposhield_strict": {
+      "case_count": 949,
+      "targeted_asr": 0.002107481559536354,
+      "security_rate": 0.9978925184404637,
+      "user_utility": 0.7523709167544784,
+      "secure_utility": 0.7523709167544784,
+      "tool_call_count": 4404,
+      "blocked_case_rate": 0.12539515279241306,
+      "confirmation_case_rate": 0.015806111696522657,
+      "intervention_rate": 0.12539515279241306,
+      "post_block_user_success_rate": 0.06722689075630252,
+      "recovery_success_rate": 0.06722689075630252,
+      "recovery_status": "ok",
+      "confirmation_execute_rate": 0.0,
+      "confirmation_success_rate": 0.4666666666666667,
+      "confirmation_status": "ok",
+      "repeated_block_rate": 0.0,
+      "policy_latency_p50_ms": 0.906,
+      "policy_latency_p95_ms": 2.25,
+      "latency_status": "present"
+    },
+    "tool_filter": {
+      "case_count": 949,
+      "targeted_asr": 0.0,
+      "security_rate": 1.0,
+      "user_utility": 0.0505795574288725,
+      "secure_utility": 0.0505795574288725,
+      "tool_call_count": 4,
+      "blocked_case_rate": 0.0,
+      "confirmation_case_rate": 0.0,
+      "intervention_rate": 0.0,
+      "post_block_user_success_rate": null,
+      "recovery_success_rate": null,
+      "recovery_status": "WARN_NO_DENOMINATOR",
+      "confirmation_execute_rate": null,
+      "confirmation_success_rate": null,
+      "confirmation_status": "WARN_NO_DENOMINATOR",
+      "repeated_block_rate": null,
+      "policy_latency_p50_ms": null,
+      "policy_latency_p95_ms": null,
+      "latency_status": "missing"
+    }
+  },
+  "attack_active_subset": {
+    "definition": "cases where no_defense raw_agentdojo_injection_task_success is true",
+    "case_count": 153,
+    "methods": {
+      "no_defense": {
+        "case_count": 153,
+        "targeted_asr": 1.0,
+        "security_rate": 0.0,
+        "user_utility": 0.3464052287581699,
+        "secure_utility": 0.0,
+        "attack_suppression": 0.0
+      },
+      "tool_filter": {
+        "case_count": 153,
+        "targeted_asr": 0.0,
+        "security_rate": 1.0,
+        "user_utility": 0.0,
+        "secure_utility": 0.0,
+        "attack_suppression": 1.0
+      },
+      "reposhield_strict": {
+        "case_count": 153,
+        "targeted_asr": 0.006535947712418301,
+        "security_rate": 0.9934640522875817,
+        "user_utility": 0.7712418300653595,
+        "secure_utility": 0.7712418300653595,
+        "attack_suppression": 0.9934640522875817
+      },
+      "reposhield_gateway_eval": {
+        "case_count": 153,
+        "targeted_asr": 0.0,
+        "security_rate": 1.0,
+        "user_utility": 0.7450980392156863,
+        "secure_utility": 0.7450980392156863,
+        "attack_suppression": 1.0
+      },
+      "reposhield_oracle_user_eval": {
+        "case_count": 153,
+        "targeted_asr": 0.0,
+        "security_rate": 1.0,
+        "user_utility": 0.7450980392156863,
+        "secure_utility": 0.7450980392156863,
+        "attack_suppression": 1.0
+      }
+    }
+  }
+}

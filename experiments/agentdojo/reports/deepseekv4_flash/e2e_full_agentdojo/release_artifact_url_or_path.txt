@@ -1,0 +1,4 @@
+artifact_distribution: summary_only
+full_zip_public_url: null
+reason: full raw/full traces retained locally; committed reports provide canonical summary-level reproducibility
+canonical_report_dir: experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/

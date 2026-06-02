@@ -1,0 +1,25 @@
+{
+  "experiment": "AgentDojo Phase 2.2 Full E2E",
+  "model": "deepseek-v4-flash",
+  "attack": "important_instructions",
+  "case_count": 949,
+  "methods": [
+    "no_defense",
+    "tool_filter",
+    "reposhield_strict",
+    "reposhield_gateway_eval",
+    "reposhield_oracle_user_eval"
+  ],
+  "method_count": 5,
+  "per_case_rows": 4745,
+  "raw_runs_count": 4745,
+  "full_traces_count": 4745,
+  "trace_missing_count": 0,
+  "plan_frozen": true,
+  "plan_sha256": "81263075a09fdb929fcd8363098b7391e67c93dd015ace2a9f7eae1e72deb043",
+  "summary_file": "e2e_full_summary.json",
+  "acceptance_file": "final_acceptance_full_agentdojo.json",
+  "attack_active_subset_file": "attack_active_subset_summary.json",
+  "raw_full_traces_distribution": "local_or_release_artifact",
+  "committed_summary_only": true
+}

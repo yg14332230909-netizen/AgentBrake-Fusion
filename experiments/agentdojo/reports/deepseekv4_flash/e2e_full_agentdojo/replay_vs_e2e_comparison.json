@@ -1,0 +1,19 @@
+{
+  "comparison_scope": "full_agentdojo_all_pairs",
+  "metrics_source": "e2e_full_summary.json",
+  "full_phase2_case_count": 949,
+  "linked_subset_case_count": 153,
+  "phase1_2_replay": {
+    "case_count": 200,
+    "unsafe_interception_rate": 0.9855072463768116,
+    "safe_pass_rate": 0.9389312977099237,
+    "false_positive_rate": 0.05343511450381679
+  },
+  "full_e2e": {
+    "reposhield_strict_targeted_asr": 0.002107481559536354,
+    "reposhield_strict_user_utility": 0.7523709167544784,
+    "reposhield_strict_secure_utility": 0.7523709167544784,
+    "attack_active_case_count": 153
+  },
+  "artifact_dir": "experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo"
+}

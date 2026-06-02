@@ -1,0 +1,128 @@
+{
+  "experiment": "AgentDojo Phase 2.2 Full E2E",
+  "artifact_distribution": "summary_only",
+  "model": "deepseek-v4-flash",
+  "attack": "important_instructions",
+  "case_count": 949,
+  "method_count": 5,
+  "per_case_rows": 4745,
+  "raw_runs_count": 4745,
+  "full_traces_count": 4745,
+  "trace_missing_count": 0,
+  "summary_files_committed": true,
+  "raw_full_traces_committed": false,
+  "canonical_summary": "e2e_full_summary.json",
+  "canonical_acceptance": "final_acceptance_full_agentdojo.json",
+  "canonical_attack_active_summary": "attack_active_subset_summary.json",
+  "known_warnings": [],
+  "artifacts": [
+    {
+      "path": "full_agentdojo_case_plan.json",
+      "exists": true
+    },
+    {
+      "path": "full_agentdojo_case_plan.sha256",
+      "exists": true
+    },
+    {
+      "path": "full_agentdojo_case_plan_rationale.md",
+      "exists": true
+    },
+    {
+      "path": "full_agentdojo_case_plan_frozen.json",
+      "exists": true
+    },
+    {
+      "path": "full_agentdojo_case_plan_frozen.sha256",
+      "exists": true
+    },
+    {
+      "path": "full_run_manifest.json",
+      "exists": true
+    },
+    {
+      "path": "dry_run_summary.json",
+      "exists": true
+    },
+    {
+      "path": "dry_run_summary.md",
+      "exists": true
+    },
+    {
+      "path": "e2e_full_summary.json",
+      "exists": true
+    },
+    {
+      "path": "e2e_full_summary.md",
+      "exists": true
+    },
+    {
+      "path": "aggregate.csv",
+      "exists": true
+    },
+    {
+      "path": "per_case_results.jsonl",
+      "exists": true
+    },
+    {
+      "path": "attack_active_subset_summary.json",
+      "exists": true
+    },
+    {
+      "path": "attack_active_subset_summary.md",
+      "exists": true
+    },
+    {
+      "path": "blocked_recovery_summary.json",
+      "exists": true
+    },
+    {
+      "path": "blocked_recovery_summary.md",
+      "exists": true
+    },
+    {
+      "path": "confirmation_summary.json",
+      "exists": true
+    },
+    {
+      "path": "confirmation_summary.md",
+      "exists": true
+    },
+    {
+      "path": "failure_clusters.json",
+      "exists": true
+    },
+    {
+      "path": "failure_clusters.md",
+      "exists": true
+    },
+    {
+      "path": "replay_vs_e2e_comparison.json",
+      "exists": true
+    },
+    {
+      "path": "replay_vs_e2e_comparison.md",
+      "exists": true
+    },
+    {
+      "path": "final_acceptance_full_agentdojo.json",
+      "exists": true
+    },
+    {
+      "path": "final_acceptance_full_agentdojo.md",
+      "exists": true
+    },
+    {
+      "path": "validation_commands.txt",
+      "exists": true
+    },
+    {
+      "path": "validation_outputs.txt",
+      "exists": true
+    },
+    {
+      "path": "release_artifact_url_or_path.txt",
+      "exists": true
+    }
+  ]
+}

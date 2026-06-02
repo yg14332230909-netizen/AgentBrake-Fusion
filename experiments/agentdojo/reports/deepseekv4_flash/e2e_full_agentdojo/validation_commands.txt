@@ -1,0 +1,29 @@
+python -m ruff check experiments/agentdojo/scripts tests
+python -m pytest tests/eval/agentdojo/unit tests/policy_engine
+python -m pytest
+python experiments/agentdojo/scripts/25_plan_full_agentdojo_e2e.py --help
+python experiments/agentdojo/scripts/26_summarize_full_agentdojo_e2e.py --help
+python experiments/agentdojo/scripts/27_check_full_agentdojo_acceptance.py --help
+python experiments/agentdojo/scripts/25_plan_full_agentdojo_e2e.py --out-dir experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo
+python experiments/agentdojo/scripts/21_run_e2e_phase2.py --case-plan experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/full_agentdojo_case_plan.json --out-dir experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo --methods no_defense tool_filter reposhield_strict reposhield_gateway_eval reposhield_oracle_user_eval --dry-run --save-full-trace
+python experiments/agentdojo/scripts/21_run_e2e_phase2.py --case-plan experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/full_agentdojo_case_plan.json --out-dir experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo --methods no_defense tool_filter reposhield_strict reposhield_gateway_eval reposhield_oracle_user_eval --save-full-trace --skip-existing
+python experiments/agentdojo/scripts/26_summarize_full_agentdojo_e2e.py --reports-dir experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo
+python experiments/agentdojo/scripts/27_check_full_agentdojo_acceptance.py --reports-dir experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo
+python - <<'PY'
+from pathlib import Path
+patterns = ['E:' + chr(92), 'C:' + chr(92), '/' + 'home/', 'file' + '://']
+root = Path('experiments/agentdojo/reports/deepseekv4_flash')
+hits = []
+for path in root.rglob('*'):
+    if path.is_file() and path.suffix.lower() in {'.json', '.jsonl', '.md', '.txt', '.csv', '.yml', '.yaml'}:
+        text = path.read_text(encoding='utf-8', errors='ignore')
+        for pat in patterns:
+            if pat in text:
+                hits.append((str(path), pat))
+if hits:
+    print('LOCAL_PATH_SCAN_FAIL')
+    for hit in hits:
+        print(hit)
+    raise SystemExit(1)
+print('LOCAL_PATH_SCAN_PASS')
+PY

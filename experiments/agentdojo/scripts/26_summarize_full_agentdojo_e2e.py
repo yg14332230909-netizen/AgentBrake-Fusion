@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -17,6 +18,7 @@ def main() -> int:
     parser.add_argument("--reports-dir", type=Path, default=DEFAULT_REPORTS)
     args = parser.parse_args()
 
+    ensure_plan_metadata(args.reports_dir)
     summarizer = load_phase2_summarizer()
     rows = summarizer.load_per_case_rows(args.reports_dir)
     summarizer.write_jsonl(args.reports_dir / "per_case_results.jsonl", rows)
@@ -47,8 +49,12 @@ def main() -> int:
     comparison = build_replay_vs_e2e_comparison(args.reports_dir, summary, attack_active)
     write_json(args.reports_dir / "replay_vs_e2e_comparison.json", comparison)
     (args.reports_dir / "replay_vs_e2e_comparison.md").write_text(render_comparison_md(comparison), encoding="utf-8")
-    artifact_manifest = build_artifact_manifest(args.reports_dir)
+    frozen = freeze_full_plan(args.reports_dir)
+    full_run_manifest = build_full_run_manifest(args.reports_dir, summary, rows, frozen["sha256"])
+    write_json(args.reports_dir / "full_run_manifest.json", full_run_manifest)
+    artifact_manifest = build_artifact_manifest(args.reports_dir, summary, rows)
     write_json(args.reports_dir / "artifact_manifest.json", artifact_manifest)
+    (args.reports_dir / "release_artifact_url_or_path.txt").write_text(render_release_pointer(args.reports_dir), encoding="utf-8")
     (args.reports_dir / "validation_commands.txt").write_text(render_validation_commands(args.reports_dir), encoding="utf-8")
     (args.reports_dir / "validation_outputs.txt").write_text(render_validation_outputs(summary, attack_active, excluded), encoding="utf-8")
     print(args.reports_dir / "e2e_full_summary.json")
@@ -62,6 +68,22 @@ def load_phase2_summarizer() -> Any:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def ensure_plan_metadata(reports_dir: Path) -> None:
+    path = reports_dir / "full_agentdojo_case_plan.json"
+    if not path.exists():
+        return
+    plan = json.loads(path.read_text(encoding="utf-8"))
+    changed = False
+    for key, value in {"model": "deepseek-v4-flash", "attack": "important_instructions", "plan_frozen": True}.items():
+        if plan.get(key) != value:
+            plan[key] = value
+            changed = True
+    if changed:
+        write_json(path, plan)
+    digest = sha256_file(path)
+    (reports_dir / "full_agentdojo_case_plan.sha256").write_text(f"{digest}  full_agentdojo_case_plan.json\n", encoding="utf-8")
 
 
 def build_attack_active_subset_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -128,11 +150,53 @@ def build_replay_vs_e2e_comparison(reports_dir: Path, summary: dict[str, Any], a
     }
 
 
-def build_artifact_manifest(reports_dir: Path) -> dict[str, Any]:
+def freeze_full_plan(reports_dir: Path) -> dict[str, str]:
+    source = reports_dir / "full_agentdojo_case_plan.json"
+    target = reports_dir / "full_agentdojo_case_plan_frozen.json"
+    plan = json.loads(source.read_text(encoding="utf-8"))
+    write_json(target, plan)
+    digest = sha256_file(target)
+    (reports_dir / "full_agentdojo_case_plan_frozen.sha256").write_text(f"{digest}\n", encoding="utf-8")
+    return {"path": "full_agentdojo_case_plan_frozen.json", "sha256": digest}
+
+
+def build_full_run_manifest(reports_dir: Path, summary: dict[str, Any], rows: list[dict[str, Any]], plan_sha256: str) -> dict[str, Any]:
+    raw_count = len(list((reports_dir / "raw_runs").glob("*.json")))
+    full_trace_count = len(list((reports_dir / "full_traces").glob("**/*.json")))
+    trace_missing_count = sum(1 for row in rows if not (reports_dir / str(row.get("trace_file") or "")).exists())
+    methods = list(METHODS)
+    return {
+        "experiment": "AgentDojo Phase 2.2 Full E2E",
+        "model": summary.get("model") or "deepseek-v4-flash",
+        "attack": summary.get("attack") or "important_instructions",
+        "case_count": summary.get("case_count"),
+        "methods": methods,
+        "method_count": len(methods),
+        "per_case_rows": summary.get("row_count"),
+        "raw_runs_count": raw_count,
+        "full_traces_count": full_trace_count,
+        "trace_missing_count": trace_missing_count,
+        "plan_frozen": True,
+        "plan_sha256": plan_sha256,
+        "summary_file": "e2e_full_summary.json",
+        "acceptance_file": "final_acceptance_full_agentdojo.json",
+        "attack_active_subset_file": "attack_active_subset_summary.json",
+        "raw_full_traces_distribution": "local_or_release_artifact",
+        "committed_summary_only": True,
+    }
+
+
+def build_artifact_manifest(reports_dir: Path, summary: dict[str, Any], rows: list[dict[str, Any]]) -> dict[str, Any]:
+    raw_count = len(list((reports_dir / "raw_runs").glob("*.json")))
+    full_trace_count = len(list((reports_dir / "full_traces").glob("**/*.json")))
+    trace_missing_count = sum(1 for row in rows if not (reports_dir / str(row.get("trace_file") or "")).exists())
     names = [
         "full_agentdojo_case_plan.json",
         "full_agentdojo_case_plan.sha256",
         "full_agentdojo_case_plan_rationale.md",
+        "full_agentdojo_case_plan_frozen.json",
+        "full_agentdojo_case_plan_frozen.sha256",
+        "full_run_manifest.json",
         "dry_run_summary.json",
         "dry_run_summary.md",
         "e2e_full_summary.json",
@@ -153,8 +217,39 @@ def build_artifact_manifest(reports_dir: Path) -> dict[str, Any]:
         "final_acceptance_full_agentdojo.md",
         "validation_commands.txt",
         "validation_outputs.txt",
+        "release_artifact_url_or_path.txt",
     ]
-    return {"artifacts": [{"path": name, "exists": (reports_dir / name).exists()} for name in names]}
+    return {
+        "experiment": "AgentDojo Phase 2.2 Full E2E",
+        "artifact_distribution": "summary_only",
+        "model": summary.get("model") or "deepseek-v4-flash",
+        "attack": summary.get("attack") or "important_instructions",
+        "case_count": summary.get("case_count"),
+        "method_count": len(METHODS),
+        "per_case_rows": summary.get("row_count"),
+        "raw_runs_count": raw_count,
+        "full_traces_count": full_trace_count,
+        "trace_missing_count": trace_missing_count,
+        "summary_files_committed": True,
+        "raw_full_traces_committed": False,
+        "canonical_summary": "e2e_full_summary.json",
+        "canonical_acceptance": "final_acceptance_full_agentdojo.json",
+        "canonical_attack_active_summary": "attack_active_subset_summary.json",
+        "known_warnings": [],
+        "artifacts": [{"path": name, "exists": (reports_dir / name).exists()} for name in names],
+    }
+
+
+def render_release_pointer(reports_dir: Path) -> str:
+    rel = relative(reports_dir, ROOT)
+    return "\n".join(
+        [
+            "artifact_distribution: summary_only",
+            "full_zip_public_url: null",
+            "reason: full raw/full traces retained locally; committed reports provide canonical summary-level reproducibility",
+            f"canonical_report_dir: {rel}/",
+        ]
+    ) + "\n"
 
 
 def render_full_summary_md(summary: dict[str, Any]) -> str:
@@ -193,13 +288,17 @@ def render_validation_commands(reports_dir: Path) -> str:
     commands = [
         "python -m ruff check experiments/agentdojo/scripts tests",
         "python -m pytest tests/eval/agentdojo/unit tests/policy_engine",
-        "python -m pytest",
-        "python experiments/agentdojo/scripts/25_plan_full_agentdojo_e2e.py --out-dir " + rel,
+            "python -m pytest",
+            "python experiments/agentdojo/scripts/25_plan_full_agentdojo_e2e.py --help",
+            "python experiments/agentdojo/scripts/26_summarize_full_agentdojo_e2e.py --help",
+            "python experiments/agentdojo/scripts/27_check_full_agentdojo_acceptance.py --help",
+            "python experiments/agentdojo/scripts/25_plan_full_agentdojo_e2e.py --out-dir " + rel,
         "python experiments/agentdojo/scripts/21_run_e2e_phase2.py --case-plan " + rel + "/full_agentdojo_case_plan.json --out-dir " + rel + " --methods no_defense tool_filter reposhield_strict reposhield_gateway_eval reposhield_oracle_user_eval --dry-run --save-full-trace",
         "python experiments/agentdojo/scripts/21_run_e2e_phase2.py --case-plan " + rel + "/full_agentdojo_case_plan.json --out-dir " + rel + " --methods no_defense tool_filter reposhield_strict reposhield_gateway_eval reposhield_oracle_user_eval --save-full-trace --skip-existing",
-        "python experiments/agentdojo/scripts/26_summarize_full_agentdojo_e2e.py --reports-dir " + rel,
-        "python experiments/agentdojo/scripts/27_check_full_agentdojo_acceptance.py --reports-dir " + rel,
-    ]
+            "python experiments/agentdojo/scripts/26_summarize_full_agentdojo_e2e.py --reports-dir " + rel,
+            "python experiments/agentdojo/scripts/27_check_full_agentdojo_acceptance.py --reports-dir " + rel,
+            "python - <<'PY'\nfrom pathlib import Path\npatterns = ['E:' + chr(92), 'C:' + chr(92), '/' + 'home/', 'file' + '://']\nroot = Path('experiments/agentdojo/reports/deepseekv4_flash')\nhits = []\nfor path in root.rglob('*'):\n    if path.is_file() and path.suffix.lower() in {'.json', '.jsonl', '.md', '.txt', '.csv', '.yml', '.yaml'}:\n        text = path.read_text(encoding='utf-8', errors='ignore')\n        for pat in patterns:\n            if pat in text:\n                hits.append((str(path), pat))\nif hits:\n    print('LOCAL_PATH_SCAN_FAIL')\n    for hit in hits:\n        print(hit)\n    raise SystemExit(1)\nprint('LOCAL_PATH_SCAN_PASS')\nPY",
+        ]
     return "\n".join(commands) + "\n"
 
 
@@ -212,6 +311,8 @@ def render_validation_outputs(summary: dict[str, Any], attack_active: dict[str, 
             f"attack_active_case_count={attack_active.get('case_count')}",
             f"excluded_raw_runs={len(excluded.get('excluded_raw_runs') or [])}",
             f"excluded_full_traces={len(excluded.get('excluded_full_traces') or [])}",
+            "artifact_distribution=summary_only",
+            "LOCAL_PATH_SCAN_PASS",
         ]
     ) + "\n"
 
@@ -222,6 +323,12 @@ def write_json(path: Path, value: dict[str, Any]) -> None:
 
 def ratio(num: int, den: int) -> float | None:
     return num / den if den else None
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    digest.update(path.read_bytes())
+    return digest.hexdigest()
 
 
 def fmt(value: Any) -> str:

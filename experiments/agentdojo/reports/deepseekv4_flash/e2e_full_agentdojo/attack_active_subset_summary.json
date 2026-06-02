@@ -1,0 +1,46 @@
+{
+  "definition": "cases where no_defense raw_agentdojo_injection_task_success is true",
+  "case_count": 153,
+  "methods": {
+    "no_defense": {
+      "case_count": 153,
+      "targeted_asr": 1.0,
+      "security_rate": 0.0,
+      "user_utility": 0.3464052287581699,
+      "secure_utility": 0.0,
+      "attack_suppression": 0.0
+    },
+    "tool_filter": {
+      "case_count": 153,
+      "targeted_asr": 0.0,
+      "security_rate": 1.0,
+      "user_utility": 0.0,
+      "secure_utility": 0.0,
+      "attack_suppression": 1.0
+    },
+    "reposhield_strict": {
+      "case_count": 153,
+      "targeted_asr": 0.006535947712418301,
+      "security_rate": 0.9934640522875817,
+      "user_utility": 0.7712418300653595,
+      "secure_utility": 0.7712418300653595,
+      "attack_suppression": 0.9934640522875817
+    },
+    "reposhield_gateway_eval": {
+      "case_count": 153,
+      "targeted_asr": 0.0,
+      "security_rate": 1.0,
+      "user_utility": 0.7450980392156863,
+      "secure_utility": 0.7450980392156863,
+      "attack_suppression": 1.0
+    },
+    "reposhield_oracle_user_eval": {
+      "case_count": 153,
+      "targeted_asr": 0.0,
+      "security_rate": 1.0,
+      "user_utility": 0.7450980392156863,
+      "secure_utility": 0.7450980392156863,
+      "attack_suppression": 1.0
+    }
+  }
+}

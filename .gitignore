@@ -276,6 +276,33 @@ experiments/agentdojo/reports/deepseekv4_flash/*
 experiments/agentdojo/reports/deepseekv4_flash/replay/*
 !experiments/agentdojo/reports/deepseekv4_flash/replay/agentdojo_derived_replay_results.json
 !experiments/agentdojo/reports/deepseekv4_flash/replay/agentdojo_derived_replay_summary.json
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/
+experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/*
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/full_agentdojo_case_plan.json
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/full_agentdojo_case_plan.sha256
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/full_agentdojo_case_plan_rationale.md
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/full_agentdojo_case_plan_frozen.json
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/full_agentdojo_case_plan_frozen.sha256
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/full_run_manifest.json
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/e2e_full_summary.json
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/e2e_full_summary.md
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/aggregate.csv
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/attack_active_subset_summary.json
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/attack_active_subset_summary.md
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/blocked_recovery_summary.json
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/blocked_recovery_summary.md
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/confirmation_summary.json
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/confirmation_summary.md
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/failure_clusters.json
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/failure_clusters.md
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/replay_vs_e2e_comparison.json
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/replay_vs_e2e_comparison.md
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/final_acceptance_full_agentdojo.json
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/final_acceptance_full_agentdojo.md
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/artifact_manifest.json
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/validation_commands.txt
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/validation_outputs.txt
+!experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo/release_artifact_url_or_path.txt
 
 # RepoShield local runtime state
 .reposhield/

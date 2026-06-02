@@ -62,6 +62,8 @@ def build_plan(benchmark_version: str, suites: tuple[str, ...]) -> dict[str, Any
         "experiment_type": "agentdojo_e2e_full_distribution",
         "phase": "phase2.2",
         "benchmark_version": benchmark_version,
+        "model": "deepseek-v4-flash",
+        "attack": "important_instructions",
         "mode": "full_agentdojo",
         "plan_frozen": True,
         "suites": list(suites),
