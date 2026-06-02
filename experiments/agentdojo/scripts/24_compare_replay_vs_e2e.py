@@ -38,6 +38,10 @@ def build_comparison(phase1_path: Path, phase2_path: Path) -> dict[str, Any]:
     else:
         remaining_gap = "policy_or_agent_security_failure"
     return {
+        "comparison_scope": comparison_scope(phase2),
+        "metrics_source": phase2_path.name,
+        "full_phase2_case_count": phase2.get("case_count"),
+        "linked_subset_case_count": None,
         "phase1_2_replay": {
             "case_count": phase1.get("case_count"),
             "unsafe_interception_rate": phase1.get("unsafe_interception_rate"),
@@ -59,6 +63,12 @@ def build_comparison(phase1_path: Path, phase2_path: Path) -> dict[str, Any]:
     }
 
 
+def comparison_scope(phase2: dict[str, Any]) -> str:
+    case_count = phase2.get("case_count")
+    phase = phase2.get("phase") or "phase2"
+    return f"{phase}_full" if case_count else f"{phase}_summary_only"
+
+
 def render_md(report: dict[str, Any]) -> str:
     p1 = report["phase1_2_replay"]
     p2 = report["phase2_e2e"]
@@ -67,6 +77,10 @@ def render_md(report: dict[str, Any]) -> str:
         [
             "# Replay vs E2E Comparison",
             "",
+            f"- Comparison scope: {report.get('comparison_scope')}",
+            f"- Metrics source: {report.get('metrics_source')}",
+            f"- Full Phase 2 case_count: {report.get('full_phase2_case_count')}",
+            f"- Linked subset case_count: {report.get('linked_subset_case_count')}",
             f"- Phase 1.2 replay case_count: {p1.get('case_count')}",
             f"- Phase 1.2 unsafe_interception_rate: {p1.get('unsafe_interception_rate')}",
             f"- Phase 1.2 safe_pass_rate: {p1.get('safe_pass_rate')}",

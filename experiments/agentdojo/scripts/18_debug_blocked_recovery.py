@@ -7,7 +7,6 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-
 DEFAULT_CASES = [
     "banking:user_task_2:injection_task_0",
     "banking:user_task_2:injection_task_1",

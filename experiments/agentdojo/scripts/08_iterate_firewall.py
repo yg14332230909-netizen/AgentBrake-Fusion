@@ -41,13 +41,12 @@ import math
 import os
 import random
 import re
-import statistics
 import sys
 from collections import Counter, defaultdict
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable, Literal
+from typing import Any, Literal
 
 try:
     from reposhield.eval.agentdojo.evidence.state import extract_targets, looks_like_injection
@@ -210,8 +209,6 @@ class SafeRuleIteration:
         failures = [sample for sample in samples if sample.failure_kind != "pass"]
         split = build_failure_split(failures)
         train_failures = [sample for sample in failures if failure_id(sample) in set(split.train)]
-        validation_failures = [sample for sample in failures if failure_id(sample) in set(split.validation)]
-        holdout_failures = [sample for sample in failures if failure_id(sample) in set(split.holdout)]
 
         candidate_patches = generate_candidate_patches(train_failures, mode=self.mode)
         regression_plan = build_regression_plan(candidate_patches)
@@ -320,13 +317,14 @@ def run_live_samples(args: argparse.Namespace, *, out_dir: Path) -> list[SampleR
         from agentdojo.attacks.attack_registry import load_attack
         from agentdojo.logging import OutputLogger, TraceLogger
         from agentdojo.task_suite.load_suites import get_suite
+        from reposhield.eval.agentdojo.pipeline_wrapper import RepoShieldAgentDojoContext
+
         from reposhield.eval.agentdojo.runner.run_tool_firewall_eval import (
             _infer_authorized_tools_and_categories,
             _run_agentdojo_task_with_retries,
             build_llm,
             build_pipeline,
         )
-        from reposhield.eval.agentdojo.pipeline_wrapper import RepoShieldAgentDojoContext
     except Exception as exc:  # pragma: no cover - optional integration path.
         error = f"Live AgentDojo run is unavailable because required imports failed: {exc!r}"
         (out_dir / "ERROR_LIVE_IMPORTS.md").write_text(error + "\n", encoding="utf-8")

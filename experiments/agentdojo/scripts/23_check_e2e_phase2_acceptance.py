@@ -9,7 +9,10 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_REPORTS = ROOT / "experiments" / "agentdojo" / "reports" / "deepseekv4_flash" / "e2e_phase2"
 DEFAULT_PHASE1 = ROOT / "experiments" / "agentdojo" / "reports" / "deepseekv4_flash"
-LOCAL_PATH_RE = re.compile(r"(?:local:[A-Za-z]:\\|[A-Za-z]:\\|/Users/|/home/|file://)", re.IGNORECASE)
+LOCAL_PATH_RE = re.compile(
+    r"(?:local:)?[A-Za-z]:\\\\(?:Users|Windows|Program Files|ProgramData|project|reposhield|Anaconda|Miniconda|Python|Temp|tmp)\\b|/Users/|/home/|file://",
+    re.IGNORECASE,
+)
 
 
 def main() -> int:
@@ -45,8 +48,9 @@ def build_report(reports_dir: Path, phase1_reports_dir: Path) -> dict[str, Any]:
     add(checks, "recovery_metrics_present", any("recovery_success_rate" in metrics for metrics in methods.values()), "recovery metrics required")
     add(checks, "confirmation_metrics_present", any("confirmation_execute_rate" in metrics for metrics in methods.values()), "confirmation metrics required")
     add(checks, "root_level_stale_artifacts_absent", root_stale_absent(phase1_reports_dir), "root-level stale replay artifacts absent")
+    add(checks, "no_local_path_in_phase2_run_plan", no_local_path_in_run_plan(reports_dir), "phase2_run_plan.json must not contain local absolute paths")
     warn_if(checks, "summary_only_artifact_mode", not summary_only_mode(phase1_reports_dir), "summary_only artifact mode declared", category="artifact")
-    warn_if(checks, "latency_present", all((metrics.get("latency_status") != "missing") for metrics in methods.values()), "latency missing", category="effectiveness")
+    warn_if(checks, "reposhield_latency_present", reposhield_latency_present(methods), "RepoShield latency missing", category="effectiveness")
     add(checks, "phase2_effectiveness_thresholds", effectiveness_thresholds_pass(methods, mode), f"{mode} Phase 2 effectiveness thresholds", category="effectiveness")
     warn_if(
         checks,
@@ -163,6 +167,18 @@ def summary_only_mode(phase1_reports_dir: Path) -> bool:
 def root_stale_absent(phase1_reports_dir: Path) -> bool:
     stale = ("agentdojo_derived_replay.jsonl", "agentdojo_derived_replay_summary.json")
     return not any((phase1_reports_dir / name).exists() for name in stale)
+
+
+def no_local_path_in_run_plan(reports_dir: Path) -> bool:
+    path = reports_dir / "phase2_run_plan.json"
+    if not path.exists():
+        return True
+    return LOCAL_PATH_RE.search(path.read_text(encoding="utf-8")) is None
+
+
+def reposhield_latency_present(methods: dict[str, Any]) -> bool:
+    required = ("reposhield_strict", "reposhield_gateway_eval", "reposhield_oracle_user_eval")
+    return all((methods.get(method) or {}).get("latency_status") != "missing" for method in required if method in methods)
 
 
 def trace_path(row: dict[str, Any], reports_dir: Path) -> Path:

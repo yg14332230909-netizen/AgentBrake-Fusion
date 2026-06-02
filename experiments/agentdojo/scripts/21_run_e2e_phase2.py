@@ -4,7 +4,6 @@ import argparse
 import json
 import os
 import subprocess
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -44,6 +43,15 @@ def main() -> int:
     args.out_dir.mkdir(parents=True, exist_ok=True)
     (args.out_dir / "phase2_run_plan.json").write_text(json.dumps(commands, indent=2, ensure_ascii=False), encoding="utf-8")
     if args.dry_run:
+        dry_run = {
+            "case_count": len(cases),
+            "method_count": len(args.methods),
+            "estimated_run_count": len(commands),
+            "save_full_trace": bool(args.save_full_trace),
+            "run_plan": "phase2_run_plan.json",
+        }
+        (args.out_dir / "dry_run_summary.json").write_text(json.dumps(dry_run, indent=2, ensure_ascii=False), encoding="utf-8")
+        (args.out_dir / "dry_run_summary.md").write_text(render_dry_run_md(dry_run), encoding="utf-8")
         print(args.out_dir / "phase2_run_plan.json")
         return 0
 
@@ -59,7 +67,7 @@ def main() -> int:
         try:
             subprocess.run(item["command"], cwd=ROOT, check=True, env=env)
         except subprocess.CalledProcessError as exc:
-            failure = {"phase2_case_id": item["phase2_case_id"], "method": item["method"], "returncode": exc.returncode}
+            failure = {"phase2_case_id": item["case_id"], "method": item["method"], "returncode": exc.returncode}
             failures.append(failure)
             if args.fail_fast:
                 break
@@ -86,14 +94,18 @@ def build_commands(cases: list[dict[str, Any]], args: argparse.Namespace) -> lis
     commands: list[dict[str, Any]] = []
     raw_dir = args.out_dir / "raw_runs"
     trace_root = args.trace_dir or (args.out_dir / "full_traces")
+    python_bin = os.environ.get("PYTHON", "python")
     for method in args.methods:
         if method not in METHODS:
             raise ValueError(f"unsupported method: {method}")
         method_spec = METHODS[method]
         for case in cases:
-            run_name = f"{case['phase2_case_id']}_{method}"
+            case_id = str(case.get("phase2_case_id") or case.get("case_id"))
+            if not case_id or case_id == "None":
+                raise ValueError(f"case is missing phase2_case_id/case_id: {case}")
+            run_name = f"{case_id}_{method}"
             command = [
-                sys.executable,
+                python_bin,
                 "-m",
                 "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
                 "--suite",
@@ -122,7 +134,8 @@ def build_commands(cases: list[dict[str, Any]], args: argparse.Namespace) -> lis
                 command.extend(["--trace-dir", str(trace_root / method)])
             commands.append(
                 {
-                    "phase2_case_id": case["phase2_case_id"],
+                    "phase2_case_id": case_id,
+                    "case_id": case_id,
                     "suite": case["suite"],
                     "method": method,
                     "raw_output": str((raw_dir / f"{run_name}.json").as_posix()),
@@ -130,6 +143,20 @@ def build_commands(cases: list[dict[str, Any]], args: argparse.Namespace) -> lis
                 }
             )
     return commands
+
+
+def render_dry_run_md(summary: dict[str, Any]) -> str:
+    return "\n".join(
+        [
+            "# AgentDojo E2E Dry Run",
+            "",
+            f"- case_count: {summary['case_count']}",
+            f"- method_count: {summary['method_count']}",
+            f"- estimated_run_count: {summary['estimated_run_count']}",
+            f"- save_full_trace: {summary['save_full_trace']}",
+            f"- run_plan: {summary['run_plan']}",
+        ]
+    ) + "\n"
 
 
 if __name__ == "__main__":

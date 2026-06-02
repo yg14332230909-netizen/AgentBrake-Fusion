@@ -36,6 +36,7 @@ def main() -> int:
     (out_dir / "confirmation_summary.md").write_text(render_confirmation_md(confirmation), encoding="utf-8")
     failures = build_failure_clusters(rows)
     (out_dir / "failure_clusters.json").write_text(json.dumps(failures, indent=2, ensure_ascii=False), encoding="utf-8")
+    (out_dir / "failure_clusters.md").write_text(render_failure_clusters_md(failures), encoding="utf-8")
     write_grouped_raw(args.reports_dir, out_dir, rows)
     print(out_dir / "e2e_summary.json")
     return 0
@@ -43,7 +44,7 @@ def main() -> int:
 
 def load_per_case_rows(reports_dir: Path) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
-    case_plan_ids = load_case_plan_ids(reports_dir / "case_plan.json")
+    case_plan_ids = load_case_plan_ids(reports_dir / "case_plan.json") or load_case_plan_ids(reports_dir / "full_agentdojo_case_plan.json")
     for path in sorted((reports_dir / "raw_runs").glob("*.json")):
         data = json.loads(path.read_text(encoding="utf-8"))
         method = method_from_run_name(str(data.get("run_name") or path.stem))
@@ -57,6 +58,7 @@ def load_per_case_rows(reports_dir: Path) -> list[dict[str, Any]]:
             latency = latencies(audit)
             blocked_count = int(run.get("post_block_blocked_tool_call_count") or 0) + (1 if run.get("blocked_case") else 0)
             confirmation_required = int(run.get("confirmation_required_count") or 0)
+            confirmation_executed = int(run.get("confirmation_executed_count") or 0)
             user_success = bool(run.get("raw_agentdojo_user_task_success"))
             injection_success = bool(run.get("raw_agentdojo_injection_task_success"))
             rows.append(
@@ -76,7 +78,7 @@ def load_per_case_rows(reports_dir: Path) -> list[dict[str, Any]]:
                     "tool_call_count": len(load_trace_field(trace_file, "tool_calls")),
                     "blocked_tool_call_count": blocked_count,
                     "require_confirmation_count": confirmation_required,
-                    "confirmation_executed_count": int(run.get("confirmation_executed_count") or 0),
+                    "confirmation_executed_count": confirmation_executed,
                     "repeated_block_count": int(run.get("repeated_block_count") or 0),
                     "blocked_case": bool(blocked_count > 0),
                     "confirmation_case": bool(confirmation_required > 0),
@@ -89,7 +91,14 @@ def load_per_case_rows(reports_dir: Path) -> list[dict[str, Any]]:
                     "policy_latency_p95_ms": percentile(latency, 0.95),
                     "latency_status": "present" if latency else "missing",
                     "trace_file": relpath(trace_file, reports_dir),
-                    "failure_category": failure_category(user_success, injection_success, blocked_count, confirmation_required, int(run.get("repeated_block_count") or 0)),
+                    "failure_category": failure_category(
+                        user_success,
+                        injection_success,
+                        blocked_count,
+                        confirmation_required,
+                        confirmation_executed,
+                        int(run.get("repeated_block_count") or 0),
+                    ),
                 }
             )
     return rows
@@ -161,12 +170,23 @@ def build_failure_clusters(rows: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def failure_category(user_success: bool, injection_success: bool, blocked_count: int, confirmation_count: int, repeated_count: int) -> str | None:
+def failure_category(
+    user_success: bool,
+    injection_success: bool,
+    blocked_count: int,
+    confirmation_count: int,
+    confirmation_executed_count: int,
+    repeated_count: int,
+) -> str | None:
     if injection_success:
         return "attack_succeeded"
     if repeated_count > 0:
         return "repeated_same_blocked_action"
-    if confirmation_count > 0 and not user_success:
+    if confirmation_executed_count > 0 and not injection_success and not user_success:
+        return "confirmation_executed_and_attack_blocked_but_user_failed"
+    if confirmation_executed_count > 0 and not user_success:
+        return "confirmation_executed_but_task_failed"
+    if confirmation_count > 0 and confirmation_executed_count == 0 and not user_success:
         return "confirmation_not_executed"
     if blocked_count > 0 and not user_success:
         return "model_stopped_after_block"
@@ -186,7 +206,7 @@ def load_case_plan_ids(path: Path) -> set[str]:
     if not path.exists():
         return set()
     data = json.loads(path.read_text(encoding="utf-8"))
-    return {str(row.get("phase2_case_id")) for row in data.get("cases") or [] if row.get("phase2_case_id")}
+    return {str(row.get("phase2_case_id") or row.get("case_id")) for row in data.get("cases") or [] if row.get("phase2_case_id") or row.get("case_id")}
 
 
 def first_intervention(audit: list[dict[str, Any]]) -> dict[str, Any]:
@@ -283,6 +303,15 @@ def render_recovery_md(summary: dict[str, Any]) -> str:
 
 def render_confirmation_md(summary: dict[str, Any]) -> str:
     return f"# Confirmation Summary\n\n- case_count: {summary['case_count']}\n- confirmation_execute_rate: {fmt(summary['metrics'].get('confirmation_execute_rate'))}\n"
+
+
+def render_failure_clusters_md(clusters: dict[str, Any]) -> str:
+    lines = ["# Failure Clusters", "", "| method | suite | failure_category | count |", "|---|---|---|---:|"]
+    for item in clusters.values():
+        lines.append(f"| {item['method']} | {item['suite']} | {item['failure_category']} | {item['count']} |")
+    if len(lines) == 4:
+        lines.append("| none | none | none | 0 |")
+    return "\n".join(lines) + "\n"
 
 
 def fmt(value: Any) -> str:

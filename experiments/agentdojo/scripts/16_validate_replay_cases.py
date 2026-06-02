@@ -5,7 +5,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-
 DERIVED_REQUIRED = {
     "case_schema_version",
     "case_id",

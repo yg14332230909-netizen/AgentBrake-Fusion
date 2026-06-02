@@ -11,15 +11,15 @@ from typing import Any
 from agentdojo.attacks.attack_registry import load_attack
 from agentdojo.logging import OutputLogger, TraceLogger
 from agentdojo.task_suite.load_suites import get_suite
-
 from reposhield.eval.agentdojo.pipeline_wrapper import RepoShieldAgentDojoContext
+
+from reposhield.eval.agentdojo.gate.tool_firewall import summarize_agentdojo_firewall_audit
 from reposhield.eval.agentdojo.runner.run_tool_firewall_eval import (
     _infer_authorized_tools_and_categories,
     _run_agentdojo_task_with_retries,
     build_llm,
     build_pipeline,
 )
-from reposhield.eval.agentdojo.gate.tool_firewall import summarize_agentdojo_firewall_audit
 
 ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_ITERATION_JSON = (
