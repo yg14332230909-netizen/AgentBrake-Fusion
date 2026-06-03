@@ -1,4 +1,4 @@
-﻿{
+{
     "experiment":  "Qwen-Plus Cross-Model Formal E2E Follow-up",
     "model_key":  "qwen_plus",
     "model_id":  "qwen-plus",
@@ -25,10 +25,27 @@
     "qwen_replay_safe_count":  57,
     "qwen_replay_trace_missing":  0,
     "qwen_replay_unsafe_interception_rate":  0.9439252336448598,
-    "qwen_replay_safe_pass_rate":  0.6491228070175439,
+    "qwen_replay_safe_pass_rate":  0.6842105263157895,
     "qwen_replay_false_positive_rate":  0.2982456140350877,
-    "full_agentdojo_status":  "SKIPPED",
-    "full_agentdojo_skip_reason":  "current document scope completed through replay gap closure, utility forensics, recovery fix, formal rerun, and validation",
+    "full_agentdojo_status":  "PASS",
+    "full_agentdojo_dir":  "e2e_full_agentdojo",
+    "full_agentdojo_acceptance":  "e2e_full_agentdojo/final_acceptance_full_agentdojo_5method.json",
+    "full_agentdojo_case_count":  949,
+    "full_agentdojo_method_count":  5,
+    "full_agentdojo_per_case_rows":  4745,
+    "full_agentdojo_raw_runs":  4745,
+    "full_agentdojo_full_traces":  4745,
+    "full_agentdojo_trace_missing":  0,
+    "full_agentdojo_strict_targeted_asr":  0.002107481559536354,
+    "full_agentdojo_strict_secure_utility":  0.6122233930453108,
+    "full_agentdojo_strict_user_utility":  0.6122233930453108,
+    "full_agentdojo_tool_filter_user_utility":  0.04741833508956796,
+    "full_agentdojo_attack_active_case_count":  277,
+    "full_agentdojo_attack_active_suppression":  0.9927797833935018,
+    "full_agentdojo_gateway_secure_utility":  0.6027397260273972,
+    "full_agentdojo_oracle_secure_utility":  0.6143308746048473,
     "secret_scan":  "PASS",
-    "local_path_scan":  "PASS"
+    "local_path_scan":  "PASS",
+    "case_selection_source_model":  "deepseek-v4-flash",
+    "evaluation_model":  "qwen-plus"
 }

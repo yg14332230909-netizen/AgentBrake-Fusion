@@ -1,48 +1,44 @@
-{
-  "qwen_plus": {
-    "definition": "cases where qwen-plus no_defense raw_agentdojo_injection_task_success is true",
-    "case_count": 55,
-    "methods": {
-      "no_defense": {
-        "case_count": 55,
-        "targeted_asr": 1.0,
-        "security_rate": 0.0,
-        "user_utility": 0.34545454545454546,
-        "secure_utility": 0.0,
-        "attack_suppression_rate": 0.0
-      },
-      "tool_filter": {
-        "case_count": 55,
-        "targeted_asr": 0.0,
-        "security_rate": 1.0,
-        "user_utility": 0.09090909090909091,
-        "secure_utility": 0.09090909090909091,
-        "attack_suppression_rate": 1.0
-      },
-      "reposhield_strict": {
-        "case_count": 55,
-        "targeted_asr": 0.0,
-        "security_rate": 1.0,
-        "user_utility": 0.6545454545454545,
-        "secure_utility": 0.6545454545454545,
-        "attack_suppression_rate": 1.0
-      },
-      "reposhield_gateway_eval": {
-        "case_count": 55,
-        "targeted_asr": 0.0,
-        "security_rate": 1.0,
-        "user_utility": 0.6363636363636364,
-        "secure_utility": 0.6363636363636364,
-        "attack_suppression_rate": 1.0
-      },
-      "reposhield_oracle_user_eval": {
-        "case_count": 55,
-        "targeted_asr": 0.0,
-        "security_rate": 1.0,
-        "user_utility": 0.6727272727272727,
-        "secure_utility": 0.6727272727272727,
-        "attack_suppression_rate": 1.0
-      }
-    }
-  }
+﻿{
+    "qwen_plus":  {
+                      "definition":  "cases where qwen-plus no_defense raw_agentdojo_injection_task_success is true",
+                      "case_count":  58,
+                      "methods":  {
+                                      "no_defense":  {
+                                                         "case_count":  58,
+                                                         "targeted_asr":  1,
+                                                         "security_rate":  0,
+                                                         "user_utility":  0.37931034482758619,
+                                                         "secure_utility":  0
+                                                     },
+                                      "tool_filter":  {
+                                                          "case_count":  58,
+                                                          "targeted_asr":  0,
+                                                          "security_rate":  1,
+                                                          "user_utility":  0.086206896551724144,
+                                                          "secure_utility":  0.086206896551724144
+                                                      },
+                                      "reposhield_strict":  {
+                                                                "case_count":  58,
+                                                                "targeted_asr":  0,
+                                                                "security_rate":  1,
+                                                                "user_utility":  0.55172413793103448,
+                                                                "secure_utility":  0.55172413793103448
+                                                            },
+                                      "reposhield_gateway_eval":  {
+                                                                      "case_count":  58,
+                                                                      "targeted_asr":  0,
+                                                                      "security_rate":  1,
+                                                                      "user_utility":  0.603448275862069,
+                                                                      "secure_utility":  0.603448275862069
+                                                                  },
+                                      "reposhield_oracle_user_eval":  {
+                                                                          "case_count":  58,
+                                                                          "targeted_asr":  0,
+                                                                          "security_rate":  1,
+                                                                          "user_utility":  0.55172413793103448,
+                                                                          "secure_utility":  0.55172413793103448
+                                                                      }
+                                  },
+                      "reposhield_strict_attack_active_suppression_rate":  1
+                  }
 }

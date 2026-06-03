@@ -1,10 +1,10 @@
-{
-  "overall_status": "WARN",
-  "reason": "formal comparison complete; Qwen full AgentDojo skipped; Qwen formal secure utility below recommended threshold",
-  "failures": [],
-  "warnings": [
-    "qwen_full_agentdojo_skipped",
-    "qwen_strict_secure_utility_below_recommended_0.60",
-    "qwen_replay_sample_shortfall"
-  ]
+﻿{
+    "overall_status":  "PASS",
+    "canonical_qwen_acceptance":  "qwen_plus/final_acceptance_qwen_formal.json",
+    "qwen_structural_acceptance":  "PASS",
+    "qwen_effectiveness_acceptance":  "PASS",
+    "notes":  [
+                  "Qwen after-fix formal PASS",
+                  "DeepSeek formal retained as reference baseline"
+              ]
 }
