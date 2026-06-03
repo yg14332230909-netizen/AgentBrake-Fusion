@@ -7,6 +7,7 @@ Risk = Literal["low", "medium", "high", "critical"]
 Decision = Literal["allow", "allow_in_sandbox", "sandbox_then_approval", "require_confirmation", "quarantine", "block"]
 AgentDojoDefenseMode = Literal["fair", "oracle_user", "oracle_full"]
 ConfirmationMode = Literal["strict_eval", "oracle_user_eval", "gateway_eval"]
+AblationProfile = Literal["full", "rule_only", "no_binding", "no_context_graph", "no_recovery_guidance"]
 SanitizeMode = Literal["off", "label", "soft", "hard"]
 EventStatus = Literal["proposed", "executed", "blocked", "tool_result", "sanitized_result"]
 FieldRole = Literal[
@@ -53,6 +54,74 @@ class ToolSpec:
     sensitive_args: list[str] = field(default_factory=list)
     decision_hints: list[str] = field(default_factory=list)
     description: str = ""
+
+
+@dataclass(frozen=True, slots=True)
+class AblationConfig:
+    profile: AblationProfile
+    enable_provenance: bool = True
+    enable_task_contract: bool = True
+    enable_action_graph: bool = True
+    enable_suite_policy: bool = True
+    enable_recovery_guidance: bool = True
+    enable_generic_sink_policy: bool = True
+
+    def as_dict(self) -> dict[str, bool | str]:
+        return {
+            "profile": self.profile,
+            "enable_provenance": self.enable_provenance,
+            "enable_task_contract": self.enable_task_contract,
+            "enable_action_graph": self.enable_action_graph,
+            "enable_suite_policy": self.enable_suite_policy,
+            "enable_recovery_guidance": self.enable_recovery_guidance,
+            "enable_generic_sink_policy": self.enable_generic_sink_policy,
+        }
+
+
+def ablation_config_from_profile(profile: str) -> AblationConfig:
+    if profile == "full":
+        return AblationConfig(profile="full")
+    if profile == "rule_only":
+        return AblationConfig(
+            profile="rule_only",
+            enable_provenance=False,
+            enable_task_contract=False,
+            enable_action_graph=False,
+            enable_suite_policy=False,
+            enable_recovery_guidance=False,
+            enable_generic_sink_policy=True,
+        )
+    if profile == "no_binding":
+        return AblationConfig(
+            profile="no_binding",
+            enable_provenance=False,
+            enable_task_contract=False,
+            enable_action_graph=True,
+            enable_suite_policy=True,
+            enable_recovery_guidance=True,
+            enable_generic_sink_policy=True,
+        )
+    if profile == "no_context_graph":
+        return AblationConfig(
+            profile="no_context_graph",
+            enable_provenance=True,
+            enable_task_contract=True,
+            enable_action_graph=False,
+            enable_suite_policy=True,
+            enable_recovery_guidance=True,
+            enable_generic_sink_policy=True,
+        )
+    if profile == "no_recovery_guidance":
+        return AblationConfig(
+            profile="no_recovery_guidance",
+            enable_provenance=True,
+            enable_task_contract=True,
+            enable_action_graph=True,
+            enable_suite_policy=True,
+            enable_recovery_guidance=False,
+            enable_generic_sink_policy=True,
+        )
+    raise ValueError(f"unknown ablation profile: {profile}")
 
 
 @dataclass(slots=True)

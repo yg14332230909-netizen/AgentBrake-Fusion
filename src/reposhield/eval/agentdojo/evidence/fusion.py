@@ -53,6 +53,8 @@ class AgentDojoEvidenceFusion:
         return FusionResult(decision=decision, constraints=constraints, reason_codes=reasons, rule_hits=hits, facts=evidence.facts)
 
     def _evaluate_policy_engines(self, evidence: EvidenceBundle) -> tuple[list[Any], list[str]]:
+        if not bool(evidence.facts.get("ablation_config", {}).get("enable_suite_policy", True)):
+            return [], []
         findings = []
         executed = []
         for engine in self.policy_engines:
@@ -64,6 +66,10 @@ class AgentDojoEvidenceFusion:
 
     def _evaluate_rules(self, e: EvidenceBundle) -> list[RuleHit]:
         hits: list[RuleHit] = []
+        if e.facts.get("ablation_profile") == "rule_only":
+            return self._evaluate_rule_only(e)
+        if not bool(e.facts.get("ablation_config", {}).get("enable_generic_sink_policy", True)):
+            return hits
         if not e.side_effect:
             return hits
         if e.unknown_tool:
@@ -137,6 +143,21 @@ class AgentDojoEvidenceFusion:
         ):
             hits.append(self._block("ADJ-GRAPH-003", "ActionGraph found attack-goal-to-action relation", e))
         return hits
+
+    def _evaluate_rule_only(self, e: EvidenceBundle) -> list[RuleHit]:
+        if not e.side_effect:
+            return []
+        if e.unknown_tool:
+            return [self._block("ADJ-RULE-UNKNOWN-SINK", "unknown side-effecting tool", e)]
+        if e.group in {"credential_change", "terminal_or_code", "destructive_update"}:
+            return [self._block("ADJ-RULE-CRITICAL-SINK", "critical state-changing sink", e)]
+        if e.external_sink and (e.private_data_seen or e.sensitive_args_present):
+            return [self._confirm("ADJ-RULE-EXTERNAL-SINK", "external sink with potentially sensitive content", e)]
+        if e.group in {"financial_commit", "booking_commit", "membership_mutation", "workspace_mutation", "calendar_mutation"}:
+            return [self._confirm("ADJ-RULE-HIGH-RISK-SINK", "high-risk side-effect sink", e)]
+        if e.risk in {"high", "critical"}:
+            return [self._confirm("ADJ-RULE-HIGH-RISK-TOOL", "high-risk side-effect tool", e)]
+        return []
 
     def _rule_hit_from_policy_finding(self, finding: PolicyFinding, e: EvidenceBundle) -> RuleHit:
         rule_id = finding.reason_codes[0] if finding.reason_codes else f"ADJ-POLICY-{finding.engine.upper()}"

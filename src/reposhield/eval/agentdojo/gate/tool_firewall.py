@@ -4,13 +4,22 @@ import time
 from dataclasses import asdict, dataclass, field
 from typing import Any, Callable
 
-from ..compat.types import ConfirmationMode, SanitizeMode, ToolCallContext
+from ..compat.types import ConfirmationMode, SanitizeMode, ToolCallContext, ablation_config_from_profile
 from ..evidence.action_graph import AgentDojoActionGraphBuilder
 from ..evidence.evidence import AgentDojoEvidenceBuilder
 from ..evidence.fusion import AgentDojoEvidenceFusion, FusionResult
 from ..evidence.state import AgentDojoStateTracker
 from ..evidence.taxonomy import AgentDojoToolTaxonomy, infer_unknown_tool
 from .blocked_result import BlockedActionTracker, build_blocked_tool_result, build_confirmation_required_result
+
+_ABLATION_MODULES = (
+    "provenance",
+    "task_contract",
+    "action_graph",
+    "suite_policy",
+    "recovery_guidance",
+    "generic_sink_policy",
+)
 
 
 @dataclass(slots=True)
@@ -39,7 +48,6 @@ class ToolExecutionDecision:
             "repeated_unsafe_action": self.repeated_unsafe_action,
             "modules_executed": self.evidence.get("modules_executed", []),
             "modules_skipped": self.evidence.get("modules_skipped", []),
-            "ablation_config": self.evidence.get("ablation_config", {}),
             "matched_rules": list(self.reason_codes),
             "matched_invariants": self.evidence.get("matched_invariants", []),
             "confirmation_mode": self.decision_metadata.get("confirmation_mode"),
@@ -48,6 +56,10 @@ class ToolExecutionDecision:
             "decision_metadata": self.decision_metadata,
             "policy_engines_executed": self.evidence.get("policy_engines_executed", []),
             "policy_engine_findings": self.evidence.get("policy_engine_findings", []),
+            "ablation_profile": self.evidence.get("ablation_profile"),
+            "ablation_config": self.evidence.get("ablation_config", {}),
+            "modules_enabled": self.evidence.get("modules_enabled", []),
+            "modules_disabled": self.evidence.get("modules_disabled", []),
         }
 
 
@@ -72,6 +84,7 @@ class AgentDojoToolFirewall:
         enable_invariants: bool = True,
         enable_recovery_guidance: bool = True,
         confirmation_mode: ConfirmationMode = "strict_eval",
+        ablation_profile: str = "full",
     ) -> None:
         self.taxonomy = taxonomy or AgentDojoToolTaxonomy()
         self.state = state or AgentDojoStateTracker()
@@ -83,7 +96,7 @@ class AgentDojoToolFirewall:
         self.sanitize_mode = sanitize_mode
         self.eval_mode = eval_mode
         self.audit_events: list[dict[str, Any]] = []
-        self.ablation_config = {
+        self.base_ablation_config = {
             "enable_taxonomy": enable_taxonomy,
             "enable_state_tracker": enable_state_tracker,
             "enable_action_graph": enable_action_graph,
@@ -93,12 +106,22 @@ class AgentDojoToolFirewall:
         }
         self._blocked_tracker = BlockedActionTracker()
         self.confirmation_mode = confirmation_mode
+        self.ablation_profile = ablation_profile
 
     def guard_before_tool(self, context: ToolCallContext) -> ToolExecutionDecision:
         started = time.perf_counter()
         modules_executed: list[str] = []
         modules_skipped: list[str] = []
-        ablation_config = {**self.ablation_config, **context.ablation_config}
+        profile = str(context.ablation_config.get("profile") or self.ablation_profile or "full")
+        profile_config = ablation_config_from_profile(profile)
+        ablation_config = {**profile_config.as_dict(), **context.ablation_config}
+        for key, enabled in self.base_ablation_config.items():
+            if key in {"enable_action_graph", "enable_task_contract", "enable_recovery_guidance"}:
+                ablation_config[key] = bool(ablation_config.get(key, True)) and bool(enabled)
+            else:
+                ablation_config.setdefault(key, enabled)
+        if "profile" not in ablation_config:
+            ablation_config["profile"] = profile
 
         def module_enabled(name: str) -> bool:
             key = f"enable_{name}"
@@ -136,8 +159,11 @@ class AgentDojoToolFirewall:
             else:
                 modules_skipped.append(name)
         evidence.facts["ablation_config"] = ablation_config
+        evidence.facts["ablation_profile"] = str(ablation_config.get("profile") or profile)
         evidence.facts["modules_executed"] = modules_executed
         evidence.facts["modules_skipped"] = modules_skipped
+        evidence.facts["modules_enabled"] = [name for name in _ABLATION_MODULES if bool(ablation_config.get(f"enable_{name}", True))]
+        evidence.facts["modules_disabled"] = [name for name in _ABLATION_MODULES if not bool(ablation_config.get(f"enable_{name}", True))]
         evidence.facts["matched_invariants"] = [] if not module_enabled("invariants") else evidence.facts.get("matched_invariants", [])
         fusion = self.fusion.decide(evidence)
         execute, public_decision, decision_metadata = self._resolve_execution_for_decision(
@@ -153,13 +179,13 @@ class AgentDojoToolFirewall:
                 safe = build_confirmation_required_result(
                     context,
                     fusion,
-                    recovery_guidance_enabled=bool(ablation_config.get("enable_recovery_guidance", True)),
+                    recovery_guidance_enabled=module_enabled("recovery_guidance"),
                 )
             else:
                 safe = build_blocked_tool_result(
                     context,
                     fusion,
-                    recovery_guidance_enabled=bool(ablation_config.get("enable_recovery_guidance", True)),
+                    recovery_guidance_enabled=module_enabled("recovery_guidance"),
                 )
             retry_count = self._blocked_tracker.record(str(safe["same_action_retry_key"]))
             repeated = retry_count > 1
@@ -168,7 +194,7 @@ class AgentDojoToolFirewall:
                     context,
                     fusion,
                     repeated_unsafe_action=True,
-                    recovery_guidance_enabled=bool(ablation_config.get("enable_recovery_guidance", True)),
+                    recovery_guidance_enabled=module_enabled("recovery_guidance"),
                 )
             self.state.observe_tool_call(
                 context.tool_name,
@@ -209,6 +235,7 @@ class AgentDojoToolFirewall:
             "confirmation_mode": self.confirmation_mode,
             "confirmation_required": fusion.decision == "require_confirmation",
             "confirmation_executed": False,
+            "ablation_profile": evidence.get("ablation_profile"),
         }
         if fusion.decision in {"allow", "allow_in_sandbox"}:
             if self.confirmation_mode in {"oracle_user_eval", "gateway_eval"} and _membership_confirmation_allowed(evidence, action_graph_facts):

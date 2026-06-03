@@ -15,6 +15,7 @@ from typing import Any
 from ....control_plane import RepoShieldControlPlane
 from ...fast_mode import load_eval_fast_mode_config
 from ..compat.agentdojo_api import require_agentdojo
+from ..compat.types import ablation_config_from_profile
 from ..gate.tool_firewall import summarize_agentdojo_firewall_audit
 from ..state_tracker import AgentDojoStateTracker
 from ..tool_taxonomy import classify_agentdojo_tool
@@ -614,9 +615,11 @@ def run_suite(
     user_task_ids: list[str] | None = None,
     injection_task_ids: list[str] | None = None,
     confirmation_mode: str = "strict_eval",
+    ablation_profile: str = "full",
     save_full_trace: bool = False,
     trace_dir: Path | None = None,
 ) -> dict[str, Any]:
+    ablation_config = ablation_config_from_profile(ablation_profile)
     deps = _load_agentdojo_deps()
     get_suite = deps["get_suite"]
     load_attack = deps["load_attack"]
@@ -642,6 +645,8 @@ def run_suite(
     pipeline = build_pipeline(defense, llm, control_plane, system_message=system_message, max_iters=max_iters)
     if hasattr(getattr(pipeline, "firewall", None), "confirmation_mode"):
         pipeline.firewall.confirmation_mode = confirmation_mode  # type: ignore[attr-defined]
+    if hasattr(getattr(pipeline, "firewall", None), "ablation_profile"):
+        pipeline.firewall.ablation_profile = ablation_profile  # type: ignore[attr-defined]
     if defense == "reposhield_toolgate" and disable_taxonomy:
         pipeline.tool_gate.taxonomy = {}  # type: ignore[attr-defined]
     if defense == "reposhield_toolgate" and disable_state_tracker:
@@ -686,12 +691,13 @@ def run_suite(
                             metadata={
                                 "disable_state_tracker": disable_state_tracker,
                                 "ablation_config": {
+                                    **ablation_config.as_dict(),
                                     "enable_taxonomy": not disable_taxonomy,
                                     "enable_state_tracker": not disable_state_tracker,
-                                    "enable_action_graph": not disable_action_graph,
-                                    "enable_task_contract": not disable_task_contract,
+                                    "enable_action_graph": ablation_config.enable_action_graph and not disable_action_graph,
+                                    "enable_task_contract": ablation_config.enable_task_contract and not disable_task_contract,
                                     "enable_invariants": not disable_invariants,
-                                    "enable_recovery_guidance": not disable_recovery_guidance,
+                                    "enable_recovery_guidance": ablation_config.enable_recovery_guidance and not disable_recovery_guidance,
                                 },
                             },
                         )
@@ -780,12 +786,13 @@ def run_suite(
                             metadata={
                                 "disable_state_tracker": disable_state_tracker,
                                 "ablation_config": {
+                                    **ablation_config.as_dict(),
                                     "enable_taxonomy": not disable_taxonomy,
                                     "enable_state_tracker": not disable_state_tracker,
-                                    "enable_action_graph": not disable_action_graph,
-                                    "enable_task_contract": not disable_task_contract,
+                                    "enable_action_graph": ablation_config.enable_action_graph and not disable_action_graph,
+                                    "enable_task_contract": ablation_config.enable_task_contract and not disable_task_contract,
                                     "enable_invariants": not disable_invariants,
-                                    "enable_recovery_guidance": not disable_recovery_guidance,
+                                    "enable_recovery_guidance": ablation_config.enable_recovery_guidance and not disable_recovery_guidance,
                                 },
                             },
                         )
@@ -874,6 +881,8 @@ def run_suite(
         "model_id": model_id,
         "defense": defense,
         "attack": attack_obj.name if attack_obj else "none",
+        "ablation_profile": ablation_profile,
+        "ablation_config": ablation_config.as_dict(),
         "total_runtime_sec": duration_sec,
         "total_runtime_min": duration_sec / 60.0,
         "utility_results": {f"{u}::{i}": v for (u, i), v in utility_results.items()},
@@ -977,6 +986,11 @@ def main() -> int:
     parser.add_argument("--user-tasks", nargs="*", default=None)
     parser.add_argument("--injection-tasks", nargs="*", default=None)
     parser.add_argument("--confirmation-mode", choices=["strict_eval", "oracle_user_eval", "gateway_eval"], default="strict_eval")
+    parser.add_argument(
+        "--ablation-profile",
+        choices=["full", "rule_only", "no_binding", "no_context_graph", "no_recovery_guidance"],
+        default="full",
+    )
     parser.add_argument("--save-full-trace", action="store_true")
     parser.add_argument("--trace-dir", type=Path, default=None)
     args = parser.parse_args()
@@ -1006,6 +1020,7 @@ def main() -> int:
         user_task_ids=args.user_tasks,
         injection_task_ids=args.injection_tasks,
         confirmation_mode=args.confirmation_mode,
+        ablation_profile=args.ablation_profile,
         save_full_trace=args.save_full_trace,
         trace_dir=args.trace_dir,
     )

@@ -58,6 +58,9 @@ def build_blocked_tool_result(
     if not recovery_guidance_enabled:
         allowed = []
         disallowed = []
+        unsafe = []
+        trusted = []
+        reason = "RepoShield blocked this tool call."
     if repeated_unsafe_action:
         disallowed = ["Do not call this tool again with the same parameters.", *disallowed]
         reason = f"Repeated unsafe action detected. {reason}"
@@ -74,7 +77,7 @@ def build_blocked_tool_result(
         requires_user_confirmation=requires_confirmation,
         same_action_retry_key=retry_key,
         repeated_unsafe_action=repeated_unsafe_action,
-        message=_llm_message(reason, allowed, disallowed),
+        message=_llm_message(reason, allowed, disallowed) if recovery_guidance_enabled else "RepoShield blocked this tool call.",
     )
     return result.as_dict()
 
