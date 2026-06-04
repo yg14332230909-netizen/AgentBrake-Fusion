@@ -32,6 +32,11 @@ class AgentDojoActionGraphBuilder:
     def build(
         self, *, context: ToolCallContext, spec: ToolSpec, state: AgentDojoStateTracker, evidence: EvidenceBundle | None = None
     ) -> GraphBuildResult:
+        ablation = dict(context.ablation_config or {})
+        structure_edges = bool(ablation.get("enable_actiongraph_structure_edges", True))
+        provenance_edges = bool(ablation.get("enable_actiongraph_provenance_edges", True)) and structure_edges
+        dataflow_edges = bool(ablation.get("enable_actiongraph_dataflow_edges", True)) and structure_edges
+        history_edges = bool(ablation.get("enable_actiongraph_history_edges", True)) and structure_edges
         graph_id = new_id("adj_graph")
         root_action_id = new_id("adj_action")
         current = self._tool_call_node(root_action_id, context, spec)
@@ -51,12 +56,16 @@ class AgentDojoActionGraphBuilder:
             "graph.has_private_to_executed_external_edge": False,
             "graph.has_private_to_financial_edge": False,
             "graph.has_attack_goal_to_action_edge": False,
-            "graph.has_blocked_attempt_edge": any(event.event_status == "blocked" for event in state.events),
+            "graph.has_blocked_attempt_edge": bool(history_edges and any(event.event_status == "blocked" for event in state.events)),
             "graph.has_unknown_side_effect_node": spec.group == "unknown" and spec.side_effect,
             "graph.attack_goal_evidence_source": "none",
+            "graph.ablation.structure_edges_enabled": structure_edges,
+            "graph.ablation.provenance_edges_enabled": provenance_edges,
+            "graph.ablation.dataflow_edges_enabled": dataflow_edges,
+            "graph.ablation.history_edges_enabled": history_edges,
         }
 
-        previous = self._last_event(state, kind="tool_call", statuses={"executed", "blocked"})
+        previous = self._last_event(state, kind="tool_call", statuses={"executed", "blocked"}) if history_edges else None
         if previous is not None:
             prev_node = self._event_node(previous, context, risk="low")
             nodes.append(prev_node)
@@ -66,7 +75,7 @@ class AgentDojoActionGraphBuilder:
                 )
             )
 
-        for event in self._recent_events(state, predicate=lambda ev: ev.untrusted or ev.injection_like, limit=3):
+        for event in self._recent_events(state, predicate=lambda ev: ev.untrusted or ev.injection_like, limit=3) if provenance_edges else []:
             ev_node = self._event_node(event, context, risk="high" if event.injection_like else "medium")
             nodes.append(ev_node)
             if spec.side_effect:
@@ -84,7 +93,7 @@ class AgentDojoActionGraphBuilder:
                 if event.injection_like:
                     facts["graph.has_injection_to_side_effect_edge"] = True
 
-        for event in self._recent_events(state, predicate=lambda ev: ev.private_data, limit=3):
+        for event in self._recent_events(state, predicate=lambda ev: ev.private_data, limit=3) if dataflow_edges else []:
             ev_node = self._event_node(event, context, risk="high")
             nodes.append(ev_node)
             if spec.external_sink:
@@ -97,7 +106,7 @@ class AgentDojoActionGraphBuilder:
                 )
                 facts["graph.has_private_to_financial_edge"] = True
 
-        if state.attack_goal_overlap(context.tool_args):
+        if provenance_edges and state.attack_goal_overlap(context.tool_args):
             attack_node = self._state_node("attack_goal_overlap", context, risk="critical")
             nodes.append(attack_node)
             edges.append(

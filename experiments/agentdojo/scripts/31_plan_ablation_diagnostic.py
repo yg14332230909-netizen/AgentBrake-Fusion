@@ -40,14 +40,22 @@ FULL_E2E_FALLBACK = Path("experiments/agentdojo/reports/cross_model/qwen_plus/e2
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Plan Qwen-Plus 500-case ablation diagnostic set")
-    parser.add_argument("--full-e2e-dir", type=Path, required=True)
+    parser.add_argument("--full-e2e-dir", type=Path, default=None)
+    parser.add_argument("--source-case-plan", type=Path, default=None)
     parser.add_argument("--out-dir", type=Path, required=True)
+    parser.add_argument("--mode", default="standard", choices=["standard", "actiongraph_targeted_same_cases"])
     parser.add_argument("--target-size", type=int, default=500)
     parser.add_argument("--blocked-critical-cap", type=int, default=120)
     parser.add_argument("--model", default="qwen-plus")
     parser.add_argument("--attack", default="important_instructions")
     args = parser.parse_args()
 
+    if args.mode == "actiongraph_targeted_same_cases":
+        if args.source_case_plan is None:
+            raise ValueError("--source-case-plan is required for actiongraph_targeted_same_cases")
+        return plan_actiongraph_same_cases(args)
+    if args.full_e2e_dir is None:
+        raise ValueError("--full-e2e-dir is required for standard planning")
     full_dir = resolve_full_e2e_dir(args.full_e2e_dir)
     rows = load_rows(full_dir / "per_case_results.jsonl")
     by_case = group_by_case(rows)
@@ -103,6 +111,92 @@ def main() -> int:
     (args.out_dir / "ablation_diagnostic_gap_report.md").write_text(render_gap_md(plan, args.target_size), encoding="utf-8")
     print(plan_path)
     return 0 if len(cases) == args.target_size else 1
+
+
+def plan_actiongraph_same_cases(args: argparse.Namespace) -> int:
+    source = json.loads(args.source_case_plan.read_text(encoding="utf-8-sig"))
+    cases = []
+    labels = []
+    for case in source["cases"]:
+        bucket = actiongraph_bucket(case)
+        planned = {
+            **case,
+            "phase2_case_id": str(case["phase2_case_id"]).replace("ablation_", "actiongraph_", 1),
+            "case_id": str(case["case_id"]).replace("ablation_", "actiongraph_", 1),
+            "model": args.model,
+            "case_selection_source_model": "deepseek-v4-flash",
+            "evaluation_model": args.model,
+            "attack": args.attack,
+            "actiongraph_bucket": bucket,
+            "source_ablation_case_id": case["phase2_case_id"],
+        }
+        cases.append(planned)
+        labels.append(
+            {
+                "phase2_case_id": planned["phase2_case_id"],
+                "source_ablation_case_id": case["phase2_case_id"],
+                "suite": case["suite"],
+                "user_task_id": case["user_task_id"],
+                "injection_task_id": case["injection_task_id"],
+                "selection_reason": case.get("selection_reason"),
+                "actiongraph_bucket": bucket,
+                "primary_side_effect_tool": case.get("primary_side_effect_tool"),
+            }
+        )
+    plan = {
+        "experiment": "qwen_plus_actiongraph_ablation_diagnostic",
+        "mode": "actiongraph_targeted_same_cases",
+        "model": args.model,
+        "attack": args.attack,
+        "case_selection_source_model": "deepseek-v4-flash",
+        "evaluation_model": args.model,
+        "source_case_plan": str(args.source_case_plan.as_posix()),
+        "source_case_plan_sha256": hashlib.sha256(canonical_json(source).encode("utf-8")).hexdigest(),
+        "case_count": len(cases),
+        "cases": cases,
+    }
+    args.out_dir.mkdir(parents=True, exist_ok=True)
+    write_json(args.out_dir / "actiongraph_ablation_case_plan.json", plan)
+    (args.out_dir / "actiongraph_ablation_case_plan.sha256").write_text(
+        hashlib.sha256(canonical_json(plan).encode("utf-8")).hexdigest(),
+        encoding="utf-8",
+    )
+    write_json(args.out_dir / "actiongraph_bucket_labels.json", labels)
+    write_bucket_csv(args.out_dir / "actiongraph_bucket_labels.csv", labels)
+    return 0 if len(cases) == int(source.get("case_count") or len(source["cases"])) else 1
+
+
+def actiongraph_bucket(case: dict[str, Any]) -> str:
+    reason = str(case.get("selection_reason") or "")
+    tool = str(case.get("primary_side_effect_tool") or "")
+    if reason == "attack_active":
+        return "target_conflict"
+    if reason == "blocked_critical":
+        return "history_recovery"
+    if tool in {"send_email", "send_direct_message", "send_channel_message", "share_file"}:
+        return "dataflow_exfiltration"
+    if tool in {"send_money", "schedule_transaction", "update_scheduled_transaction"}:
+        return "provenance_conflict"
+    return "safe_side_effect_control"
+
+
+def write_bucket_csv(path: Path, labels: list[dict[str, Any]]) -> None:
+    import csv
+
+    fields = [
+        "phase2_case_id",
+        "source_ablation_case_id",
+        "suite",
+        "user_task_id",
+        "injection_task_id",
+        "selection_reason",
+        "actiongraph_bucket",
+        "primary_side_effect_tool",
+    ]
+    with path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fields)
+        writer.writeheader()
+        writer.writerows(labels)
 
 
 def resolve_full_e2e_dir(path: Path) -> Path:

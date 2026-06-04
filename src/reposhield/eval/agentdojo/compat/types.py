@@ -7,7 +7,17 @@ Risk = Literal["low", "medium", "high", "critical"]
 Decision = Literal["allow", "allow_in_sandbox", "sandbox_then_approval", "require_confirmation", "quarantine", "block"]
 AgentDojoDefenseMode = Literal["fair", "oracle_user", "oracle_full"]
 ConfirmationMode = Literal["strict_eval", "oracle_user_eval", "gateway_eval"]
-AblationProfile = Literal["full", "rule_only", "no_binding", "no_context_graph", "no_recovery_guidance"]
+AblationProfile = Literal[
+    "full",
+    "rule_only",
+    "no_binding",
+    "no_recovery_guidance",
+    "flatten_action_graph",
+    "no_actiongraph_provenance_edges",
+    "no_actiongraph_dataflow_edges",
+    "no_actiongraph_history_edges",
+    "legacy_no_context_graph",
+]
 SanitizeMode = Literal["off", "label", "soft", "hard"]
 EventStatus = Literal["proposed", "executed", "blocked", "tool_result", "sanitized_result"]
 FieldRole = Literal[
@@ -65,6 +75,10 @@ class AblationConfig:
     enable_suite_policy: bool = True
     enable_recovery_guidance: bool = True
     enable_generic_sink_policy: bool = True
+    enable_actiongraph_structure_edges: bool = True
+    enable_actiongraph_provenance_edges: bool = True
+    enable_actiongraph_dataflow_edges: bool = True
+    enable_actiongraph_history_edges: bool = True
 
     def as_dict(self) -> dict[str, bool | str]:
         return {
@@ -75,6 +89,10 @@ class AblationConfig:
             "enable_suite_policy": self.enable_suite_policy,
             "enable_recovery_guidance": self.enable_recovery_guidance,
             "enable_generic_sink_policy": self.enable_generic_sink_policy,
+            "enable_actiongraph_structure_edges": self.enable_actiongraph_structure_edges,
+            "enable_actiongraph_provenance_edges": self.enable_actiongraph_provenance_edges,
+            "enable_actiongraph_dataflow_edges": self.enable_actiongraph_dataflow_edges,
+            "enable_actiongraph_history_edges": self.enable_actiongraph_history_edges,
         }
 
 
@@ -101,9 +119,9 @@ def ablation_config_from_profile(profile: str) -> AblationConfig:
             enable_recovery_guidance=True,
             enable_generic_sink_policy=True,
         )
-    if profile == "no_context_graph":
+    if profile == "legacy_no_context_graph":
         return AblationConfig(
-            profile="no_context_graph",
+            profile="legacy_no_context_graph",
             enable_provenance=True,
             enable_task_contract=True,
             enable_action_graph=False,
@@ -121,6 +139,35 @@ def ablation_config_from_profile(profile: str) -> AblationConfig:
             enable_recovery_guidance=False,
             enable_generic_sink_policy=True,
         )
+    if profile == "flatten_action_graph":
+        return AblationConfig(
+            profile="flatten_action_graph",
+            enable_action_graph=True,
+            enable_actiongraph_structure_edges=False,
+            enable_actiongraph_provenance_edges=False,
+            enable_actiongraph_dataflow_edges=False,
+            enable_actiongraph_history_edges=False,
+        )
+    if profile == "no_actiongraph_provenance_edges":
+        return AblationConfig(
+            profile="no_actiongraph_provenance_edges",
+            enable_action_graph=True,
+            enable_actiongraph_provenance_edges=False,
+        )
+    if profile == "no_actiongraph_dataflow_edges":
+        return AblationConfig(
+            profile="no_actiongraph_dataflow_edges",
+            enable_action_graph=True,
+            enable_actiongraph_dataflow_edges=False,
+        )
+    if profile == "no_actiongraph_history_edges":
+        return AblationConfig(
+            profile="no_actiongraph_history_edges",
+            enable_action_graph=True,
+            enable_actiongraph_history_edges=False,
+        )
+    if profile == "no_context_graph":
+        raise ValueError("no_context_graph is legacy-only; use legacy_no_context_graph for historical reports")
     raise ValueError(f"unknown ablation profile: {profile}")
 
 

@@ -988,7 +988,17 @@ def main() -> int:
     parser.add_argument("--confirmation-mode", choices=["strict_eval", "oracle_user_eval", "gateway_eval"], default="strict_eval")
     parser.add_argument(
         "--ablation-profile",
-        choices=["full", "rule_only", "no_binding", "no_context_graph", "no_recovery_guidance"],
+        choices=[
+            "full",
+            "rule_only",
+            "no_binding",
+            "no_recovery_guidance",
+            "flatten_action_graph",
+            "no_actiongraph_provenance_edges",
+            "no_actiongraph_dataflow_edges",
+            "no_actiongraph_history_edges",
+            "legacy_no_context_graph",
+        ],
         default="full",
     )
     parser.add_argument("--save-full-trace", action="store_true")

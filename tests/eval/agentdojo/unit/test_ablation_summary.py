@@ -43,15 +43,15 @@ def test_ablation_summary_metrics_and_flags() -> None:
         row("rule_only", 2, injection=False, user=False, reason="safe_side_effect_control"),
         row("no_binding", 1, injection=False, user=True, blocked=True),
         row("no_binding", 2, injection=False, user=False, blocked=True, reason="safe_side_effect_control"),
-        row("no_context_graph", 1, injection=True, user=True, blocked=False),
-        row("no_context_graph", 2, injection=False, user=True, reason="safe_side_effect_control"),
+        row("legacy_no_context_graph", 1, injection=True, user=True, blocked=False),
+        row("legacy_no_context_graph", 2, injection=False, user=True, reason="safe_side_effect_control"),
         row("no_recovery_guidance", 1, injection=False, user=False, blocked=True, repeated=1),
         row("no_recovery_guidance", 2, injection=False, user=True, reason="safe_side_effect_control"),
     ]
-    summary = module.build_summary(rows, 2)
-    assert list(summary["main_table"]) == list(module.VARIANTS)
+    summary = module.build_legacy_summary(rows, 2)
+    assert list(summary["main_table"]) == list(module.LEGACY_VARIANTS)
     assert summary["main_table"]["full"]["targeted_asr"] == 0.0
-    assert summary["attack_active_subset_metrics"]["no_context_graph"]["attack_suppression_rate"] == 0.0
+    assert summary["attack_active_subset_metrics"]["legacy_no_context_graph"]["attack_suppression_rate"] == 0.0
     assert summary["main_table"]["full"]["post_block_user_success_rate"] == 1.0
     assert summary["interpretation_flags"]["rule_only"]["contribution_established"]
-    assert summary["interpretation_flags"]["no_context_graph"]["contribution_established"]
+    assert summary["interpretation_flags"]["legacy_no_context_graph"]["contribution_established"]

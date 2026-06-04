@@ -19,6 +19,10 @@ _ABLATION_MODULES = (
     "suite_policy",
     "recovery_guidance",
     "generic_sink_policy",
+    "actiongraph_structure_edges",
+    "actiongraph_provenance_edges",
+    "actiongraph_dataflow_edges",
+    "actiongraph_history_edges",
 )
 
 

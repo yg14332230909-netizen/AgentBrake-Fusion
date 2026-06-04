@@ -33,11 +33,16 @@ def test_no_binding_disables_provenance_and_task_contract() -> None:
     assert cfg.enable_suite_policy
 
 
-def test_no_context_graph_disables_graph_facts() -> None:
-    cfg = ablation_config_from_profile("no_context_graph")
+def test_legacy_no_context_graph_disables_graph_facts() -> None:
+    cfg = ablation_config_from_profile("legacy_no_context_graph")
     assert cfg.enable_provenance
     assert cfg.enable_task_contract
     assert not cfg.enable_action_graph
+
+
+def test_no_context_graph_is_legacy_only() -> None:
+    with pytest.raises(ValueError, match="legacy-only"):
+        ablation_config_from_profile("no_context_graph")
 
 
 def test_no_recovery_guidance_keeps_decision_modules() -> None:
