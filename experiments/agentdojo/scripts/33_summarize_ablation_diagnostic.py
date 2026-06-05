@@ -499,17 +499,13 @@ def metrics_for(rows: list[dict[str, Any]], attack_active_keys: set[tuple[str, s
     blocked = [r for r in rows if r["blocked_case"]]
     attack_active_rows = [r for r in rows if case_tuple(r) in attack_active_keys]
     targeted_asr = mean(bool(r["raw_agentdojo_injection_task_success"]) for r in rows)
-    derived_secure_utility = mean(
-        bool(r["raw_agentdojo_user_task_success"]) and not bool(r["raw_agentdojo_injection_task_success"]) for r in rows
-    )
     return {
         "case_count": len(rows),
         "targeted_asr": targeted_asr,
         "security_rate": 1.0 - targeted_asr if targeted_asr is not None else None,
         "attack_suppression_rate": mean(not bool(r["raw_agentdojo_injection_task_success"]) for r in attack_active_rows) if attack_active_rows else None,
         "user_utility": mean(bool(r["raw_agentdojo_user_task_success"]) for r in rows),
-        "derived_secure_utility": derived_secure_utility,
-        "secure_utility": derived_secure_utility,
+        "secure_utility": mean(bool(r["raw_agentdojo_user_task_success"]) and not bool(r["raw_agentdojo_injection_task_success"]) for r in rows),
         "post_block_user_success_rate": mean(bool(r["raw_agentdojo_user_task_success"]) for r in blocked) if blocked else None,
         "repeated_block_rate": mean(int(r.get("repeated_block_count") or 0) > 0 for r in blocked) if blocked else None,
         "blocked_case_rate": mean(bool(r["blocked_case"]) for r in rows),
@@ -543,10 +539,9 @@ def write_main_table_csv(path: Path, variants: tuple[str, ...], table: dict[str,
     fields = [
         "variant",
         "targeted_asr",
-        "security_rate",
         "attack_suppression_rate",
         "user_utility",
-        "derived_secure_utility",
+        "secure_utility",
         "post_block_user_success_rate",
         "repeated_block_rate",
         "case_count",
@@ -561,7 +556,7 @@ def write_main_table_csv(path: Path, variants: tuple[str, ...], table: dict[str,
 
 def write_legacy_suite_csv(path: Path, summary: dict[str, Any]) -> None:
     with path.open("w", newline="", encoding="utf-8") as f:
-        fields = ["suite", "variant", "targeted_asr", "security_rate", "user_utility", "derived_secure_utility", "case_count"]
+        fields = ["suite", "variant", "targeted_asr", "user_utility", "secure_utility", "case_count"]
         writer = csv.DictWriter(f, fieldnames=fields)
         writer.writeheader()
         for suite, variants in summary["by_suite"].items():
@@ -586,10 +581,9 @@ def write_bucket_breakdown_csv(path: Path, summary: dict[str, Any]) -> None:
         "variant",
         "case_count",
         "targeted_asr",
-        "security_rate",
         "attack_suppression_rate",
         "user_utility",
-        "derived_secure_utility",
+        "secure_utility",
         "post_block_user_success_rate",
     ]
     with path.open("w", newline="", encoding="utf-8") as f:
@@ -617,15 +611,13 @@ def render_legacy_summary_md(summary: dict[str, Any]) -> str:
         f"- missing_trace_count: {summary['missing_trace_count']}",
         f"- failed_run_count: {summary['failed_run_count']}",
         "",
-        "Primary metrics follow the official AgentDojo convention: Targeted ASR, Security Rate, and User Utility. Derived Secure Utility is diagnostic only.",
-        "",
-        "| Variant | Targeted ASR | Security Rate | Attack Suppression | User Utility | Derived Secure Utility | Post-block Success | Repeated Block |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|",
+        "| Variant | Targeted ASR | Attack Suppression | User Utility | Secure Utility | Post-block Success | Repeated Block |",
+        "|---|---:|---:|---:|---:|---:|---:|",
     ]
     for variant in LEGACY_VARIANTS:
         m = summary["main_table"][variant]
         lines.append(
-            f"| {labels[variant]} | {fmt(m['targeted_asr'])} | {fmt(m['security_rate'])} | {fmt(m['attack_suppression_rate'])} | {fmt(m['user_utility'])} | {fmt(m['derived_secure_utility'])} | {fmt(m['post_block_user_success_rate'])} | {fmt(m['repeated_block_rate'])} |"
+            f"| {labels[variant]} | {fmt(m['targeted_asr'])} | {fmt(m['attack_suppression_rate'])} | {fmt(m['user_utility'])} | {fmt(m['secure_utility'])} | {fmt(m['post_block_user_success_rate'])} | {fmt(m['repeated_block_rate'])} |"
         )
     return "\n".join(lines) + "\n"
 
@@ -639,15 +631,13 @@ def render_actiongraph_md(summary: dict[str, Any]) -> str:
         f"- failed_run_count: {summary['failed_run_count']}",
         f"- contribution_status: {summary['contribution_flags']['overall']['status']}",
         "",
-        "Primary metrics follow the official AgentDojo convention: Targeted ASR, Security Rate, and User Utility. Derived Secure Utility is diagnostic only.",
-        "",
-        "| Variant | Targeted ASR | Security Rate | Attack Suppression | User Utility | Derived Secure Utility | Post-block Success | Repeated Block |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|",
+        "| Variant | Targeted ASR | Attack Suppression | User Utility | Secure Utility | Post-block Success | Repeated Block |",
+        "|---|---:|---:|---:|---:|---:|---:|",
     ]
     for variant in ACTIONGRAPH_VARIANTS:
         m = summary["main_table"][variant]
         lines.append(
-            f"| {variant} | {fmt(m['targeted_asr'])} | {fmt(m['security_rate'])} | {fmt(m['attack_suppression_rate'])} | {fmt(m['user_utility'])} | {fmt(m['derived_secure_utility'])} | {fmt(m['post_block_user_success_rate'])} | {fmt(m['repeated_block_rate'])} |"
+            f"| {variant} | {fmt(m['targeted_asr'])} | {fmt(m['attack_suppression_rate'])} | {fmt(m['user_utility'])} | {fmt(m['secure_utility'])} | {fmt(m['post_block_user_success_rate'])} | {fmt(m['repeated_block_rate'])} |"
         )
     lines.extend(["", "## Interpretation", ""])
     for variant, flag in summary["contribution_flags"].items():

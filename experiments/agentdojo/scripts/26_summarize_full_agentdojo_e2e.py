@@ -95,14 +95,12 @@ def build_attack_active_subset_summary(rows: list[dict[str, Any]]) -> dict[str, 
         attack_successes = sum(1 for row in method_rows if row["raw_agentdojo_injection_task_success"])
         user_successes = sum(1 for row in method_rows if row["raw_agentdojo_user_task_success"])
         secure_successes = sum(1 for row in method_rows if row["raw_agentdojo_user_task_success"] and not row["raw_agentdojo_injection_task_success"])
-        derived_secure_utility = ratio(secure_successes, len(method_rows))
         methods[method] = {
             "case_count": len(method_rows),
             "targeted_asr": ratio(attack_successes, len(method_rows)),
             "security_rate": 1.0 - ratio(attack_successes, len(method_rows)) if method_rows else None,
             "user_utility": ratio(user_successes, len(method_rows)),
-            "derived_secure_utility": derived_secure_utility,
-            "secure_utility": derived_secure_utility,
+            "secure_utility": ratio(secure_successes, len(method_rows)),
             "attack_suppression": 1.0 - ratio(attack_successes, baseline_count) if baseline_count else None,
         }
     return {
@@ -145,7 +143,7 @@ def build_replay_vs_e2e_comparison(reports_dir: Path, summary: dict[str, Any], a
         "full_e2e": {
             "reposhield_strict_targeted_asr": strict.get("targeted_asr"),
             "reposhield_strict_user_utility": strict.get("user_utility"),
-            "reposhield_strict_derived_secure_utility": strict.get("derived_secure_utility", strict.get("secure_utility")),
+            "reposhield_strict_secure_utility": strict.get("secure_utility"),
             "attack_active_case_count": attack_active.get("case_count"),
         },
         "artifact_dir": relative(reports_dir, ROOT),
@@ -258,14 +256,12 @@ def render_full_summary_md(summary: dict[str, Any]) -> str:
     lines = [
         "# Full AgentDojo E2E Summary",
         "",
-        "Primary metrics follow the official AgentDojo convention: Targeted ASR, Security Rate, and User Utility. Derived Secure Utility is reported only as an additional diagnostic.",
-        "",
-        "| method | cases | targeted_asr | security_rate | user_utility | derived_secure_utility | confirmation_execute | repeated_block |",
+        "| method | cases | targeted_asr | security | user_utility | secure_utility | confirmation_execute | repeated_block |",
         "|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for method, metrics in (summary.get("methods") or {}).items():
         lines.append(
-            f"| {method} | {metrics.get('case_count')} | {fmt(metrics.get('targeted_asr'))} | {fmt(metrics.get('security_rate'))} | {fmt(metrics.get('user_utility'))} | {fmt(metrics.get('derived_secure_utility', metrics.get('secure_utility')))} | {fmt(metrics.get('confirmation_execute_rate'))} | {fmt(metrics.get('repeated_block_rate'))} |"
+            f"| {method} | {metrics.get('case_count')} | {fmt(metrics.get('targeted_asr'))} | {fmt(metrics.get('security_rate'))} | {fmt(metrics.get('user_utility'))} | {fmt(metrics.get('secure_utility'))} | {fmt(metrics.get('confirmation_execute_rate'))} | {fmt(metrics.get('repeated_block_rate'))} |"
         )
     return "\n".join(lines) + "\n"
 
@@ -276,13 +272,11 @@ def render_attack_active_md(summary: dict[str, Any]) -> str:
         "",
         f"- case_count: {summary['case_count']}",
         "",
-        "| method | cases | targeted_asr | security_rate | user_utility | attack_suppression | derived_secure_utility |",
-        "|---|---:|---:|---:|---:|---:|---:|",
+        "| method | cases | targeted_asr | suppression | secure_utility |",
+        "|---|---:|---:|---:|---:|",
     ]
     for method, metrics in summary["methods"].items():
-        lines.append(
-            f"| {method} | {metrics['case_count']} | {fmt(metrics['targeted_asr'])} | {fmt(metrics['security_rate'])} | {fmt(metrics['user_utility'])} | {fmt(metrics['attack_suppression'])} | {fmt(metrics.get('derived_secure_utility', metrics.get('secure_utility')))} |"
-        )
+        lines.append(f"| {method} | {metrics['case_count']} | {fmt(metrics['targeted_asr'])} | {fmt(metrics['attack_suppression'])} | {fmt(metrics['secure_utility'])} |")
     return "\n".join(lines) + "\n"
 
 
@@ -296,7 +290,7 @@ def render_comparison_md(report: dict[str, Any]) -> str:
             f"- full_phase2_case_count: {report['full_phase2_case_count']}",
             f"- linked_subset_case_count: {report['linked_subset_case_count']}",
             f"- strict_targeted_asr: {report['full_e2e'].get('reposhield_strict_targeted_asr')}",
-            f"- strict_derived_secure_utility: {report['full_e2e'].get('reposhield_strict_derived_secure_utility')}",
+            f"- strict_secure_utility: {report['full_e2e'].get('reposhield_strict_secure_utility')}",
         ]
     ) + "\n"
 
