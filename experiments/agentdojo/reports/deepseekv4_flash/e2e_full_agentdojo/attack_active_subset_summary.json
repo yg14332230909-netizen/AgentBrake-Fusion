@@ -18,7 +18,7 @@
       "secure_utility": 0.0,
       "attack_suppression": 1.0
     },
-    "reposhield_strict": {
+    "agentbrake_strict": {
       "case_count": 153,
       "targeted_asr": 0.006535947712418301,
       "security_rate": 0.9934640522875817,
@@ -26,7 +26,7 @@
       "secure_utility": 0.7712418300653595,
       "attack_suppression": 0.9934640522875817
     },
-    "reposhield_gateway_eval": {
+    "agentbrake_gateway_eval": {
       "case_count": 153,
       "targeted_asr": 0.0,
       "security_rate": 1.0,
@@ -34,7 +34,7 @@
       "secure_utility": 0.7450980392156863,
       "attack_suppression": 1.0
     },
-    "reposhield_oracle_user_eval": {
+    "agentbrake_oracle_user_eval": {
       "case_count": 153,
       "targeted_asr": 0.0,
       "security_rate": 1.0,

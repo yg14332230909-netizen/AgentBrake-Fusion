@@ -1,10 +1,10 @@
-# RepoShield AgentDojo 评测代码整理要求文档
+# AgentBrake AgentDojo 评测代码整理要求文档
 
 ## 1. 文档目的
 
-本文档定义 RepoShield 仓库中 **AgentDojo 评测相关代码** 的整理目标、目录结构、迁移步骤、验收标准和约束条件。
+本文档定义 AgentBrake 仓库中 **AgentDojo 评测相关代码** 的整理目标、目录结构、迁移步骤、验收标准和约束条件。
 
-本次整理的核心目标不是修改 RepoShield 的核心安全逻辑，而是解决当前 AgentDojo 相关代码分散、命名不统一、实验脚本与核心实现混杂的问题，使仓库结构更清晰、可维护、可复现实验。
+本次整理的核心目标不是修改 AgentBrake 的核心安全逻辑，而是解决当前 AgentDojo 相关代码分散、命名不统一、实验脚本与核心实现混杂的问题，使仓库结构更清晰、可维护、可复现实验。
 
 建议将本文档保存为：
 
@@ -23,8 +23,8 @@ docs/evaluations/agentdojo_refactor_requirements.md
 目前仓库中同时存在类似以下几类 AgentDojo 相关实现：
 
 ```text
-src/reposhield/eval/agentdojo/
-src/reposhield/eval/agentdojo_firewall/
+src/agentbrake/eval/agentdojo/
+src/agentbrake/eval/agentdojo_firewall/
 experiments/agentdojo_firewall/
 experiments/agentdojo_toolgate/
 experiments/agentdojo_gateway_only/
@@ -43,13 +43,13 @@ tests/test_agentdojo_toolgate.py
 
 ### 2.2 AgentDojo 评测逻辑侵入主仓库结构
 
-AgentDojo 本质上应当是 RepoShield 的一个**可选评测适配层**，而不是 RepoShield 核心逻辑的一部分。
+AgentDojo 本质上应当是 AgentBrake 的一个**可选评测适配层**，而不是 AgentBrake 核心逻辑的一部分。
 
 整理后应当明确：
 
 ```text
-RepoShield 核心能力     -> src/reposhield/
-AgentDojo 评测适配层    -> src/reposhield/eval/agentdojo/
+AgentBrake 核心能力     -> src/agentbrake/
+AgentDojo 评测适配层    -> src/agentbrake/eval/agentdojo/
 AgentDojo 实验脚本      -> experiments/agentdojo/
 AgentDojo 文档          -> docs/evaluations/agentdojo.md
 AgentDojo 测试          -> tests/eval/agentdojo/
@@ -83,7 +83,7 @@ AgentDojo Tool Firewall
 推荐代码包路径：
 
 ```text
-src/reposhield/eval/agentdojo/
+src/agentbrake/eval/agentdojo/
 ```
 
 ### 3.2 隔离历史实现
@@ -101,13 +101,13 @@ experiments/agentdojo/archive/
 所有 AgentDojo 评测适配代码统一收敛到：
 
 ```text
-src/reposhield/eval/agentdojo/
+src/agentbrake/eval/agentdojo/
 ```
 
 不再保留并列的：
 
 ```text
-src/reposhield/eval/agentdojo_firewall/
+src/agentbrake/eval/agentdojo_firewall/
 ```
 
 ### 3.4 统一测试结构
@@ -127,7 +127,7 @@ tests/test_agentdojo_toolgate.py
 
 ### 3.5 隔离可选依赖
 
-AgentDojo、OpenAI 等评测依赖不应成为 RepoShield 基础安装的硬依赖。
+AgentDojo、OpenAI 等评测依赖不应成为 AgentBrake 基础安装的硬依赖。
 
 AgentDojo 相关依赖必须放入 optional dependencies，例如：
 
@@ -141,7 +141,7 @@ pip install -e ".[agentdojo]"
 
 本次整理不要求完成以下工作：
 
-1. 不重写 RepoShield 核心检测算法；
+1. 不重写 AgentBrake 核心检测算法；
 2. 不重写 AgentDojo benchmark 本身；
 3. 不修改已有评测指标的语义；
 4. 不删除历史实验结果；
@@ -155,9 +155,9 @@ pip install -e ".[agentdojo]"
 整理后的目标结构如下：
 
 ```text
-RepoShield/
+AgentBrake/
 ├── src/
-│   └── reposhield/
+│   └── agentbrake/
 │       ├── gateway/
 │       ├── policy_engine/
 │       ├── sandbox/
@@ -255,13 +255,13 @@ RepoShield/
 必须将 AgentDojo 相关实现统一到：
 
 ```text
-src/reposhield/eval/agentdojo/
+src/agentbrake/eval/agentdojo/
 ```
 
 不得继续保留以下并列主实现：
 
 ```text
-src/reposhield/eval/agentdojo_firewall/
+src/agentbrake/eval/agentdojo_firewall/
 ```
 
 ### 6.2 子模块职责
@@ -341,7 +341,7 @@ metrics.py
 要求：
 
 - runner 可以 import `gate/`、`evidence/`、`adapters/`；
-- runner 不应被 `src/reposhield/eval/agentdojo/__init__.py` 顶层导入；
+- runner 不应被 `src/agentbrake/eval/agentdojo/__init__.py` 顶层导入；
 - runner 中的 AgentDojo / OpenAI 依赖必须懒加载。
 
 #### `adapters/`
@@ -414,19 +414,19 @@ gateway_only
 为了降低迁移风险，允许临时保留兼容 wrapper，例如：
 
 ```python
-# src/reposhield/eval/agentdojo/tool_gate.py
+# src/agentbrake/eval/agentdojo/tool_gate.py
 
 """
 Deprecated compatibility wrapper.
 
 Use:
-    reposhield.eval.agentdojo.gate.tool_firewall.AgentDojoToolFirewall
+    agentbrake.eval.agentdojo.gate.tool_firewall.AgentDojoToolFirewall
 instead.
 """
 
-from .gate.tool_firewall import AgentDojoToolFirewall as RepoShieldToolGate
+from .gate.tool_firewall import AgentDojoToolFirewall as AgentBrakeToolGate
 
-__all__ = ["RepoShieldToolGate"]
+__all__ = ["AgentBrakeToolGate"]
 ```
 
 ---
@@ -464,7 +464,7 @@ archive/
 要求：
 
 - 不放核心 Python 实现；
-- 不复制 `src/reposhield/eval/agentdojo/` 中的逻辑；
+- 不复制 `src/agentbrake/eval/agentdojo/` 中的逻辑；
 - 脚本只负责调用 CLI 或 runner；
 - 实验结果报告统一放入 `reports/`；
 - 历史 baseline 放入 `archive/`。
@@ -679,9 +679,9 @@ agentdojo
 禁止在以下文件中顶层导入重依赖：
 
 ```text
-src/reposhield/eval/agentdojo/__init__.py
-src/reposhield/__init__.py
-src/reposhield/cli.py
+src/agentbrake/eval/agentdojo/__init__.py
+src/agentbrake/__init__.py
+src/agentbrake/cli.py
 ```
 
 推荐写法：
@@ -708,7 +708,7 @@ require_agentdojo()
 
 ### 11.1 主 CLI 不继续膨胀
 
-`src/reposhield/cli.py` 只负责：
+`src/agentbrake/cli.py` 只负责：
 
 - 创建 parser；
 - 注册子命令；
@@ -717,7 +717,7 @@ require_agentdojo()
 AgentDojo 相关 CLI 逻辑应放入：
 
 ```text
-src/reposhield/cli_commands/eval_agentdojo.py
+src/agentbrake/cli_commands/eval_agentdojo.py
 ```
 
 ### 11.2 推荐 CLI 结构
@@ -725,12 +725,12 @@ src/reposhield/cli_commands/eval_agentdojo.py
 推荐命令结构：
 
 ```bash
-reposhield eval agentdojo inventory
-reposhield eval agentdojo run --mode baseline
-reposhield eval agentdojo run --mode gateway-only
-reposhield eval agentdojo run --mode tool-firewall
-reposhield eval agentdojo summarize
-reposhield eval agentdojo profile
+agentbrake eval agentdojo inventory
+agentbrake eval agentdojo run --mode baseline
+agentbrake eval agentdojo run --mode gateway-only
+agentbrake eval agentdojo run --mode tool-firewall
+agentbrake eval agentdojo summarize
+agentbrake eval agentdojo profile
 ```
 
 ### 11.3 CLI mode 要求
@@ -745,7 +745,7 @@ tool-firewall
 
 其中：
 
-- `baseline` 表示无 RepoShield 防御；
+- `baseline` 表示无 AgentBrake 防御；
 - `gateway-only` 表示历史/对照评测路径；
 - `tool-firewall` 表示当前推荐路径。
 
@@ -809,7 +809,7 @@ Historical baselines:
 > Deprecated.
 >
 > Use:
-> - `src/reposhield/eval/agentdojo/`
+> - `src/agentbrake/eval/agentdojo/`
 > - `experiments/agentdojo/`
 >
 > This directory will be removed after compatibility migration.
@@ -912,48 +912,48 @@ git mv <old-baseline-files> experiments/agentdojo/archive/deepseek_no_defense_ba
 新建目录：
 
 ```bash
-mkdir -p src/reposhield/eval/agentdojo/{compat,gate,evidence,runner,adapters}
+mkdir -p src/agentbrake/eval/agentdojo/{compat,gate,evidence,runner,adapters}
 ```
 
 迁移 firewall 主实现：
 
 ```bash
-git mv src/reposhield/eval/agentdojo_firewall/tool_firewall.py src/reposhield/eval/agentdojo/gate/tool_firewall.py
-git mv src/reposhield/eval/agentdojo_firewall/runtime_wrapper.py src/reposhield/eval/agentdojo/gate/runtime_wrapper.py
-git mv src/reposhield/eval/agentdojo_firewall/action_graph.py src/reposhield/eval/agentdojo/evidence/action_graph.py
-git mv src/reposhield/eval/agentdojo_firewall/evidence.py src/reposhield/eval/agentdojo/evidence/evidence.py
-git mv src/reposhield/eval/agentdojo_firewall/fusion.py src/reposhield/eval/agentdojo/evidence/fusion.py
-git mv src/reposhield/eval/agentdojo_firewall/state.py src/reposhield/eval/agentdojo/evidence/state.py
-git mv src/reposhield/eval/agentdojo_firewall/taxonomy.py src/reposhield/eval/agentdojo/evidence/taxonomy.py
-git mv src/reposhield/eval/agentdojo_firewall/task_authorizer.py src/reposhield/eval/agentdojo/evidence/task_authorizer.py
-git mv src/reposhield/eval/agentdojo_firewall/types.py src/reposhield/eval/agentdojo/compat/types.py
-git mv src/reposhield/eval/agentdojo_firewall/models_compat.py src/reposhield/eval/agentdojo/compat/models_compat.py
+git mv src/agentbrake/eval/agentdojo_firewall/tool_firewall.py src/agentbrake/eval/agentdojo/gate/tool_firewall.py
+git mv src/agentbrake/eval/agentdojo_firewall/runtime_wrapper.py src/agentbrake/eval/agentdojo/gate/runtime_wrapper.py
+git mv src/agentbrake/eval/agentdojo_firewall/action_graph.py src/agentbrake/eval/agentdojo/evidence/action_graph.py
+git mv src/agentbrake/eval/agentdojo_firewall/evidence.py src/agentbrake/eval/agentdojo/evidence/evidence.py
+git mv src/agentbrake/eval/agentdojo_firewall/fusion.py src/agentbrake/eval/agentdojo/evidence/fusion.py
+git mv src/agentbrake/eval/agentdojo_firewall/state.py src/agentbrake/eval/agentdojo/evidence/state.py
+git mv src/agentbrake/eval/agentdojo_firewall/taxonomy.py src/agentbrake/eval/agentdojo/evidence/taxonomy.py
+git mv src/agentbrake/eval/agentdojo_firewall/task_authorizer.py src/agentbrake/eval/agentdojo/evidence/task_authorizer.py
+git mv src/agentbrake/eval/agentdojo_firewall/types.py src/agentbrake/eval/agentdojo/compat/types.py
+git mv src/agentbrake/eval/agentdojo_firewall/models_compat.py src/agentbrake/eval/agentdojo/compat/models_compat.py
 ```
 
 迁移 runner 和 adapter：
 
 ```bash
-git mv src/reposhield/eval/agentdojo/run_toolgate_eval.py src/reposhield/eval/agentdojo/runner/run_tool_firewall_eval.py
-git mv src/reposhield/eval/agentdojo/result_exporter.py src/reposhield/eval/agentdojo/runner/result_exporter.py
-git mv src/reposhield/eval/agentdojo/pipeline_wrapper.py src/reposhield/eval/agentdojo/adapters/pipeline_wrapper.py
-git mv src/reposhield/eval/agentdojo/native_defense.py src/reposhield/eval/agentdojo/adapters/native_defense.py
-git mv src/reposhield/eval/agentdojo/inspect_adapter.py src/reposhield/eval/agentdojo/adapters/inspect_adapter.py
+git mv src/agentbrake/eval/agentdojo/run_toolgate_eval.py src/agentbrake/eval/agentdojo/runner/run_tool_firewall_eval.py
+git mv src/agentbrake/eval/agentdojo/result_exporter.py src/agentbrake/eval/agentdojo/runner/result_exporter.py
+git mv src/agentbrake/eval/agentdojo/pipeline_wrapper.py src/agentbrake/eval/agentdojo/adapters/pipeline_wrapper.py
+git mv src/agentbrake/eval/agentdojo/native_defense.py src/agentbrake/eval/agentdojo/adapters/native_defense.py
+git mv src/agentbrake/eval/agentdojo/inspect_adapter.py src/agentbrake/eval/agentdojo/adapters/inspect_adapter.py
 ```
 
 添加 `__init__.py`：
 
 ```bash
-touch src/reposhield/eval/agentdojo/compat/__init__.py
-touch src/reposhield/eval/agentdojo/gate/__init__.py
-touch src/reposhield/eval/agentdojo/evidence/__init__.py
-touch src/reposhield/eval/agentdojo/runner/__init__.py
-touch src/reposhield/eval/agentdojo/adapters/__init__.py
+touch src/agentbrake/eval/agentdojo/compat/__init__.py
+touch src/agentbrake/eval/agentdojo/gate/__init__.py
+touch src/agentbrake/eval/agentdojo/evidence/__init__.py
+touch src/agentbrake/eval/agentdojo/runner/__init__.py
+touch src/agentbrake/eval/agentdojo/adapters/__init__.py
 ```
 
 添加兼容 wrapper：
 
 ```text
-src/reposhield/eval/agentdojo/tool_gate.py
+src/agentbrake/eval/agentdojo/tool_gate.py
 ```
 
 内容：
@@ -963,19 +963,19 @@ src/reposhield/eval/agentdojo/tool_gate.py
 Deprecated compatibility wrapper.
 
 Use:
-    reposhield.eval.agentdojo.gate.tool_firewall.AgentDojoToolFirewall
+    agentbrake.eval.agentdojo.gate.tool_firewall.AgentDojoToolFirewall
 instead.
 """
 
-from .gate.tool_firewall import AgentDojoToolFirewall as RepoShieldToolGate
+from .gate.tool_firewall import AgentDojoToolFirewall as AgentBrakeToolGate
 
-__all__ = ["RepoShieldToolGate"]
+__all__ = ["AgentBrakeToolGate"]
 ```
 
 验收标准：
 
-- 不再存在主实现目录 `src/reposhield/eval/agentdojo_firewall/`；
-- 新代码统一 import `reposhield.eval.agentdojo.*`；
+- 不再存在主实现目录 `src/agentbrake/eval/agentdojo_firewall/`；
+- 新代码统一 import `agentbrake.eval.agentdojo.*`；
 - 旧 import 通过兼容 wrapper 暂时可用；
 - 单元测试通过。
 
@@ -1005,9 +1005,9 @@ git mv tests/test_agentdojo_toolgate.py tests/eval/agentdojo/integration/test_le
 根据测试内容调整 import：
 
 ```python
-from reposhield.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
-from reposhield.eval.agentdojo.evidence.taxonomy import ...
-from reposhield.eval.agentdojo.evidence.state import ...
+from agentbrake.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
+from agentbrake.eval.agentdojo.evidence.taxonomy import ...
+from agentbrake.eval.agentdojo.evidence.state import ...
 ```
 
 验收标准：
@@ -1027,13 +1027,13 @@ from reposhield.eval.agentdojo.evidence.state import ...
 新增：
 
 ```text
-src/reposhield/cli_commands/eval_agentdojo.py
+src/agentbrake/cli_commands/eval_agentdojo.py
 ```
 
 修改：
 
 ```text
-src/reposhield/cli.py
+src/agentbrake/cli.py
 pyproject.toml
 ```
 
@@ -1057,19 +1057,19 @@ eval = [
 CLI 子命令：
 
 ```bash
-reposhield eval agentdojo inventory
-reposhield eval agentdojo run --mode baseline
-reposhield eval agentdojo run --mode gateway-only
-reposhield eval agentdojo run --mode tool-firewall
-reposhield eval agentdojo summarize
-reposhield eval agentdojo profile
+agentbrake eval agentdojo inventory
+agentbrake eval agentdojo run --mode baseline
+agentbrake eval agentdojo run --mode gateway-only
+agentbrake eval agentdojo run --mode tool-firewall
+agentbrake eval agentdojo summarize
+agentbrake eval agentdojo profile
 ```
 
 验收标准：
 
 - `pip install -e .` 不安装 AgentDojo；
 - `pip install -e ".[agentdojo]"` 可运行 AgentDojo 评测；
-- import `reposhield` 不触发 AgentDojo / OpenAI import；
+- import `agentbrake` 不触发 AgentDojo / OpenAI import；
 - AgentDojo CLI 逻辑不继续塞进主 `cli.py`；
 - 默认运行模式为 `tool-firewall`。
 
@@ -1082,14 +1082,14 @@ reposhield eval agentdojo profile
 ### 推荐 import
 
 ```python
-from reposhield.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
-from reposhield.eval.agentdojo.gate.runtime_wrapper import ...
-from reposhield.eval.agentdojo.evidence.action_graph import ...
-from reposhield.eval.agentdojo.evidence.fusion import ...
-from reposhield.eval.agentdojo.evidence.state import ...
-from reposhield.eval.agentdojo.evidence.taxonomy import ...
-from reposhield.eval.agentdojo.runner.result_exporter import ...
-from reposhield.eval.agentdojo.adapters.pipeline_wrapper import ...
+from agentbrake.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
+from agentbrake.eval.agentdojo.gate.runtime_wrapper import ...
+from agentbrake.eval.agentdojo.evidence.action_graph import ...
+from agentbrake.eval.agentdojo.evidence.fusion import ...
+from agentbrake.eval.agentdojo.evidence.state import ...
+from agentbrake.eval.agentdojo.evidence.taxonomy import ...
+from agentbrake.eval.agentdojo.runner.result_exporter import ...
+from agentbrake.eval.agentdojo.adapters.pipeline_wrapper import ...
 ```
 
 ### 禁止新增 import
@@ -1097,8 +1097,8 @@ from reposhield.eval.agentdojo.adapters.pipeline_wrapper import ...
 新代码不得新增：
 
 ```python
-from reposhield.eval.agentdojo_firewall import ...
-from reposhield.eval.agentdojo.tool_gate import ...
+from agentbrake.eval.agentdojo_firewall import ...
+from agentbrake.eval.agentdojo.tool_gate import ...
 ```
 
 其中 `tool_gate.py` 只允许旧代码兼容使用，不允许新代码依赖。
@@ -1146,7 +1146,7 @@ mv
 必须存在：
 
 ```text
-src/reposhield/eval/agentdojo/
+src/agentbrake/eval/agentdojo/
 experiments/agentdojo/
 tests/eval/agentdojo/
 docs/evaluations/agentdojo.md
@@ -1155,7 +1155,7 @@ docs/evaluations/agentdojo.md
 不应继续存在主实现目录：
 
 ```text
-src/reposhield/eval/agentdojo_firewall/
+src/agentbrake/eval/agentdojo_firewall/
 experiments/agentdojo_firewall/
 experiments/agentdojo_toolgate/
 experiments/agentdojo_gateway_only/
@@ -1208,7 +1208,7 @@ pytest -q tests/eval/agentdojo/integration -m "not external"
 
 ```bash
 pip install -e .
-python -c "import reposhield"
+python -c "import agentbrake"
 ```
 
 AgentDojo 评测安装必须成功：
@@ -1294,13 +1294,13 @@ experiments/agentdojo/archive/README.md
 
 ## 18. 最终完成状态
 
-整理完成后，RepoShield 的 AgentDojo 相关结构应表达清楚：
+整理完成后，AgentBrake 的 AgentDojo 相关结构应表达清楚：
 
 ```text
-RepoShield core
+AgentBrake core
     主体安全能力，与 AgentDojo 解耦。
 
-src/reposhield/eval/agentdojo/
+src/agentbrake/eval/agentdojo/
     AgentDojo 评测适配源码。
 
 experiments/agentdojo/
@@ -1320,4 +1320,4 @@ docs/evaluations/agentdojo.md
 3. 哪些目录是历史内容；
 4. 哪些代码是核心实现；
 5. 哪些代码只是 benchmark adapter；
-6. 如何在不安装 AgentDojo 的情况下使用 RepoShield 主功能。
+6. 如何在不安装 AgentDojo 的情况下使用 AgentBrake 主功能。

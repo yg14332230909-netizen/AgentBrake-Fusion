@@ -1,14 +1,14 @@
 ﻿from __future__ import annotations
 
-from reposhield.control_plane import RepoShieldControlPlane
-from reposhield.eval.agentdojo.tool_gate import RepoShieldToolGate
+from agentbrake.control_plane import AgentBrakeControlPlane
+from agentbrake.eval.agentdojo.tool_gate import AgentBrakeToolGate
 
 
 def test_tool_gate_blocks_and_allows_without_executing_original_tool(tmp_path):
     repo = tmp_path / "repo"
     repo.mkdir()
-    cp = RepoShieldControlPlane(repo, audit_path=tmp_path / "audit.jsonl")
-    gate = RepoShieldToolGate(cp)
+    cp = AgentBrakeControlPlane(repo, audit_path=tmp_path / "audit.jsonl")
+    gate = AgentBrakeToolGate(cp)
 
     blocked = gate.guard_tool_call(
         {"name": "send_money", "arguments": {"amount": "1000", "recipient": "attacker"}},

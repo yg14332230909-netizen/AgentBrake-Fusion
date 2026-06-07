@@ -1,11 +1,11 @@
-from reposhield.control_plane import RepoShieldControlPlane
+from agentbrake.control_plane import AgentBrakeControlPlane
 
 
 def test_control_plane_uses_policygraph_preflight_plan_for_tests(tmp_path):
     (tmp_path / "src").mkdir()
     (tmp_path / "tests").mkdir()
     (tmp_path / "package.json").write_text('{"scripts":{"test":"echo ok"}}', encoding="utf-8")
-    cp = RepoShieldControlPlane(tmp_path, audit_path=tmp_path / "audit.jsonl")
+    cp = AgentBrakeControlPlane(tmp_path, audit_path=tmp_path / "audit.jsonl")
     cp.build_contract("fix login button and run tests")
 
     _action, decision = cp.guard_action("npm test")

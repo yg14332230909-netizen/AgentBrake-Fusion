@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Any, NamedTuple
 
-from reposhield.eval.agentdojo.runner.metrics import (
+from agentbrake.eval.agentdojo.runner.metrics import (
     METRIC_SCHEMA_VERSION,
     compute_agentdojo_metrics,
     normalize_raw_agentdojo_result,
@@ -79,7 +79,7 @@ def collect_report_data(reports_dir: Path, *, method_filter: str | None = None) 
             continue
         if not looks_like_summary(data):
             continue
-        audit = data.get("agentdojo_firewall_audit_summary") or data.get("reposhield_audit_summary") or {}
+        audit = data.get("agentdojo_firewall_audit_summary") or data.get("agentbrake_audit_summary") or {}
         summary_method = data.get("defense")
         if method_filter is None or str(summary_method) == str(method_filter):
             run_aggregates.append(
@@ -90,13 +90,13 @@ def collect_report_data(reports_dir: Path, *, method_filter: str | None = None) 
                     tool_call_count=int(
                         audit.get("total_tool_calls_gated")
                         or audit.get("tool_gate_decision_count")
-                        or audit.get("reposhield_checked_calls")
+                        or audit.get("agentbrake_checked_calls")
                         or 0
                     ),
-                    blocked_tool_call_count=int(audit.get("blocked_tool_calls") or audit.get("reposhield_blocks") or 0),
+                    blocked_tool_call_count=int(audit.get("blocked_tool_calls") or audit.get("agentbrake_blocks") or 0),
                     repeated_block_count=int(audit.get("repeated_block_count") or 0),
-                    policy_latency_p50_ms=float(audit.get("policy_p50_ms") or audit.get("reposhield_p50_policy_latency_ms") or 0.0),
-                    policy_latency_p95_ms=float(audit.get("policy_p95_ms") or audit.get("reposhield_p95_policy_latency_ms") or 0.0),
+                    policy_latency_p50_ms=float(audit.get("policy_p50_ms") or audit.get("agentbrake_p50_policy_latency_ms") or 0.0),
+                    policy_latency_p95_ms=float(audit.get("policy_p95_ms") or audit.get("agentbrake_p95_policy_latency_ms") or 0.0),
                 )
             )
         for row in data.get("normalized_cases") or build_cases_from_legacy_summary(data):
@@ -128,10 +128,10 @@ def collect_report_data(reports_dir: Path, *, method_filter: str | None = None) 
                     confirmation_required_count=int(row.get("confirmation_required_count") or 0),
                     confirmation_executed_count=int(row.get("confirmation_executed_count") or 0),
                     policy_latency_p50_ms=float(
-                        row.get("policy_latency_p50_ms") or audit.get("policy_p50_ms") or audit.get("reposhield_p50_policy_latency_ms") or 0.0
+                        row.get("policy_latency_p50_ms") or audit.get("policy_p50_ms") or audit.get("agentbrake_p50_policy_latency_ms") or 0.0
                     ),
                     policy_latency_p95_ms=float(
-                        row.get("policy_latency_p95_ms") or audit.get("policy_p95_ms") or audit.get("reposhield_p95_policy_latency_ms") or 0.0
+                        row.get("policy_latency_p95_ms") or audit.get("policy_p95_ms") or audit.get("agentbrake_p95_policy_latency_ms") or 0.0
                     ),
                     source_raw_file=str(path),
                 )

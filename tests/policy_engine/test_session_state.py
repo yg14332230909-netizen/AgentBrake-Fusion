@@ -1,11 +1,11 @@
-from reposhield.control_plane import RepoShieldControlPlane
+from agentbrake.control_plane import AgentBrakeControlPlane
 
 
 def test_session_state_records_cross_step_secret_taint(tmp_path):
     repo = tmp_path / "repo"
     repo.mkdir()
-    (repo / ".env").write_text("RS_CANARY_TOKEN=npm_REPOSHIELD_CANARY\n", encoding="utf-8")
-    cp = RepoShieldControlPlane(repo, audit_path=tmp_path / "audit.jsonl")
+    (repo / ".env").write_text("RS_CANARY_TOKEN=npm_AGENTBRAKE_CANARY\n", encoding="utf-8")
+    cp = AgentBrakeControlPlane(repo, audit_path=tmp_path / "audit.jsonl")
     cp.build_contract("inspect project")
 
     _action1, decision1 = cp.guard_action("cat .env", run_preflight=False)
@@ -23,7 +23,7 @@ def test_session_state_records_cross_step_secret_taint(tmp_path):
 def test_action_graph_event_is_written_without_breaking_action_event(tmp_path):
     repo = tmp_path / "repo"
     repo.mkdir()
-    cp = RepoShieldControlPlane(repo, audit_path=tmp_path / "audit.jsonl")
+    cp = AgentBrakeControlPlane(repo, audit_path=tmp_path / "audit.jsonl")
     cp.build_contract("run tests")
 
     action, _decision = cp.guard_action("npm test", run_preflight=False)
@@ -38,7 +38,7 @@ def test_action_graph_event_is_written_without_breaking_action_event(tmp_path):
 def test_constraint_lattice_trace_event_is_written(tmp_path):
     repo = tmp_path / "repo"
     repo.mkdir()
-    cp = RepoShieldControlPlane(repo, audit_path=tmp_path / "audit.jsonl")
+    cp = AgentBrakeControlPlane(repo, audit_path=tmp_path / "audit.jsonl")
     cp.build_contract("run tests")
 
     _action, decision = cp.guard_action("npm test", run_preflight=False)

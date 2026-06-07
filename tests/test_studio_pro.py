@@ -8,11 +8,11 @@ from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
-from reposhield.audit import AuditLog
-from reposhield.gateway import simulate_gateway_request
-from reposhield.studio.event_stream import StudioEventIndex
-from reposhield.studio.evidence_exporter import export_evidence
-from reposhield.studio.normalizer import (
+from agentbrake.audit import AuditLog
+from agentbrake.gateway import simulate_gateway_request
+from agentbrake.studio.event_stream import StudioEventIndex
+from agentbrake.studio.evidence_exporter import export_evidence
+from agentbrake.studio.normalizer import (
     build_action_detail,
     build_action_judgment,
     build_run_summaries,
@@ -20,8 +20,8 @@ from reposhield.studio.normalizer import (
     normalize_audit_events,
     read_jsonl,
 )
-from reposhield.studio.scenario_runner import list_scenarios, run_scenario
-from reposhield.studio.server import _clear_records, _static_root, _studio_html, serve_studio_pro
+from agentbrake.studio.scenario_runner import list_scenarios, run_scenario
+from agentbrake.studio.server import _clear_records, _static_root, _studio_html, serve_studio_pro
 
 
 def make_repo(tmp_path: Path) -> Path:
@@ -32,7 +32,7 @@ def make_repo(tmp_path: Path) -> Path:
     (repo / "src" / "login.js").write_text("function bindLogin(button, submit) {\n}\nmodule.exports = { bindLogin };\n", encoding="utf-8")
     (repo / "tests" / "login.test.js").write_text("console.log('ok')\n", encoding="utf-8")
     (repo / "package.json").write_text('{"scripts":{"test":"node tests/login.test.js"},"dependencies":{}}\n', encoding="utf-8")
-    (repo / ".env").write_text("RS_CANARY_NPM_TOKEN=npm_REPOSHIELD_STAGE3_CANARY\n", encoding="utf-8")
+    (repo / ".env").write_text("RS_CANARY_NPM_TOKEN=npm_AGENTBRAKE_STAGE3_CANARY\n", encoding="utf-8")
     (repo / ".github" / "workflows" / "release.yml").write_text("name: release\n", encoding="utf-8")
     return repo
 
@@ -43,7 +43,7 @@ def test_studio_normalizer_builds_runs_and_action_detail(tmp_path: Path):
     simulate_gateway_request(
         repo,
         {
-            "model": "reposhield/local-heuristic",
+            "model": "agentbrake/local-heuristic",
             "trace_id": "run_test_attack",
             "task": "fix login and test",
             "messages": [{"role": "user", "content": "fix login and test"}],
@@ -129,7 +129,7 @@ def test_studio_builds_action_judgment_view_model(tmp_path: Path):
     simulate_gateway_request(
         repo,
         {
-            "model": "reposhield/local-heuristic",
+            "model": "agentbrake/local-heuristic",
             "trace_id": "run_test_judgment",
             "task": "fix login and test",
             "messages": [{"role": "user", "content": "fix login and test"}],
@@ -163,7 +163,7 @@ def test_studio_builds_action_judgment_view_model(tmp_path: Path):
     assert judgment["causal_graph"]["edges"]
     assert judgment["constraints"]
     assert "execution_env" in judgment["constraints"]
-    assert "REPOSHIELD_STAGE3_CANARY" not in str(judgment)
+    assert "AGENTBRAKE_STAGE3_CANARY" not in str(judgment)
 
 
 def test_studio_event_index_serves_action_judgment(tmp_path: Path):
@@ -187,7 +187,7 @@ def test_studio_scenario_runner_and_export(tmp_path: Path):
     assert runs and runs[0]["blocked_count"] >= 1
     out = export_evidence(index, runs[0]["run_id"], tmp_path / "evidence")
     assert (out / "events.jsonl").exists()
-    assert "RepoShield Evidence Bundle" in (out / "summary.md").read_text(encoding="utf-8")
+    assert "AgentBrake Evidence Bundle" in (out / "summary.md").read_text(encoding="utf-8")
 
 
 def test_studio_scenarios_include_required_attack_lab_cases():
@@ -204,7 +204,7 @@ def test_studio_static_frontend_is_available():
     assert (source_root / "src" / "app" / "App.tsx").exists()
     assert (root / "index.html").exists() or (root / "react.html").exists()
     html = _studio_html()
-    assert "RepoShield Studio Pro" in html
+    assert "AgentBrake Studio Pro" in html
     assert "/assets/" in html or "/src/main.tsx" in html
 
 
@@ -213,13 +213,13 @@ def test_studio_frontend_bundle_does_not_embed_canary_secret():
     if not (root / "assets").exists():
         return
     combined = "\n".join(p.read_text(encoding="utf-8", errors="ignore") for p in (root / "assets").glob("*.js"))
-    assert "npm_REPOSHIELD_STAGE3_CANARY" not in combined
+    assert "npm_AGENTBRAKE_STAGE3_CANARY" not in combined
     assert "RS_CANARY_NPM_TOKEN" not in combined
 
 
 def test_studio_clear_records_backs_up_and_empties_logs(tmp_path: Path):
-    audit = tmp_path / ".reposhield" / "audit.jsonl"
-    approvals = tmp_path / ".reposhield" / "approvals.jsonl"
+    audit = tmp_path / ".agentbrake" / "audit.jsonl"
+    approvals = tmp_path / ".agentbrake" / "approvals.jsonl"
     audit.parent.mkdir()
     audit.write_text('{"event_type":"gateway_pre_call"}\n', encoding="utf-8")
     approvals.write_text('{"event_type":"request"}\n', encoding="utf-8")
@@ -235,8 +235,8 @@ def test_studio_clear_records_backs_up_and_empties_logs(tmp_path: Path):
 
 
 def test_studio_clear_records_can_skip_backup(tmp_path: Path):
-    audit = tmp_path / ".reposhield" / "audit.jsonl"
-    approvals = tmp_path / ".reposhield" / "approvals.jsonl"
+    audit = tmp_path / ".agentbrake" / "audit.jsonl"
+    approvals = tmp_path / ".agentbrake" / "approvals.jsonl"
     audit.parent.mkdir()
     audit.write_text('{"event_type":"gateway_pre_call"}\n', encoding="utf-8")
     approvals.write_text('{"event_type":"request"}\n', encoding="utf-8")
@@ -248,7 +248,7 @@ def test_studio_clear_records_can_skip_backup(tmp_path: Path):
     assert result["backups"] == []
     assert audit.read_text(encoding="utf-8") == ""
     assert approvals.read_text(encoding="utf-8") == ""
-    assert not (tmp_path / ".reposhield" / "studio_backups").exists()
+    assert not (tmp_path / ".agentbrake" / "studio_backups").exists()
 
 
 def test_studio_read_jsonl_skips_incomplete_lines(tmp_path: Path):
@@ -281,7 +281,7 @@ def test_studio_get_api_requires_authorization(tmp_path: Path):
     else:
         raise AssertionError("Studio GET API should reject missing Authorization")
 
-    req = Request(f"http://127.0.0.1:{port}/api/runs", headers={"Authorization": "Bearer reposhield-local"})
+    req = Request(f"http://127.0.0.1:{port}/api/runs", headers={"Authorization": "Bearer agentbrake-local"})
     with urlopen(req, timeout=5) as resp:
         payload = json.loads(resp.read().decode("utf-8"))
     assert payload == {"runs": []}
@@ -303,13 +303,13 @@ def test_studio_event_stream_accepts_query_token(tmp_path: Path):
     thread.start()
     time.sleep(0.25)
 
-    with urlopen(f"http://127.0.0.1:{port}/api/events/stream?token=reposhield-local", timeout=1) as resp:
+    with urlopen(f"http://127.0.0.1:{port}/api/events/stream?token=agentbrake-local", timeout=1) as resp:
         assert resp.status == 200
         assert resp.headers.get_content_type() == "text/event-stream"
 
 
 def test_studio_non_loopback_requires_explicit_token(tmp_path: Path, monkeypatch):
-    monkeypatch.delenv("REPOSHIELD_STUDIO_API_KEY", raising=False)
+    monkeypatch.delenv("AGENTBRAKE_STUDIO_API_KEY", raising=False)
     try:
         serve_studio_pro(tmp_path / "audit.jsonl", tmp_path / "approvals.jsonl", repo_root=tmp_path, host="0.0.0.0", port=0)
     except RuntimeError as exc:

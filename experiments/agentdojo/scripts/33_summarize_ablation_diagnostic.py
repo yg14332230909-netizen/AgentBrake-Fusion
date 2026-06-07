@@ -82,7 +82,7 @@ def summarize_actiongraph(args: argparse.Namespace) -> int:
     full_dir = resolve_full_e2e_dir(FULL_E2E_FALLBACK)
     for row in read_jsonl(full_dir / "per_case_results.jsonl"):
         key = (str(row["suite"]), str(row["user_task_id"]), str(row["injection_task_id"]))
-        if key not in plan_keys or row["method"] != "reposhield_strict":
+        if key not in plan_keys or row["method"] != "agentbrake_strict":
             continue
         trace_file = full_dir / str(row.get("trace_file") or "")
         normalized = normalize_row(row, "full", reason_by_key[key], trace_file=trace_file.as_posix())
@@ -134,7 +134,7 @@ def load_full_baseline_rows(
     out = []
     for row in read_jsonl(full_dir / "per_case_results.jsonl"):
         key = (str(row["suite"]), str(row["user_task_id"]), str(row["injection_task_id"]))
-        if key in plan_keys and row["method"] == "reposhield_strict":
+        if key in plan_keys and row["method"] == "agentbrake_strict":
             out.append(normalize_row(row, "full", plan_reason[key], trace_file=row.get("trace_file")))
     return out
 
@@ -596,7 +596,7 @@ def write_bucket_breakdown_csv(path: Path, summary: dict[str, Any]) -> None:
 
 def render_legacy_summary_md(summary: dict[str, Any]) -> str:
     labels = {
-        "full": "Full RepoShield",
+        "full": "Full AgentBrake",
         "rule_only": "Rule-only",
         "no_binding": "No Binding",
         "legacy_no_context_graph": "Legacy No ContextGraph",

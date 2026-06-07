@@ -1,7 +1,7 @@
-from reposhield.audit import AuditLog
-from reposhield.models import SessionState
-from reposhield.session_state import PersistentSessionStateStore
-from reposhield.state_replay import restore_latest_session_state
+from agentbrake.audit import AuditLog
+from agentbrake.models import SessionState
+from agentbrake.session_state import PersistentSessionStateStore
+from agentbrake.state_replay import restore_latest_session_state
 
 
 def test_restore_latest_session_state_prefers_jsonl_then_audit(tmp_path):

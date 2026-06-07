@@ -2,10 +2,10 @@ import { useState } from "react";
 
 export function TokenControl() {
   const [open, setOpen] = useState(false);
-  const [token, setToken] = useState(localStorage.getItem("reposhieldToken") || "reposhield-local");
+  const [token, setToken] = useState(localStorage.getItem("agentbrakeToken") || "agentbrake-local");
 
   function save() {
-    localStorage.setItem("reposhieldToken", token);
+    localStorage.setItem("agentbrakeToken", token);
     window.location.reload();
   }
 

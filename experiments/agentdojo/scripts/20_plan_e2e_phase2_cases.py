@@ -81,7 +81,7 @@ def build_case_plan(
         selected_keys.add((suite, user_task_id, injection_task_id))
 
     return {
-        "schema_version": "reposhield_agentdojo_phase2_case_plan_v1",
+        "schema_version": "agentbrake_agentdojo_phase2_case_plan_v1",
         "experiment_type": "agentdojo_e2e_defended_run",
         "phase": "phase2",
         "mode": mode,

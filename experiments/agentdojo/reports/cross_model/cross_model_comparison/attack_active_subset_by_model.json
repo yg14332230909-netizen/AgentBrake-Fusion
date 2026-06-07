@@ -17,21 +17,21 @@
                                                           "user_utility":  0.086206896551724144,
                                                           "secure_utility":  0.086206896551724144
                                                       },
-                                      "reposhield_strict":  {
+                                      "agentbrake_strict":  {
                                                                 "case_count":  58,
                                                                 "targeted_asr":  0,
                                                                 "security_rate":  1,
                                                                 "user_utility":  0.55172413793103448,
                                                                 "secure_utility":  0.55172413793103448
                                                             },
-                                      "reposhield_gateway_eval":  {
+                                      "agentbrake_gateway_eval":  {
                                                                       "case_count":  58,
                                                                       "targeted_asr":  0,
                                                                       "security_rate":  1,
                                                                       "user_utility":  0.603448275862069,
                                                                       "secure_utility":  0.603448275862069
                                                                   },
-                                      "reposhield_oracle_user_eval":  {
+                                      "agentbrake_oracle_user_eval":  {
                                                                           "case_count":  58,
                                                                           "targeted_asr":  0,
                                                                           "security_rate":  1,
@@ -39,6 +39,6 @@
                                                                           "secure_utility":  0.55172413793103448
                                                                       }
                                   },
-                      "reposhield_strict_attack_active_suppression_rate":  1
+                      "agentbrake_strict_attack_active_suppression_rate":  1
                   }
 }

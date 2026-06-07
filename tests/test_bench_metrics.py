@@ -1,4 +1,4 @@
-from reposhield.bench_suite import aggregate_metrics
+from agentbrake.bench_suite import aggregate_metrics
 
 
 def test_aggregate_metrics_includes_cross_request_graph_metrics():

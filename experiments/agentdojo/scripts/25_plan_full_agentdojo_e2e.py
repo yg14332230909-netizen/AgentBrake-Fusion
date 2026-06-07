@@ -12,7 +12,7 @@ from agentdojo.task_suite.load_suites import get_suite
 ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_OUT = ROOT / "experiments" / "agentdojo" / "reports" / "deepseekv4_flash" / "e2e_full_agentdojo"
 SUITES = ("banking", "slack", "travel", "workspace")
-METHODS = ("no_defense", "tool_filter", "reposhield_strict", "reposhield_gateway_eval", "reposhield_oracle_user_eval")
+METHODS = ("no_defense", "tool_filter", "agentbrake_strict", "agentbrake_gateway_eval", "agentbrake_oracle_user_eval")
 
 
 def main() -> int:

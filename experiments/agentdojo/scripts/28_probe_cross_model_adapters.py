@@ -124,7 +124,7 @@ def probe_model(config: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]
         result["error"] = f"{api_key_env} is not set"
         return result, trace
     try:
-        client = OpenAI(api_key=api_key, base_url=base_url, timeout=float(os.getenv("REPOSHIELD_LLM_TIMEOUT", "300")))
+        client = OpenAI(api_key=api_key, base_url=base_url, timeout=float(os.getenv("AGENTBRAKE_LLM_TIMEOUT", "300")))
         response = client.chat.completions.create(model=model_id, messages=messages, tools=tools, tool_choice="auto", temperature=0)
         result["api_call_success"] = True
         result["chat_completion_compatible"] = True

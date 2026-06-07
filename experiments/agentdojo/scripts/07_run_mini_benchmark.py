@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
-from reposhield.eval.agentdojo.runner.run_tool_firewall_eval import run_suite
+from agentbrake.eval.agentdojo.runner.run_tool_firewall_eval import run_suite
 
 ROOT = Path(__file__).resolve().parents[3]
 REPORT_DIR = ROOT / "experiments" / "agentdojo" / "reports"

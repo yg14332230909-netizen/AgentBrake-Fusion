@@ -1,4 +1,4 @@
-"""Generate a compact profile report from RepoShield audit JSONL."""
+"""Generate a compact profile report from AgentBrake audit JSONL."""
 
 from __future__ import annotations
 

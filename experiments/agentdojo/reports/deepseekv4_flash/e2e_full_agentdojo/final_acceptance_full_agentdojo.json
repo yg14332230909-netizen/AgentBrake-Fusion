@@ -151,7 +151,7 @@
       "name": "effectiveness_thresholds",
       "category": "effectiveness",
       "status": "PASS",
-      "detail": "RepoShield full E2E thresholds"
+      "detail": "AgentBrake full E2E thresholds"
     },
     {
       "name": "attack_active_thresholds",
@@ -184,7 +184,7 @@
       "policy_latency_p95_ms": null,
       "latency_status": "missing"
     },
-    "reposhield_gateway_eval": {
+    "agentbrake_gateway_eval": {
       "case_count": 949,
       "targeted_asr": 0.0,
       "security_rate": 1.0,
@@ -205,7 +205,7 @@
       "policy_latency_p95_ms": 2.132,
       "latency_status": "present"
     },
-    "reposhield_oracle_user_eval": {
+    "agentbrake_oracle_user_eval": {
       "case_count": 949,
       "targeted_asr": 0.0,
       "security_rate": 1.0,
@@ -226,7 +226,7 @@
       "policy_latency_p95_ms": 2.278,
       "latency_status": "present"
     },
-    "reposhield_strict": {
+    "agentbrake_strict": {
       "case_count": 949,
       "targeted_asr": 0.002107481559536354,
       "security_rate": 0.9978925184404637,
@@ -289,7 +289,7 @@
         "secure_utility": 0.0,
         "attack_suppression": 1.0
       },
-      "reposhield_strict": {
+      "agentbrake_strict": {
         "case_count": 153,
         "targeted_asr": 0.006535947712418301,
         "security_rate": 0.9934640522875817,
@@ -297,7 +297,7 @@
         "secure_utility": 0.7712418300653595,
         "attack_suppression": 0.9934640522875817
       },
-      "reposhield_gateway_eval": {
+      "agentbrake_gateway_eval": {
         "case_count": 153,
         "targeted_asr": 0.0,
         "security_rate": 1.0,
@@ -305,7 +305,7 @@
         "secure_utility": 0.7450980392156863,
         "attack_suppression": 1.0
       },
-      "reposhield_oracle_user_eval": {
+      "agentbrake_oracle_user_eval": {
         "case_count": 153,
         "targeted_asr": 0.0,
         "security_rate": 1.0,

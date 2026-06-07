@@ -1,7 +1,7 @@
-from reposhield.models import PolicyDecision
-from reposhield.policy_engine.constraint_lattice import DecisionConstraints, constraints_to_decision
-from reposhield.policy_engine.decision_lattice import DecisionLattice
-from reposhield.policy_engine.rule_schema import RuleHit
+from agentbrake.models import PolicyDecision
+from agentbrake.policy_engine.constraint_lattice import DecisionConstraints, constraints_to_decision
+from agentbrake.policy_engine.decision_lattice import DecisionLattice
+from agentbrake.policy_engine.rule_schema import RuleHit
 
 
 def test_constraint_join_maps_to_minimum_public_decision():

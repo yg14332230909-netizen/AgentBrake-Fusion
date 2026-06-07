@@ -3,12 +3,12 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "reposhield"
+name = "agentbrake"
 version = "0.3.0"
-description = "RepoShield v0.3: OpenAI-compatible governance gateway, InstructionIR, policy plugin runtime, Studio, and gateway benchmark suite"
+description = "AgentBrake v0.3: OpenAI-compatible governance gateway, InstructionIR, policy plugin runtime, Studio, and gateway benchmark suite"
 readme = "README.zh-CN.md"
 requires-python = ">=3.10"
-authors = [{ name = "RepoShield Demo" }]
+authors = [{ name = "AgentBrake Demo" }]
 dependencies = []
 
 [project.optional-dependencies]
@@ -27,14 +27,13 @@ eval = [
 ]
 
 [project.scripts]
-reposhield = "reposhield.cli:main"
-peposhield = "reposhield.cli:main"
+agentbrake = "agentbrake.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-reposhield = ["integration/profiles/*.yaml", "eval/agentdojo/evidence/*.yaml"]
+agentbrake = ["integration/profiles/*.yaml", "eval/agentdojo/evidence/*.yaml"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

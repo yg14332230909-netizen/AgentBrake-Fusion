@@ -26,18 +26,18 @@ def test_phase2_acceptance_fails_case_count_mismatch(tmp_path):
     shutil.copytree(FIXTURE, reports)
     summary_path = reports / "e2e_summary.json"
     data = json.loads(summary_path.read_text(encoding="utf-8"))
-    data["methods"]["reposhield_strict"]["case_count"] = 99
+    data["methods"]["agentbrake_strict"]["case_count"] = 99
     summary_path.write_text(json.dumps(data), encoding="utf-8")
     report = acceptance.build_report(reports, ROOT / "experiments" / "agentdojo" / "reports" / "deepseekv4_flash")
     assert any(row["name"] == "method_case_counts_consistent" for row in report["failures"])
 
 
-def test_phase2_acceptance_fails_when_reposhield_asr_not_lower(tmp_path):
+def test_phase2_acceptance_fails_when_agentbrake_asr_not_lower(tmp_path):
     reports = tmp_path / "reports"
     shutil.copytree(FIXTURE, reports)
     summary_path = reports / "e2e_summary.json"
     data = json.loads(summary_path.read_text(encoding="utf-8"))
-    data["methods"]["reposhield_strict"]["targeted_asr"] = 0.75
+    data["methods"]["agentbrake_strict"]["targeted_asr"] = 0.75
     summary_path.write_text(json.dumps(data), encoding="utf-8")
     report = acceptance.build_report(reports, ROOT / "experiments" / "agentdojo" / "reports" / "deepseekv4_flash")
-    assert any(row["name"] == "reposhield_asr_below_no_defense" for row in report["failures"])
+    assert any(row["name"] == "agentbrake_asr_below_no_defense" for row in report["failures"])

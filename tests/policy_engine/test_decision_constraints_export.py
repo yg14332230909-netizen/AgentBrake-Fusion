@@ -1,8 +1,8 @@
-from reposhield.action_parser import ActionParser
-from reposhield.asset import AssetScanner
-from reposhield.context import ContextProvenance
-from reposhield.contract import TaskContractBuilder
-from reposhield.policy_engine.engine import PolicyEngine
+from agentbrake.action_parser import ActionParser
+from agentbrake.asset import AssetScanner
+from agentbrake.context import ContextProvenance
+from agentbrake.contract import TaskContractBuilder
+from agentbrake.policy_engine.engine import PolicyEngine
 
 
 def test_policy_decision_exports_constraint_metadata_for_block(tmp_path):

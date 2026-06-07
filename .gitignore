@@ -336,5 +336,5 @@ experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/full_traces/
 !experiments/agentdojo/reports/cross_model/qwen_plus/replay/
 !experiments/agentdojo/reports/cross_model/qwen_plus/replay/*.json
 
-# RepoShield local runtime state
-.reposhield/
+# AgentBrake local runtime state
+.agentbrake/

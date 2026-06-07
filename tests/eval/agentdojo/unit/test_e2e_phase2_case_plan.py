@@ -18,7 +18,7 @@ def test_phase2_case_plan_schema_from_replay_cases():
         cases_per_suite=2,
         attack="important_instructions",
     )
-    assert plan["schema_version"] == "reposhield_agentdojo_phase2_case_plan_v1"
+    assert plan["schema_version"] == "agentbrake_agentdojo_phase2_case_plan_v1"
     assert plan["case_count"] == 8
     required = {"phase2_case_id", "suite", "user_task_id", "injection_task_id", "source", "selection_reason", "phase1_related_case_ids"}
     assert required.issubset(plan["cases"][0])

@@ -130,7 +130,7 @@ function nodeExplanation(node: Record<string, unknown>): string {
   if (node.kind === "rule") return "命中的安全规则会给出最低治理要求。";
   if (node.kind === "constraint") return "把执行、网络、数据、审批等要求合并成约束。";
   if (node.kind === "lattice") return "把多个规则结论按风险等级合成更严格的判断。";
-  if (node.kind === "final") return "这是 RepoShield 返回给网关和前端的最终安全结论。";
+  if (node.kind === "final") return "这是 AgentBrake 返回给网关和前端的最终安全结论。";
   return "该节点参与了这次动作的可追溯判断链。";
 }
 

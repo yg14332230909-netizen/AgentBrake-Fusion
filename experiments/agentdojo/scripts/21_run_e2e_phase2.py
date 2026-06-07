@@ -13,9 +13,9 @@ DEFAULT_OUT = ROOT / "experiments" / "agentdojo" / "reports" / "deepseekv4_flash
 METHODS = {
     "no_defense": {"defense": "none", "confirmation_mode": None},
     "tool_filter": {"defense": "tool_filter", "confirmation_mode": None},
-    "reposhield_strict": {"defense": "agentdojo_firewall", "confirmation_mode": "strict_eval"},
-    "reposhield_gateway_eval": {"defense": "agentdojo_firewall", "confirmation_mode": "gateway_eval"},
-    "reposhield_oracle_user_eval": {"defense": "agentdojo_firewall", "confirmation_mode": "oracle_user_eval"},
+    "agentbrake_strict": {"defense": "agentdojo_firewall", "confirmation_mode": "strict_eval"},
+    "agentbrake_gateway_eval": {"defense": "agentdojo_firewall", "confirmation_mode": "gateway_eval"},
+    "agentbrake_oracle_user_eval": {"defense": "agentdojo_firewall", "confirmation_mode": "oracle_user_eval"},
 }
 
 
@@ -25,7 +25,7 @@ def main() -> int:
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--model", default="deepseek-v4-flash")
     parser.add_argument("--attack", default="important_instructions")
-    parser.add_argument("--methods", nargs="+", default=["no_defense", "reposhield_strict", "reposhield_gateway_eval", "reposhield_oracle_user_eval"])
+    parser.add_argument("--methods", nargs="+", default=["no_defense", "agentbrake_strict", "agentbrake_gateway_eval", "agentbrake_oracle_user_eval"])
     parser.add_argument("--suites", nargs="*", default=None)
     parser.add_argument("--max-cases-per-suite", type=int, default=None)
     parser.add_argument("--dry-run", action="store_true")
@@ -107,7 +107,7 @@ def build_commands(cases: list[dict[str, Any]], args: argparse.Namespace) -> lis
             command = [
                 python_bin,
                 "-m",
-                "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+                "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
                 "--suite",
                 str(case["suite"]),
                 "--model",

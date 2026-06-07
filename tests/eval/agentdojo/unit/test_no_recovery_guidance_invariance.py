@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from reposhield.eval.agentdojo.compat.types import ToolCallContext, ablation_config_from_profile
-from reposhield.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
+from agentbrake.eval.agentdojo.compat.types import ToolCallContext, ablation_config_from_profile
+from agentbrake.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
 
 
 def dangerous_context(profile: str) -> ToolCallContext:
@@ -25,6 +25,6 @@ def test_no_recovery_guidance_does_not_change_decision() -> None:
     assert full.safe_result is not None
     assert no_recovery.safe_result is not None
     assert full.safe_result["message"] != no_recovery.safe_result["message"]
-    assert no_recovery.safe_result["message"] == "RepoShield blocked this tool call."
+    assert no_recovery.safe_result["message"] == "AgentBrake blocked this tool call."
     assert no_recovery.safe_result["allowed_next_steps"] == []
     assert no_recovery.safe_result["disallowed_next_steps"] == []

@@ -1,5 +1,5 @@
-from reposhield.eval.agentdojo.compat.types import ToolCallContext
-from reposhield.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
+from agentbrake.eval.agentdojo.compat.types import ToolCallContext
+from agentbrake.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
 
 
 def test_blocked_attempt_does_not_count_as_executed_side_effect():

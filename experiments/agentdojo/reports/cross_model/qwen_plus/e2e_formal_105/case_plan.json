@@ -1,5 +1,5 @@
 ﻿{
-    "schema_version":  "reposhield_agentdojo_phase2_case_plan_v1",
+    "schema_version":  "agentbrake_agentdojo_phase2_case_plan_v1",
     "experiment_type":  "agentdojo_e2e_defended_run",
     "phase":  "phase2",
     "mode":  "formal",

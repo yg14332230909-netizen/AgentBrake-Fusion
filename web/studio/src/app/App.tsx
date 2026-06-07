@@ -72,7 +72,7 @@ export function App() {
   return (
     <>
       <header className="topbar">
-        <div><h1>RepoShield Studio Pro</h1><p>看见 coding agent 为什么被放行、沙箱执行、要求审批或阻断。</p></div>
+        <div><h1>AgentBrake Studio Pro</h1><p>看见 coding agent 为什么被放行、沙箱执行、要求审批或阻断。</p></div>
         <div className="topbar-actions">
           <span className="status-pill">{store.health?.version || "等待服务"} · {mode}</span>
           <span className={`status-pill live ${store.liveStatus}`}><i />{liveLabel} · {lastRefresh}</span>
@@ -110,7 +110,7 @@ export function App() {
             <div className="title-row">
               <div>
                 <h2>{store.selectedRun ? runTitle(store.selectedRun) : "未选择运行记录"}</h2>
-                <p className="muted">{store.selectedRun ? runSubtitle(store.selectedRun) : "选择左侧运行记录，查看 RepoShield 如何追踪来源、识别动作并做出安全决策。"}</p>
+                <p className="muted">{store.selectedRun ? runSubtitle(store.selectedRun) : "选择左侧运行记录，查看 AgentBrake 如何追踪来源、识别动作并做出安全决策。"}</p>
               </div>
               <button onClick={exportEvidence}>导出证据包</button>
             </div>

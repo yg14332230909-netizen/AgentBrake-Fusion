@@ -1,5 +1,5 @@
-from reposhield.asset import AssetScanner
-from reposhield.context import ContextProvenance
+from agentbrake.asset import AssetScanner
+from agentbrake.context import ContextProvenance
 
 
 def test_asset_scanner_detects_core_assets(tmp_path):
@@ -18,7 +18,7 @@ def test_asset_scanner_detects_core_assets(tmp_path):
 
 def test_asset_scanner_skips_local_runtime_and_test_output_dirs(tmp_path):
     (tmp_path / "package.json").write_text("{}", encoding="utf-8")
-    for dirname in [".reposhield", ".pytest_tmp_run", ".pytest_cache", ".ruff_cache", "reports_tmp_demo"]:
+    for dirname in [".agentbrake", ".pytest_tmp_run", ".pytest_cache", ".ruff_cache", "reports_tmp_demo"]:
         target = tmp_path / dirname
         target.mkdir()
         (target / ".env").write_text("TOKEN=demo", encoding="utf-8")
@@ -29,7 +29,7 @@ def test_asset_scanner_skips_local_runtime_and_test_output_dirs(tmp_path):
 
     assert "package.json" in paths
     assert not any(
-        path.startswith((".reposhield/", ".pytest_tmp_run/", ".pytest_cache/", ".ruff_cache/", "reports_tmp_demo/")) for path in paths
+        path.startswith((".agentbrake/", ".pytest_tmp_run/", ".pytest_cache/", ".ruff_cache/", "reports_tmp_demo/")) for path in paths
     )
 
 

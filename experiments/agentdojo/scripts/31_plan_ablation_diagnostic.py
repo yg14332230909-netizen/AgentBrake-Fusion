@@ -70,8 +70,8 @@ def main() -> int:
     blocked_candidates = [
         case
         for case in by_case.values()
-        if bool(case.get("reposhield_strict", {}).get("blocked_case"))
-        or int(case.get("reposhield_strict", {}).get("require_confirmation_count") or 0) > 0
+        if bool(case.get("agentbrake_strict", {}).get("blocked_case"))
+        or int(case.get("agentbrake_strict", {}).get("require_confirmation_count") or 0) > 0
     ]
     blocked_candidates = sorted(blocked_candidates, key=blocked_sort_key)[: args.blocked_critical_cap]
     add_cases(selected, sources, blocked_candidates, "blocked_critical", full_dir, args.model, args.attack)
@@ -250,15 +250,15 @@ def add_cases(
             "model": model,
             "selection_reason": reason,
             "case_source_reason": reason,
-            "source_methods": sorted(m for m in ("no_defense", "reposhield_strict") if m in case),
-            "has_full_trace": has_trace(case, full_dir, "reposhield_strict"),
+            "source_methods": sorted(m for m in ("no_defense", "agentbrake_strict") if m in case),
+            "has_full_trace": has_trace(case, full_dir, "agentbrake_strict"),
             "primary_side_effect_tool": primary_tool,
         }
         sources[phase2_case_id].append(reason)
 
 
 def primary_side_effect_tool(case: dict[str, Any], full_dir: Path) -> str | None:
-    for method in ("no_defense", "reposhield_strict"):
+    for method in ("no_defense", "agentbrake_strict"):
         row = case.get(method) or {}
         trace = row.get("trace_file")
         if not trace:
@@ -281,7 +281,7 @@ def has_trace(case: dict[str, Any], full_dir: Path, method: str) -> bool:
 
 
 def blocked_sort_key(case: dict[str, Any]) -> tuple[Any, ...]:
-    strict = case.get("reposhield_strict", {})
+    strict = case.get("agentbrake_strict", {})
     return (
         bool(strict.get("raw_agentdojo_user_task_success")),
         *case_sort_key(case),

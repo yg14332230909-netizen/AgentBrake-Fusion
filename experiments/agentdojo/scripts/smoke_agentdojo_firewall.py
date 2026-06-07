@@ -1,7 +1,7 @@
 ﻿import json
 from pathlib import Path
 
-from reposhield.eval.agentdojo.runner.run_scenario import run_scenario
+from agentbrake.eval.agentdojo.runner.run_scenario import run_scenario
 
 SCENARIOS = {
     "authorized_travel_review": {

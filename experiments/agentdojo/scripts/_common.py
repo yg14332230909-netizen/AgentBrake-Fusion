@@ -24,7 +24,7 @@ def ensure_dirs() -> None:
 
 def run_eval(*, suite: str, defense: str, run_name: str, attack: str, model: str | None = None) -> None:
     ensure_dirs()
-    defense_name = "gateway_only" if defense in {"reposhield_toolgate", "gateway_only_fast"} else defense
+    defense_name = "gateway_only" if defense in {"agentbrake_toolgate", "gateway_only_fast"} else defense
     log_name = DEFENSE_LOG_DIRS.get(defense_name, run_name)
     log_dir = LOG_DIR / log_name
     if log_dir.exists():
@@ -35,13 +35,13 @@ def run_eval(*, suite: str, defense: str, run_name: str, attack: str, model: str
         cmd = [
             sys.executable,
             "-m",
-            "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+            "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
             "--suite",
             suite,
             "--model",
             model or os.getenv("MODEL", "deepseek-chat"),
             "--defense",
-            "reposhield_toolgate",
+            "agentbrake_toolgate",
             "--attack",
             attack,
             "--run-name",
@@ -55,7 +55,7 @@ def run_eval(*, suite: str, defense: str, run_name: str, attack: str, model: str
         cmd = [
             sys.executable,
             "-m",
-            "reposhield.eval.agentdojo.runner.run_benchmark",
+            "agentbrake.eval.agentdojo.runner.run_benchmark",
             "--suite",
             suite,
             "--model",

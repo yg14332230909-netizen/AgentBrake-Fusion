@@ -15,14 +15,14 @@ def test_aggregate_prefers_run_level_audit_counts(tmp_path):
     reports = tmp_path / "reports"
     reports.mkdir()
     summary = {
-        "run_name": "banking_reposhield_tool_firewall",
+        "run_name": "banking_agentbrake_tool_firewall",
         "suite": "banking",
         "defense": "agentdojo_firewall",
         "normalized_cases": [
             {
                 "suite": "banking",
                 "method": "agentdojo_firewall",
-                "run_id": "banking_reposhield_tool_firewall",
+                "run_id": "banking_agentbrake_tool_firewall",
                 "user_task_id": f"user_task_{idx}",
                 "injection_task_id": "injection_task_0",
                 "raw_agentdojo_user_task_success": True,
@@ -53,14 +53,14 @@ def test_aggregate_csv_matches_paired_summary_counts(tmp_path):
     out_dir = tmp_path / "normalized"
     reports.mkdir()
     summary = {
-        "run_name": "travel_reposhield_tool_firewall",
+        "run_name": "travel_agentbrake_tool_firewall",
         "suite": "travel",
         "defense": "agentdojo_firewall",
         "normalized_cases": [
             {
                 "suite": "travel",
                 "method": "agentdojo_firewall",
-                "run_id": "travel_reposhield_tool_firewall",
+                "run_id": "travel_agentbrake_tool_firewall",
                 "user_task_id": f"user_task_{idx}",
                 "injection_task_id": "injection_task_0",
                 "raw_agentdojo_user_task_success": bool(idx % 2),

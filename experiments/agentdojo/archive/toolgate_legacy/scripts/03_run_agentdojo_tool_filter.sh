@@ -9,7 +9,7 @@ MODEL="${MODEL:-openai-api/deepseek/deepseek-chat}"
 LIMIT="${LIMIT:-}"
 mkdir -p experiments/agentdojo_toolgate/logs/tool_filter experiments/agentdojo_toolgate/reports/runs
 
-ARGS=(python -m reposhield.eval.agentdojo.run_toolgate_eval
+ARGS=(python -m agentbrake.eval.agentdojo.run_toolgate_eval
   --suite "${SUITE:-banking}" \
   --model "$MODEL" \
   --defense tool_filter \

@@ -1,5 +1,5 @@
-from reposhield.eval.agentdojo.compat.types import ToolCallContext
-from reposhield.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
+from agentbrake.eval.agentdojo.compat.types import ToolCallContext
+from agentbrake.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
 
 
 def test_banking_oracle_executes_user_authorized_confirmation():

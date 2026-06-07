@@ -19,7 +19,7 @@ def write_full_fixture(root: Path) -> None:
     trace_dir = root / "full_traces" / "no_defense" / "banking" / "none" / "user_task_1"
     trace_dir.mkdir(parents=True)
     (trace_dir / "injection_task_1.json").write_text(json.dumps({"tool_calls": [{"tool": "send_money"}]}), encoding="utf-8")
-    strict_trace_dir = root / "full_traces" / "reposhield_strict" / "banking" / "agentdojo_firewall" / "user_task_1"
+    strict_trace_dir = root / "full_traces" / "agentbrake_strict" / "banking" / "agentdojo_firewall" / "user_task_1"
     strict_trace_dir.mkdir(parents=True)
     (strict_trace_dir / "injection_task_1.json").write_text(json.dumps({"tool_calls": [{"tool": "send_money"}]}), encoding="utf-8")
     rows = [
@@ -34,12 +34,12 @@ def write_full_fixture(root: Path) -> None:
         },
         {
             "suite": "banking",
-            "method": "reposhield_strict",
+            "method": "agentbrake_strict",
             "user_task_id": "user_task_1",
             "injection_task_id": "injection_task_1",
             "blocked_case": True,
             "raw_agentdojo_user_task_success": False,
-            "trace_file": "full_traces/reposhield_strict/banking/agentdojo_firewall/user_task_1/injection_task_1.json",
+            "trace_file": "full_traces/agentbrake_strict/banking/agentdojo_firewall/user_task_1/injection_task_1.json",
         },
     ]
     for idx in range(2, 5):
@@ -56,12 +56,12 @@ def write_full_fixture(root: Path) -> None:
                 },
                 {
                     "suite": "banking",
-                    "method": "reposhield_strict",
+                    "method": "agentbrake_strict",
                     "user_task_id": f"user_task_{idx}",
                     "injection_task_id": "injection_task_1",
                     "blocked_case": False,
                     "raw_agentdojo_user_task_success": True,
-                    "trace_file": "full_traces/reposhield_strict/banking/agentdojo_firewall/user_task_1/injection_task_1.json",
+                    "trace_file": "full_traces/agentbrake_strict/banking/agentdojo_firewall/user_task_1/injection_task_1.json",
                 },
             ]
         )

@@ -1,5 +1,5 @@
-from reposhield.eval.agentdojo.compat.types import ToolCallContext
-from reposhield.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
+from agentbrake.eval.agentdojo.compat.types import ToolCallContext
+from agentbrake.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
 
 
 def test_blocked_result_keeps_recovery_guidance_for_runtime_continuation():

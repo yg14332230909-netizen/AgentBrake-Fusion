@@ -1,4 +1,4 @@
-﻿from reposhield.eval.agentdojo.evidence.taxonomy import AgentDojoToolTaxonomy
+﻿from agentbrake.eval.agentdojo.evidence.taxonomy import AgentDojoToolTaxonomy
 
 
 def test_taxonomy_groups_core_tools():

@@ -1,4 +1,4 @@
-from reposhield.gateway_bench import aggregate_gateway_metrics
+from agentbrake.gateway_bench import aggregate_gateway_metrics
 
 
 def test_gateway_metrics_include_history_graph_and_trace_rates():

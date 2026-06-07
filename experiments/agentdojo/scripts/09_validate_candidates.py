@@ -11,10 +11,10 @@ from typing import Any
 from agentdojo.attacks.attack_registry import load_attack
 from agentdojo.logging import OutputLogger, TraceLogger
 from agentdojo.task_suite.load_suites import get_suite
-from reposhield.eval.agentdojo.pipeline_wrapper import RepoShieldAgentDojoContext
+from agentbrake.eval.agentdojo.pipeline_wrapper import AgentBrakeAgentDojoContext
 
-from reposhield.eval.agentdojo.gate.tool_firewall import summarize_agentdojo_firewall_audit
-from reposhield.eval.agentdojo.runner.run_tool_firewall_eval import (
+from agentbrake.eval.agentdojo.gate.tool_firewall import summarize_agentdojo_firewall_audit
+from agentbrake.eval.agentdojo.runner.run_tool_firewall_eval import (
     _infer_authorized_tools_and_categories,
     _run_agentdojo_task_with_retries,
     build_llm,
@@ -158,7 +158,7 @@ def run_specs(
                     ]
                 if hasattr(pipeline, "set_context"):
                     pipeline.set_context(
-                        RepoShieldAgentDojoContext(
+                        AgentBrakeAgentDojoContext(
                             suite=suite_name,
                             user_task_id=spec.user_task_id,
                             injection_task_id=spec.injection_task_id,

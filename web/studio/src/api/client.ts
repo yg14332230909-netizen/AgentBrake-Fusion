@@ -1,6 +1,6 @@
 import type { ActionDetail, ApprovalEvent, BenchReport, CoverageReport, GraphEdge, GraphNode, JudgmentTraceViewModel, RunSummary, ScenarioSpec, StudioEvent } from "../types";
 
-const token = localStorage.getItem("reposhieldToken") || "reposhield-local";
+const token = localStorage.getItem("agentbrakeToken") || "agentbrake-local";
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(path, {

@@ -4,16 +4,16 @@ import pytest
 
 pytest.importorskip("agentdojo")
 
-from reposhield.control_plane import RepoShieldControlPlane
-from reposhield.eval.agentdojo import RepoShieldToolGate, register_native_defense, reposhield_agentdojo
+from agentbrake.control_plane import AgentBrakeControlPlane
+from agentbrake.eval.agentdojo import AgentBrakeToolGate, register_native_defense, agentbrake_agentdojo
 
 
 def test_tool_gate_blocks_and_allows_without_mutating_environment(tmp_path):
     repo = tmp_path / "repo"
     repo.mkdir()
-    cp = RepoShieldControlPlane(repo, audit_path=tmp_path / "audit.jsonl")
+    cp = AgentBrakeControlPlane(repo, audit_path=tmp_path / "audit.jsonl")
     cp.build_contract("check bank balance and assist user")
-    gate = RepoShieldToolGate(cp)
+    gate = AgentBrakeToolGate(cp)
 
     blocked = gate.guard_tool_call(
         {"name": "send_money", "arguments": {"amount": "1000", "recipient": "attacker"}},
@@ -32,9 +32,9 @@ def test_tool_gate_blocks_and_allows_without_mutating_environment(tmp_path):
 
 
 def test_inspect_and_native_defense_entrypoints_import():
-    task = reposhield_agentdojo(repo_root=".", suite="banking", task_id="task_1", injection_task_id="inj_1")
+    task = agentbrake_agentdojo(repo_root=".", suite="banking", task_id="task_1", injection_task_id="inj_1")
     defense = register_native_defense()
     assert task["task"].suite == "banking"
-    assert defense["defense_name"] == "reposhield_toolgate"
+    assert defense["defense_name"] == "agentbrake_toolgate"
 
 

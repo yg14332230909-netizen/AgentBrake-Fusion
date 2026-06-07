@@ -1,7 +1,7 @@
 ﻿from __future__ import annotations
 
-from reposhield.eval.agentdojo.fact_adapter import agentdojo_facts_from_action
-from reposhield.models import ActionIR
+from agentbrake.eval.agentdojo.fact_adapter import agentdojo_facts_from_action
+from agentbrake.models import ActionIR
 
 
 def test_agentdojo_facts_sync_untrusted_source_and_contract_match():

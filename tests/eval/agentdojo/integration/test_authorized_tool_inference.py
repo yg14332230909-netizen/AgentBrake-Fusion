@@ -6,7 +6,7 @@ pytest.importorskip("agentdojo")
 
 from agentdojo.task_suite.load_suites import get_suite
 
-from reposhield.eval.agentdojo.runner.run_tool_firewall_eval import _infer_authorized_tools_and_categories
+from agentbrake.eval.agentdojo.runner.run_tool_firewall_eval import _infer_authorized_tools_and_categories
 
 
 def test_infer_authorized_tools_uses_agentdojo_ground_truth():

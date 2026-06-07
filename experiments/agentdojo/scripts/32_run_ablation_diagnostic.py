@@ -166,7 +166,7 @@ def build_commands(
             command = [
                 python_bin,
                 "-m",
-                "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+                "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
                 "--suite",
                 str(case["suite"]),
                 "--model",

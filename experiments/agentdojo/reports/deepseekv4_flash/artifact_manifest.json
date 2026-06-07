@@ -1,6 +1,6 @@
 {
-  "artifact_schema_version": "reposhield_agentdojo_artifact_v1",
-  "repo_url": "https://github.com/yg14332230909-netizen/RepoShield",
+  "artifact_schema_version": "agentbrake_agentdojo_artifact_v1",
+  "repo_url": "https://github.com/yg14332230909-netizen/AgentBrake",
   "commit_hash": "de6b73b56209165ed2873e78e6c45f49a209a045",
   "branch": "main",
   "model": "deepseek-v4-flash",
@@ -55,7 +55,7 @@
     "python experiments/agentdojo/scripts/19_final_acceptance_check.py --replay-cases-dir experiments/agentdojo/replay_cases --reports-dir experiments/agentdojo/reports/deepseekv4_flash"
   ],
   "generated_at": "2026-06-01T07:52:23.493401+00:00",
-  "artifact_name": "reposhield_agentdojo_phase1_1_deepseekv4_flash_de6b73b.zip",
+  "artifact_name": "agentbrake_agentdojo_phase1_1_deepseekv4_flash_de6b73b.zip",
   "artifact_sha256": "ac4b0aebd4013cc078df5179cde5aab755d1e78e261a60e9c248e29700783cc2",
   "artifact_sha256_scope": "local retained ZIP hash for integrity reference; public review is summary_only unless a GitHub Release is published",
   "artifact_distribution": "summary_only",

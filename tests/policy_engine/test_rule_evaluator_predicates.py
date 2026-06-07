@@ -1,6 +1,6 @@
-from reposhield.policy_engine.compiler import PolicyRuleCompiler
-from reposhield.policy_engine.evaluator import RuleEvaluator
-from reposhield.policy_engine.facts import PolicyFact, PolicyFactSet
+from agentbrake.policy_engine.compiler import PolicyRuleCompiler
+from agentbrake.policy_engine.evaluator import RuleEvaluator
+from agentbrake.policy_engine.facts import PolicyFact, PolicyFactSet
 
 
 def test_rule_evaluator_supports_predicates_and_evidence_refs():

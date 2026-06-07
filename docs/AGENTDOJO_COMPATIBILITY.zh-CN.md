@@ -1,10 +1,10 @@
-# RepoShield AgentDojo Compatibility
+# AgentBrake AgentDojo Compatibility
 
-RepoShield 现在支持三层 AgentDojo 接入：
+AgentBrake 现在支持三层 AgentDojo 接入：
 
 1. Gateway-only Fast Mode，用于快速验证网关兼容性。
-2. `RepoShieldToolGate`，用于在工具执行前裁决。
-3. `reposhield_agentdojo` / `reposhield_toolgate`，用于 Inspect 或原生 AgentDojo 的对接入口。
+2. `AgentBrakeToolGate`，用于在工具执行前裁决。
+3. `agentbrake_agentdojo` / `agentbrake_toolgate`，用于 Inspect 或原生 AgentDojo 的对接入口。
 
 关键能力：
 

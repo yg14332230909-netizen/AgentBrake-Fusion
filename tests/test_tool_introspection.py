@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from reposhield.gateway import RepoShieldGateway
-from reposhield.plugins import ToolIntrospector, ToolParserRegistry
+from agentbrake.gateway import AgentBrakeGateway
+from agentbrake.plugins import ToolIntrospector, ToolParserRegistry
 
 
 def make_repo(tmp_path: Path) -> Path:
@@ -94,7 +94,7 @@ def test_gateway_introspects_request_tools_before_parsing_assistant_call(tmp_pat
                 ],
             }
 
-    gw = RepoShieldGateway(repo, audit_path=tmp_path / "audit.jsonl", upstream=ToolUsingUpstream())
+    gw = AgentBrakeGateway(repo, audit_path=tmp_path / "audit.jsonl", upstream=ToolUsingUpstream())
     result = gw.handle_chat_completion(
         {
             "model": "agent-with-custom-tools",

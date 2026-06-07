@@ -1,9 +1,9 @@
 import random
 
-from reposhield.policy_engine.compiler import PolicyRuleCompiler
-from reposhield.policy_engine.evaluator import RuleEvaluator
-from reposhield.policy_engine.facts import PolicyFact, PolicyFactSet
-from reposhield.policy_engine.rule_index import RuleIndex
+from agentbrake.policy_engine.compiler import PolicyRuleCompiler
+from agentbrake.policy_engine.evaluator import RuleEvaluator
+from agentbrake.policy_engine.facts import PolicyFact, PolicyFactSet
+from agentbrake.policy_engine.rule_index import RuleIndex
 
 FACT_DOMAINS = {
     "action.semantic_action": ["run_tests", "send_network_request", "edit_source_file", "install_git_dependency"],

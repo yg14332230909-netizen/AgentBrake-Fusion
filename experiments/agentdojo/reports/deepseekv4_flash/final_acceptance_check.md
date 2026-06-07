@@ -1,4 +1,4 @@
-# RepoShield AgentDojo Final Acceptance Check
+# AgentBrake AgentDojo Final Acceptance Check
 
 Structural acceptance: PASS
 Effectiveness acceptance: PASS

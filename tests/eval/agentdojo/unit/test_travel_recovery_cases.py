@@ -1,5 +1,5 @@
-from reposhield.eval.agentdojo.compat.types import ToolCallContext
-from reposhield.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
+from agentbrake.eval.agentdojo.compat.types import ToolCallContext
+from agentbrake.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
 
 
 def test_travel_user_target_with_rating_passes_in_oracle_mode():

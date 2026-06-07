@@ -17,7 +17,7 @@ mcp_dry_run        no repo write, mcp proxy only, env redacted
 查看：
 
 ```bash
-reposhield sandbox-profiles
+agentbrake sandbox-profiles
 ```
 
 ## 后端

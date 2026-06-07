@@ -2,7 +2,7 @@ param(
   [string]$Model = $(if ($env:MODEL) { $env:MODEL } else { "deepseek-chat" }),
   [string]$Attack = $(if ($env:ATTACK_NAME) { $env:ATTACK_NAME } else { "important_instructions" }),
   [string]$GatewayPort = $(if ($env:GATEWAY_PORT) { $env:GATEWAY_PORT } else { "8765" }),
-  [string]$GatewayApiKey = $(if ($env:REPOSHIELD_GATEWAY_API_KEY) { $env:REPOSHIELD_GATEWAY_API_KEY } else { "reposhield-local" }),
+  [string]$GatewayApiKey = $(if ($env:AGENTBRAKE_GATEWAY_API_KEY) { $env:AGENTBRAKE_GATEWAY_API_KEY } else { "agentbrake-local" }),
   [string]$UpstreamBaseUrl = $(if ($env:OPENAI_BASE_URL) { $env:OPENAI_BASE_URL } else { "https://api.deepseek.com/v1" }),
   [string]$UpstreamApiKey = $(if ($env:OPENAI_API_KEY) { $env:OPENAI_API_KEY } else { "" })
 )
@@ -13,14 +13,14 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $scriptDir))
 Set-Location $repoRoot
 
-$env:REPOSHIELD_EVAL_FAST_MODE = "1"
-$env:REPOSHIELD_DISABLE_STUDIO_EVENTS = "1"
-$env:REPOSHIELD_AUDIT_BUFFERED = "1"
-$env:REPOSHIELD_EVIDENCE_GRAPH_MODE = "summary"
-$env:REPOSHIELD_POLICY_TRACE_MODE = "summary"
-$env:REPOSHIELD_DISABLE_PREFLIGHT = "1"
-$env:REPOSHIELD_SESSION_CACHE = "1"
-$env:REPOSHIELD_OPENAI_COMPAT_SYSTEM_ROLE = "1"
+$env:AGENTBRAKE_EVAL_FAST_MODE = "1"
+$env:AGENTBRAKE_DISABLE_STUDIO_EVENTS = "1"
+$env:AGENTBRAKE_AUDIT_BUFFERED = "1"
+$env:AGENTBRAKE_EVIDENCE_GRAPH_MODE = "summary"
+$env:AGENTBRAKE_POLICY_TRACE_MODE = "summary"
+$env:AGENTBRAKE_DISABLE_PREFLIGHT = "1"
+$env:AGENTBRAKE_SESSION_CACHE = "1"
+$env:AGENTBRAKE_OPENAI_COMPAT_SYSTEM_ROLE = "1"
 
 $logRoot = Join-Path $repoRoot "experiments/agentdojo_toolgate/logs"
 $reportRoot = Join-Path $repoRoot "experiments/agentdojo_toolgate/reports"
@@ -99,7 +99,7 @@ function Set-GatewayEnv {
 }
 
 function Start-Gateway {
-  $gatewayLogDir = Join-Path $logRoot "reposhield_gateway_only"
+  $gatewayLogDir = Join-Path $logRoot "agentbrake_gateway_only"
   New-Item -ItemType Directory -Force -Path $gatewayLogDir | Out-Null
   $gatewayPidPath = Join-Path $gatewayLogDir "gateway.pid"
   if (Test-Path $gatewayPidPath) {
@@ -116,7 +116,7 @@ function Start-Gateway {
   $stdout = Join-Path $gatewayLogDir "gateway.stdout.log"
   $stderr = Join-Path $gatewayLogDir "gateway.stderr.log"
   $args = @(
-    "-m", "reposhield.cli", "gateway-start",
+    "-m", "agentbrake.cli", "gateway-start",
     "--repo", $repoRoot,
     "--host", "127.0.0.1",
     "--port", $GatewayPort,
@@ -132,7 +132,7 @@ function Start-Gateway {
 }
 
 function Stop-Gateway {
-  $gatewayPidPath = Join-Path $logRoot "reposhield_gateway_only/gateway.pid"
+  $gatewayPidPath = Join-Path $logRoot "agentbrake_gateway_only/gateway.pid"
   if (Test-Path $gatewayPidPath) {
     $gatewayProcessId = Get-Content $gatewayPidPath | Select-Object -First 1
     if ($gatewayProcessId) {
@@ -140,7 +140,7 @@ function Stop-Gateway {
     }
   }
   Get-CimInstance Win32_Process |
-    Where-Object { $_.CommandLine -match 'reposhield\.cli gateway-start' -and $_.CommandLine -match [regex]::Escape($repoRoot) } |
+    Where-Object { $_.CommandLine -match 'agentbrake\.cli gateway-start' -and $_.CommandLine -match [regex]::Escape($repoRoot) } |
     ForEach-Object {
       try { Stop-Process -Id $_.ProcessId -Force -ErrorAction Stop } catch {}
     }
@@ -230,7 +230,7 @@ try {
     New-Item -ItemType Directory -Force -Path $suiteLogRoot | Out-Null
 
     Invoke-EvalRun -Step "${suite}_no_defense" -RunName "${suite}_no_defense_attack" -CommandArgs @(
-      "-m", "reposhield.eval.agentdojo.run_toolgate_eval",
+      "-m", "agentbrake.eval.agentdojo.run_toolgate_eval",
       "--suite", $suite,
       "--model", $Model,
       "--defense", "none",
@@ -241,7 +241,7 @@ try {
     ) -StdoutPath (Join-Path $suiteLogRoot "no_defense.stdout.log")
 
     Invoke-EvalRun -Step "${suite}_tool_filter" -RunName "${suite}_tool_filter_attack" -CommandArgs @(
-      "-m", "reposhield.eval.agentdojo.run_toolgate_eval",
+      "-m", "agentbrake.eval.agentdojo.run_toolgate_eval",
       "--suite", $suite,
       "--model", $Model,
       "--defense", "tool_filter",
@@ -258,84 +258,84 @@ try {
     $suiteLogRoot = Join-Path $logRoot $suite
 
     Set-GatewayEnv
-    Invoke-EvalRunOptional -Step "${suite}_gateway_only" -RunName "${suite}_reposhield_gateway_only_attack" -CommandArgs @(
-      "-m", "reposhield.eval.agentdojo.run_toolgate_eval",
+    Invoke-EvalRunOptional -Step "${suite}_gateway_only" -RunName "${suite}_agentbrake_gateway_only_attack" -CommandArgs @(
+      "-m", "agentbrake.eval.agentdojo.run_toolgate_eval",
       "--suite", $suite,
       "--model", $Model,
       "--defense", "none",
       "--attack", $Attack,
-      "--run-name", "${suite}_reposhield_gateway_only_attack",
-      "--logdir", (Join-Path $suiteLogRoot "reposhield_gateway_only"),
+      "--run-name", "${suite}_agentbrake_gateway_only_attack",
+      "--logdir", (Join-Path $suiteLogRoot "agentbrake_gateway_only"),
       "--report-dir", $runReportDir
     ) -StdoutPath (Join-Path $suiteLogRoot "gateway_only.stdout.log") -MayRestartGateway
 
     Set-DirectUpstreamEnv
-    Invoke-EvalRunWithRecovery -Step "${suite}_toolgate" -RunName "${suite}_reposhield_toolgate_attack" -CommandArgs @(
-      "-m", "reposhield.eval.agentdojo.run_toolgate_eval",
+    Invoke-EvalRunWithRecovery -Step "${suite}_toolgate" -RunName "${suite}_agentbrake_toolgate_attack" -CommandArgs @(
+      "-m", "agentbrake.eval.agentdojo.run_toolgate_eval",
       "--suite", $suite,
       "--model", $Model,
-      "--defense", "reposhield_toolgate",
+      "--defense", "agentbrake_toolgate",
       "--attack", $Attack,
-      "--run-name", "${suite}_reposhield_toolgate_attack",
-      "--logdir", (Join-Path $suiteLogRoot "reposhield_toolgate"),
+      "--run-name", "${suite}_agentbrake_toolgate_attack",
+      "--logdir", (Join-Path $suiteLogRoot "agentbrake_toolgate"),
       "--report-dir", $runReportDir
     ) -StdoutPath (Join-Path $suiteLogRoot "toolgate.stdout.log") -MayRestartGateway
 
-    Invoke-EvalRunWithRecovery -Step "${suite}_toolgate_benign" -RunName "${suite}_reposhield_toolgate_benign" -CommandArgs @(
-      "-m", "reposhield.eval.agentdojo.run_toolgate_eval",
+    Invoke-EvalRunWithRecovery -Step "${suite}_toolgate_benign" -RunName "${suite}_agentbrake_toolgate_benign" -CommandArgs @(
+      "-m", "agentbrake.eval.agentdojo.run_toolgate_eval",
       "--suite", $suite,
       "--model", $Model,
-      "--defense", "reposhield_toolgate",
+      "--defense", "agentbrake_toolgate",
       "--attack", "none",
-      "--run-name", "${suite}_reposhield_toolgate_benign",
-      "--logdir", (Join-Path $suiteLogRoot "reposhield_toolgate_benign"),
+      "--run-name", "${suite}_agentbrake_toolgate_benign",
+      "--logdir", (Join-Path $suiteLogRoot "agentbrake_toolgate_benign"),
       "--report-dir", $runReportDir
     ) -StdoutPath (Join-Path $suiteLogRoot "toolgate_benign.stdout.log") -MayRestartGateway
 
-    Invoke-EvalRunWithRecovery -Step "${suite}_toolgate_no_taxonomy" -RunName "${suite}_reposhield_toolgate_no_taxonomy_attack" -CommandArgs @(
-      "-m", "reposhield.eval.agentdojo.run_toolgate_eval",
+    Invoke-EvalRunWithRecovery -Step "${suite}_toolgate_no_taxonomy" -RunName "${suite}_agentbrake_toolgate_no_taxonomy_attack" -CommandArgs @(
+      "-m", "agentbrake.eval.agentdojo.run_toolgate_eval",
       "--suite", $suite,
       "--model", $Model,
-      "--defense", "reposhield_toolgate",
+      "--defense", "agentbrake_toolgate",
       "--attack", $Attack,
-      "--run-name", "${suite}_reposhield_toolgate_no_taxonomy_attack",
+      "--run-name", "${suite}_agentbrake_toolgate_no_taxonomy_attack",
       "--disable-taxonomy",
-      "--logdir", (Join-Path $suiteLogRoot "reposhield_toolgate_no_taxonomy"),
+      "--logdir", (Join-Path $suiteLogRoot "agentbrake_toolgate_no_taxonomy"),
       "--report-dir", $runReportDir
     ) -StdoutPath (Join-Path $suiteLogRoot "toolgate_no_taxonomy.stdout.log") -MayRestartGateway
 
-    Invoke-EvalRunWithRecovery -Step "${suite}_toolgate_no_state_tracker" -RunName "${suite}_reposhield_toolgate_no_state_tracker_attack" -CommandArgs @(
-      "-m", "reposhield.eval.agentdojo.run_toolgate_eval",
+    Invoke-EvalRunWithRecovery -Step "${suite}_toolgate_no_state_tracker" -RunName "${suite}_agentbrake_toolgate_no_state_tracker_attack" -CommandArgs @(
+      "-m", "agentbrake.eval.agentdojo.run_toolgate_eval",
       "--suite", $suite,
       "--model", $Model,
-      "--defense", "reposhield_toolgate",
+      "--defense", "agentbrake_toolgate",
       "--attack", $Attack,
-      "--run-name", "${suite}_reposhield_toolgate_no_state_tracker_attack",
+      "--run-name", "${suite}_agentbrake_toolgate_no_state_tracker_attack",
       "--disable-state-tracker",
-      "--logdir", (Join-Path $suiteLogRoot "reposhield_toolgate_no_state_tracker"),
+      "--logdir", (Join-Path $suiteLogRoot "agentbrake_toolgate_no_state_tracker"),
       "--report-dir", $runReportDir
     ) -StdoutPath (Join-Path $suiteLogRoot "toolgate_no_state_tracker.stdout.log") -MayRestartGateway
 
-    Invoke-EvalRunWithRecovery -Step "${suite}_toolgate_no_invariants" -RunName "${suite}_reposhield_toolgate_no_invariants_attack" -CommandArgs @(
-      "-m", "reposhield.eval.agentdojo.run_toolgate_eval",
+    Invoke-EvalRunWithRecovery -Step "${suite}_toolgate_no_invariants" -RunName "${suite}_agentbrake_toolgate_no_invariants_attack" -CommandArgs @(
+      "-m", "agentbrake.eval.agentdojo.run_toolgate_eval",
       "--suite", $suite,
       "--model", $Model,
-      "--defense", "reposhield_toolgate",
+      "--defense", "agentbrake_toolgate",
       "--attack", $Attack,
-      "--run-name", "${suite}_reposhield_toolgate_no_invariants_attack",
+      "--run-name", "${suite}_agentbrake_toolgate_no_invariants_attack",
       "--disable-invariants",
-      "--logdir", (Join-Path $suiteLogRoot "reposhield_toolgate_no_invariants"),
+      "--logdir", (Join-Path $suiteLogRoot "agentbrake_toolgate_no_invariants"),
       "--report-dir", $runReportDir
     ) -StdoutPath (Join-Path $suiteLogRoot "toolgate_no_invariants.stdout.log") -MayRestartGateway
 
-    Invoke-EvalRunWithRecovery -Step "${suite}_full_fast" -RunName "${suite}_full_reposhield_fast_attack" -CommandArgs @(
-      "-m", "reposhield.eval.agentdojo.run_toolgate_eval",
+    Invoke-EvalRunWithRecovery -Step "${suite}_full_fast" -RunName "${suite}_full_agentbrake_fast_attack" -CommandArgs @(
+      "-m", "agentbrake.eval.agentdojo.run_toolgate_eval",
       "--suite", $suite,
       "--model", $Model,
-      "--defense", "reposhield_toolgate",
+      "--defense", "agentbrake_toolgate",
       "--attack", $Attack,
-      "--run-name", "${suite}_full_reposhield_fast_attack",
-      "--logdir", (Join-Path $suiteLogRoot "full_reposhield_fast"),
+      "--run-name", "${suite}_full_agentbrake_fast_attack",
+      "--logdir", (Join-Path $suiteLogRoot "full_agentbrake_fast"),
       "--report-dir", $runReportDir
     ) -StdoutPath (Join-Path $suiteLogRoot "full_fast.stdout.log") -MayRestartGateway
   }

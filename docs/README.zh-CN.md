@@ -1,6 +1,6 @@
-# RepoShield 文档目录
+# AgentBrake 文档目录
 
-RepoShield 是面向 coding agent 的执行前安全治理网关。它可以作为 OpenAI-compatible Gateway 接入模型请求，也可以通过 `exec-guard`、file guard、PATH shim、Studio 和 Approval API 治理真实工具执行路径。
+AgentBrake 是面向 coding agent 的执行前安全治理网关。它可以作为 OpenAI-compatible Gateway 接入模型请求，也可以通过 `exec-guard`、file guard、PATH shim、Studio 和 Approval API 治理真实工具执行路径。
 
 ## 推荐阅读顺序
 
@@ -44,14 +44,14 @@ Agent 专用模板：
 ## 常用命令
 
 ```bash
-reposhield connect --repo . --agent codex --mode standard
-reposhield start --repo .
-reposhield status --repo .
-reposhield doctor --repo . --agent codex
-reposhield smoke-test --repo . --agent codex
-reposhield profiles --agent codex
-reposhield integration-matrix
-reposhield stop --repo .
+agentbrake connect --repo . --agent codex --mode standard
+agentbrake start --repo .
+agentbrake status --repo .
+agentbrake doctor --repo . --agent codex
+agentbrake smoke-test --repo . --agent codex
+agentbrake profiles --agent codex
+agentbrake integration-matrix
+agentbrake stop --repo .
 ```
 
 ## Bench / Replay / Studio
@@ -63,10 +63,10 @@ reposhield stop --repo .
 
 ## 当前能力摘要
 
-RepoShield 当前已经具备：
+AgentBrake 当前已经具备：
 
 - OpenAI-compatible Gateway：`/v1/chat/completions` 与 `/v1/responses`
-- agent profile 化接入：`src/reposhield/integration/profiles/*.yaml`
+- agent profile 化接入：`src/agentbrake/integration/profiles/*.yaml`
 - 多轮稳定身份：`run_id` / `conversation_id`
 - 多源证据综合判断算法（R-MPF）
 - PolicyGraph / RuleIndex

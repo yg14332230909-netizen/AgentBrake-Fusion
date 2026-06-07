@@ -1,14 +1,14 @@
-from reposhield.gateway.session_identity import resolve_session_identity
+from agentbrake.gateway.session_identity import resolve_session_identity
 
 
-def test_session_identity_prefers_reposhield_run_id(tmp_path):
+def test_session_identity_prefers_agentbrake_run_id(tmp_path):
     identity = resolve_session_identity(
-        request={"metadata": {"reposhield_run_id": "run_explicit", "run_id": "run_compat"}},
+        request={"metadata": {"agentbrake_run_id": "run_explicit", "run_id": "run_compat"}},
         repo_root=tmp_path,
     )
 
     assert identity.run_id == "run_explicit"
-    assert identity.source == "metadata.reposhield_run_id"
+    assert identity.source == "metadata.agentbrake_run_id"
 
 
 def test_session_identity_uses_compatible_run_id(tmp_path):
@@ -37,8 +37,8 @@ def test_session_identity_reads_http_header(tmp_path):
     identity = resolve_session_identity(
         request={"metadata": {"conversation_id": "conv_1"}},
         repo_root=tmp_path,
-        headers={"X-RepoShield-Run-Id": "run_header"},
+        headers={"X-AgentBrake-Run-Id": "run_header"},
     )
 
     assert identity.run_id == "run_header"
-    assert identity.source == "header.x-reposhield-run-id"
+    assert identity.source == "header.x-agentbrake-run-id"

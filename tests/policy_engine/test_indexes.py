@@ -1,6 +1,6 @@
-from reposhield.asset import AssetScanner
-from reposhield.context import ContextProvenance
-from reposhield.policy_engine.indexes import AssetIndex, SourceIndex
+from agentbrake.asset import AssetScanner
+from agentbrake.context import ContextProvenance
+from agentbrake.policy_engine.indexes import AssetIndex, SourceIndex
 
 
 def test_asset_index_classifies_secret_and_repo_escape(tmp_path):

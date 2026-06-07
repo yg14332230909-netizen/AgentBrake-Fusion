@@ -1,9 +1,9 @@
-# RepoShield / PepoShield v0.3
+# AgentBrake / AgentBrake v0.3
 
-RepoShield 是面向 coding agent 的执行前安全治理网关。它拦在模型 API、tool call、shell、文件操作、MCP 工具和包管理器动作之前，把即将执行的行为转换成结构化 `ActionIR`，再结合任务边界、来源可信度、资产类型、密钥事件、供应链信号、沙箱预检和策略图谱，决定动作是放行、仅沙箱执行、需要审批，还是直接阻断。
+AgentBrake 是面向 coding agent 的执行前安全治理网关。它拦在模型 API、tool call、shell、文件操作、MCP 工具和包管理器动作之前，把即将执行的行为转换成结构化 `ActionIR`，再结合任务边界、来源可信度、资产类型、密钥事件、供应链信号、沙箱预检和策略图谱，决定动作是放行、仅沙箱执行、需要审批，还是直接阻断。
 
 ```text
-RepoShield = coding agent 的 pre-execution safety gate
+AgentBrake = coding agent 的 pre-execution safety gate
 ```
 
 ## 统一状态口径
@@ -50,32 +50,32 @@ Bench 样本数口径：
 ## 正式智能体接入
 
 ```bash
-reposhield connect --repo . --agent codex --mode quick
-reposhield connect --repo . --agent codex --mode standard
-reposhield connect --repo . --agent openclaw --mode full
-reposhield start --repo .
-reposhield doctor --repo . --agent codex
-reposhield smoke-test --repo . --agent codex
-reposhield coverage --repo .
-reposhield status --repo .
-reposhield stop --repo .
+agentbrake connect --repo . --agent codex --mode quick
+agentbrake connect --repo . --agent codex --mode standard
+agentbrake connect --repo . --agent openclaw --mode full
+agentbrake start --repo .
+agentbrake doctor --repo . --agent codex
+agentbrake smoke-test --repo . --agent codex
+agentbrake coverage --repo .
+agentbrake status --repo .
+agentbrake stop --repo .
 ```
 
-- **Quick**：Gateway + `.reposhield/config.yaml`、`agent.env`、agent instructions。
+- **Quick**：Gateway + `.agentbrake/config.yaml`、`agent.env`、agent instructions。
 - **Standard**：Quick + shell、包管理器、Python、Git 等 guarded tool shim。
 - **Full**：Standard + Studio、Approval API、demo request。
 
-多轮 agent 每一轮都必须传入稳定 `metadata.reposhield_run_id` 和 `metadata.conversation_id`。Gateway 也会返回 `X-RepoShield-Run-Id`，便于客户端确认本轮解析到的 run id。
+多轮 agent 每一轮都必须传入稳定 `metadata.agentbrake_run_id` 和 `metadata.conversation_id`。Gateway 也会返回 `X-AgentBrake-Run-Id`，便于客户端确认本轮解析到的 run id。
 
-RepoShield 现在使用 YAML agent profile 管理智能体差异：
+AgentBrake 现在使用 YAML agent profile 管理智能体差异：
 
 ```bash
-reposhield profiles
-reposhield profiles --agent codex
-reposhield integration-matrix
+agentbrake profiles
+agentbrake profiles --agent codex
+agentbrake integration-matrix
 ```
 
-新增智能体优先新增 `src/reposhield/integration/profiles/<agent>.yaml`，不应为单个智能体修改 Gateway 核心代码。
+新增智能体优先新增 `src/agentbrake/integration/profiles/<agent>.yaml`，不应为单个智能体修改 Gateway 核心代码。
 
 ## 核心算法：多源证据综合判断算法（R-MPF）
 
@@ -140,10 +140,10 @@ ActionIR + Evidence
 
 本版本新增了面向 AgentDojo 评测的轻量模式与工具门禁：
 
-- `REPOSHIELD_EVAL_FAST_MODE=1`
-- `REPOSHIELD_DISABLE_PREFLIGHT=1`
-- `REPOSHIELD_POLICY_TRACE_MODE=summary`
-- `REPOSHIELD_EVIDENCE_GRAPH_MODE=summary`
-- `RepoShieldToolGate` 会在工具调用前把 AgentDojo 工具映射成 `agentdojo.*` facts，并写入 `agentdojo_tool_gate_decision`
+- `AGENTBRAKE_EVAL_FAST_MODE=1`
+- `AGENTBRAKE_DISABLE_PREFLIGHT=1`
+- `AGENTBRAKE_POLICY_TRACE_MODE=summary`
+- `AGENTBRAKE_EVIDENCE_GRAPH_MODE=summary`
+- `AgentBrakeToolGate` 会在工具调用前把 AgentDojo 工具映射成 `agentdojo.*` facts，并写入 `agentdojo_tool_gate_decision`
 
 该模式只压缩审计与证据细节，不改变最终 allow / block 语义。

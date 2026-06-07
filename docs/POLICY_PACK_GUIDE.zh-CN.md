@@ -1,6 +1,6 @@
 # Policy Pack / PolicyGraph 规则指南
 
-RepoShield 的策略层由两部分组成：
+AgentBrake 的策略层由两部分组成：
 
 - `PolicyGraphEngine`：核心安全判断，引擎输出 `allow`、`allow_in_sandbox`、`sandbox_then_approval`、`block`、`quarantine`。
 - `PolicyRuntime`：运行时模式包装，用于 enforce、observe_only、warn、disabled 等实验或部署模式。
@@ -26,8 +26,8 @@ disabled      全部放行，仅用于对照实验，需要显式 unsafe flag
 代码入口：
 
 ```text
-src/reposhield/policy_runtime/policy_pack.py
-src/reposhield/policy_runtime/policy_registry.py
+src/agentbrake/policy_runtime/policy_pack.py
+src/agentbrake/policy_runtime/policy_registry.py
 policies/policy_registry.yaml
 ```
 
@@ -36,7 +36,7 @@ policies/policy_registry.yaml
 核心策略包位于：
 
 ```text
-src/reposhield/policy_engine/policies/core_coding_agent.yaml
+src/agentbrake/policy_engine/policies/core_coding_agent.yaml
 ```
 
 典型规则：
@@ -97,8 +97,8 @@ src/reposhield/policy_engine/policies/core_coding_agent.yaml
 ## 验证策略包
 
 ```bash
-PYTHONPATH=src python -m reposhield policy-validate \
-  --policy-pack src/reposhield/policy_engine/policies/core_coding_agent.yaml
+PYTHONPATH=src python -m agentbrake policy-validate \
+  --policy-pack src/agentbrake/policy_engine/policies/core_coding_agent.yaml
 ```
 
 相关测试：

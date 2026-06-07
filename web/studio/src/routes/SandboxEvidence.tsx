@@ -29,7 +29,7 @@ function verdict(decision: string): string {
 
 export function SandboxEvidence({ events }: { events: StudioEvent[] }) {
   const traces = events.filter((event) => event.type === "exec_trace");
-  if (!traces.length) return <div className="empty-state">当前运行暂无沙箱预检证据。只有当 RepoShield 需要先隔离观察工具动作时，这里才会出现文件、网络和进程证据。</div>;
+  if (!traces.length) return <div className="empty-state">当前运行暂无沙箱预检证据。只有当 AgentBrake 需要先隔离观察工具动作时，这里才会出现文件、网络和进程证据。</div>;
   return (
     <div className="sandbox-evidence-view">
       <div className="sandbox-explainer">

@@ -1,6 +1,6 @@
 ﻿from __future__ import annotations
 
-from reposhield.eval.agentdojo.state_tracker import AgentDojoStateTracker
+from agentbrake.eval.agentdojo.state_tracker import AgentDojoStateTracker
 
 
 def test_state_tracker_sanitizes_risky_read_output():

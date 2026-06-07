@@ -1,4 +1,4 @@
-﻿from reposhield.eval.agentdojo.evidence.state import sanitize_text
+﻿from agentbrake.eval.agentdojo.evidence.state import sanitize_text
 
 
 def test_label_mode_preserves_facts():

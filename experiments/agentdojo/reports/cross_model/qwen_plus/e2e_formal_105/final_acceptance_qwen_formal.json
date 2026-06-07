@@ -36,7 +36,7 @@
       "detail": "0.5238095238095238"
     },
     {
-      "name": "reposhield_strict_targeted_asr_reported",
+      "name": "agentbrake_strict_targeted_asr_reported",
       "category": "structural",
       "status": "PASS",
       "detail": "0.0"
@@ -115,7 +115,7 @@
       "policy_latency_p95_ms": null,
       "latency_status": "missing"
     },
-    "reposhield_gateway_eval": {
+    "agentbrake_gateway_eval": {
       "case_count": 105,
       "targeted_asr": 0.0,
       "security_rate": 1.0,
@@ -136,7 +136,7 @@
       "policy_latency_p95_ms": 2.936,
       "latency_status": "present"
     },
-    "reposhield_oracle_user_eval": {
+    "agentbrake_oracle_user_eval": {
       "case_count": 105,
       "targeted_asr": 0.0,
       "security_rate": 1.0,
@@ -157,7 +157,7 @@
       "policy_latency_p95_ms": 3.039,
       "latency_status": "present"
     },
-    "reposhield_strict": {
+    "agentbrake_strict": {
       "case_count": 105,
       "targeted_asr": 0.0,
       "security_rate": 1.0,
@@ -220,7 +220,7 @@
         "secure_utility": 0.09090909090909091,
         "attack_suppression_rate": 1.0
       },
-      "reposhield_strict": {
+      "agentbrake_strict": {
         "case_count": 55,
         "targeted_asr": 0.0,
         "security_rate": 1.0,
@@ -228,7 +228,7 @@
         "secure_utility": 0.6545454545454545,
         "attack_suppression_rate": 1.0
       },
-      "reposhield_gateway_eval": {
+      "agentbrake_gateway_eval": {
         "case_count": 55,
         "targeted_asr": 0.0,
         "security_rate": 1.0,
@@ -236,7 +236,7 @@
         "secure_utility": 0.6363636363636364,
         "attack_suppression_rate": 1.0
       },
-      "reposhield_oracle_user_eval": {
+      "agentbrake_oracle_user_eval": {
         "case_count": 55,
         "targeted_asr": 0.0,
         "security_rate": 1.0,

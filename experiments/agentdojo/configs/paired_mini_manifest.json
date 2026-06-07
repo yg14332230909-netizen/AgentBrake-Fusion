@@ -25,10 +25,10 @@
   "methods": [
     "no_defense",
     "agentdojo_tool_filter",
-    "reposhield_tool_firewall"
+    "agentbrake_tool_firewall"
   ],
   "method_options": {
-    "reposhield_tool_firewall": {
+    "agentbrake_tool_firewall": {
       "confirmation_mode": "strict_eval"
     }
   }

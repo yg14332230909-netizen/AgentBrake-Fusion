@@ -3,9 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from reposhield.instruction_ir import InstructionBuilder, InstructionLowerer
-from reposhield.plugins import ToolParserRegistry
-from reposhield.trace_matrix import run_trace_matrix
+from agentbrake.instruction_ir import InstructionBuilder, InstructionLowerer
+from agentbrake.plugins import ToolParserRegistry
+from agentbrake.trace_matrix import run_trace_matrix
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures" / "agent_traces"
 

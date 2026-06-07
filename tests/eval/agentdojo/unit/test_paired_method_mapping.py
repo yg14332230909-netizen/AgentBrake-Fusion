@@ -23,7 +23,7 @@ def test_no_duplicate_method_to_defense_mapping():
 def test_unsupported_method_fails_fast():
     paired = load_script("12_run_paired_mini.py")
     try:
-        paired._validate_method_mapping(["reposhield_tool_firewall", "reposhield_full"])
+        paired._validate_method_mapping(["agentbrake_tool_firewall", "agentbrake_full"])
     except ValueError as exc:
         assert "Unsupported paired benchmark methods" in str(exc)
     else:
@@ -37,8 +37,8 @@ def test_build_plan_contains_confirmation_mode_when_configured(tmp_path):
         "agentdojo_version": "v1.2.2",
         "attack": "important_instructions",
         "suites": {"banking": {"user_tasks": [0], "injection_tasks": [0]}},
-        "methods": ["reposhield_tool_firewall"],
-        "method_options": {"reposhield_tool_firewall": {"confirmation_mode": "oracle_user_eval"}},
+        "methods": ["agentbrake_tool_firewall"],
+        "method_options": {"agentbrake_tool_firewall": {"confirmation_mode": "oracle_user_eval"}},
     }
     command = paired.build_plan(manifest, tmp_path)[0]
     assert "--confirmation-mode" in command

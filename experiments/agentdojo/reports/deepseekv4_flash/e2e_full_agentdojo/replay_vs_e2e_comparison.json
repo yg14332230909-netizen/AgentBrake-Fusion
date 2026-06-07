@@ -10,9 +10,9 @@
     "false_positive_rate": 0.05343511450381679
   },
   "full_e2e": {
-    "reposhield_strict_targeted_asr": 0.002107481559536354,
-    "reposhield_strict_user_utility": 0.7523709167544784,
-    "reposhield_strict_secure_utility": 0.7523709167544784,
+    "agentbrake_strict_targeted_asr": 0.002107481559536354,
+    "agentbrake_strict_user_utility": 0.7523709167544784,
+    "agentbrake_strict_secure_utility": 0.7523709167544784,
     "attack_active_case_count": 153
   },
   "artifact_dir": "experiments/agentdojo/reports/deepseekv4_flash/e2e_full_agentdojo"

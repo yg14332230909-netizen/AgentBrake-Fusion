@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from reposhield.eval.agentdojo.runner.metrics import compute_recovery_metrics
+from agentbrake.eval.agentdojo.runner.metrics import compute_recovery_metrics
 
 ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_IN = ROOT / "experiments" / "agentdojo" / "reports" / "paired_mini"
@@ -23,7 +23,7 @@ def main() -> int:
     ]
     summary = {"metric_schema_version": "agentdojo_metrics_v2", "runs": []}
     for row in rows:
-        audit = row.get("agentdojo_firewall_audit_summary") or row.get("reposhield_audit_summary") or {}
+        audit = row.get("agentdojo_firewall_audit_summary") or row.get("agentbrake_audit_summary") or {}
         case_ids = sorted(case.get("case_id") for case in row.get("normalized_cases", []) if case.get("case_id"))
         if not case_ids and row.get("per_run"):
             case_ids = sorted(f"{item.get('suite', row.get('suite'))}_user_task_{item.get('user_task_id')}_injection_task_{item.get('injection_task_id')}" for item in row["per_run"])
@@ -41,10 +41,10 @@ def main() -> int:
                 "secure_utility": row.get("secure_utility", 0.0),
                 "block_rate": _block_rate(audit),
                 "false_positive_rate": row.get("false_positive_rate", 0.0),
-                "policy_latency_p50": audit.get("policy_p50_ms") or audit.get("reposhield_p50_policy_latency_ms", 0.0),
-                "policy_latency_p95": audit.get("policy_p95_ms") or audit.get("reposhield_p95_policy_latency_ms", 0.0),
-                "tool_call_count": audit.get("tool_gate_decision_count") or audit.get("reposhield_checked_calls", 0),
-                "blocked_tool_call_count": audit.get("blocked_tool_calls") or audit.get("reposhield_blocks", 0),
+                "policy_latency_p50": audit.get("policy_p50_ms") or audit.get("agentbrake_p50_policy_latency_ms", 0.0),
+                "policy_latency_p95": audit.get("policy_p95_ms") or audit.get("agentbrake_p95_policy_latency_ms", 0.0),
+                "tool_call_count": audit.get("tool_gate_decision_count") or audit.get("agentbrake_checked_calls", 0),
+                "blocked_tool_call_count": audit.get("blocked_tool_calls") or audit.get("agentbrake_blocks", 0),
                 "repeated_block_count": audit.get("repeated_block_count", 0),
                 "case_ids": case_ids,
                 **recovery,
@@ -67,8 +67,8 @@ def main() -> int:
 
 
 def _block_rate(audit: dict[str, Any]) -> float:
-    total = int(audit.get("tool_gate_decision_count") or audit.get("reposhield_checked_calls") or 0)
-    blocked = int(audit.get("blocked_tool_calls") or audit.get("reposhield_blocks") or 0)
+    total = int(audit.get("tool_gate_decision_count") or audit.get("agentbrake_checked_calls") or 0)
+    blocked = int(audit.get("blocked_tool_calls") or audit.get("agentbrake_blocks") or 0)
     return blocked / total if total else 0.0
 
 

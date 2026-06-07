@@ -1,4 +1,4 @@
-﻿{
+{
     "overall_status":  "PASS",
     "canonical_qwen_acceptance":  "qwen_plus/final_acceptance_qwen_formal.json",
     "qwen_structural_acceptance":  "PASS",

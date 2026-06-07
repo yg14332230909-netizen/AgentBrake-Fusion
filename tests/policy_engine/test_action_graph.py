@@ -1,7 +1,7 @@
-from reposhield.action_graph import ensure_action_graph
-from reposhield.action_parser import ActionParser
-from reposhield.instruction_ir.lowering import InstructionLowerer
-from reposhield.instruction_ir.schema import new_instruction
+from agentbrake.action_graph import ensure_action_graph
+from agentbrake.action_parser import ActionParser
+from agentbrake.instruction_ir.lowering import InstructionLowerer
+from agentbrake.instruction_ir.schema import new_instruction
 
 
 def test_action_graph_preserves_compound_command_flow(tmp_path):

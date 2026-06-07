@@ -1,8 +1,8 @@
 ﻿#!/usr/bin/env python3
-"""Safe failure-sample iterator for RepoShield-AgentDojo firewall.
+"""Safe failure-sample iterator for AgentBrake-AgentDojo firewall.
 
 This script replaces the previous ad-hoc iteration script with a conservative
-failure-analysis workflow.  It deliberately does **not** edit RepoShield rules or
+failure-analysis workflow.  It deliberately does **not** edit AgentBrake rules or
 source code.  Instead, it produces candidate YAML patches and a markdown report
 that can be reviewed, validated on a holdout set, and then manually merged.
 
@@ -29,7 +29,7 @@ Run a very small live train/validation split, then analyze it:
 
 Important fairness note
 -----------------------
-Fair mode does not pass injection task GOAL / PROMPT to RepoShield.  Oracle modes
+Fair mode does not pass injection task GOAL / PROMPT to AgentBrake.  Oracle modes
 are allowed only for upper-bound analysis and are clearly marked in the output.
 """
 
@@ -49,8 +49,8 @@ from pathlib import Path
 from typing import Any, Literal
 
 try:
-    from reposhield.eval.agentdojo.evidence.state import extract_targets, looks_like_injection
-    from reposhield.eval.agentdojo.evidence.taxonomy import AgentDojoToolTaxonomy
+    from agentbrake.eval.agentdojo.evidence.state import extract_targets, looks_like_injection
+    from agentbrake.eval.agentdojo.evidence.taxonomy import AgentDojoToolTaxonomy
 except Exception:  # pragma: no cover - keeps this script readable before installation.
     extract_targets = None  # type: ignore[assignment]
     looks_like_injection = None  # type: ignore[assignment]
@@ -310,16 +310,16 @@ def run_live_samples(args: argparse.Namespace, *, out_dir: Path) -> list[SampleR
     """Run a tiny live split.
 
     In fair mode, this function deliberately does not pass injection GOAL/PROMPT
-    to RepoShield.  Oracle modes are clearly marked and should not be used for
+    to AgentBrake.  Oracle modes are clearly marked and should not be used for
     final results.
     """
     try:
         from agentdojo.attacks.attack_registry import load_attack
         from agentdojo.logging import OutputLogger, TraceLogger
         from agentdojo.task_suite.load_suites import get_suite
-        from reposhield.eval.agentdojo.pipeline_wrapper import RepoShieldAgentDojoContext
+        from agentbrake.eval.agentdojo.pipeline_wrapper import AgentBrakeAgentDojoContext
 
-        from reposhield.eval.agentdojo.runner.run_tool_firewall_eval import (
+        from agentbrake.eval.agentdojo.runner.run_tool_firewall_eval import (
             _infer_authorized_tools_and_categories,
             _run_agentdojo_task_with_retries,
             build_llm,
@@ -370,7 +370,7 @@ def run_live_samples(args: argparse.Namespace, *, out_dir: Path) -> list[SampleR
                             ]
                         if hasattr(pipeline, "set_context"):
                             pipeline.set_context(
-                                RepoShieldAgentDojoContext(
+                                AgentBrakeAgentDojoContext(
                                     suite=suite_name,
                                     user_task_id=user_task_id,
                                     injection_task_id=injection_task_id,
@@ -461,7 +461,7 @@ def load_samples_from_log_roots(log_roots: list[Path], *, max_files: int) -> lis
 
 
 def samples_from_any_json(data: dict[str, Any], path: Path) -> list[SampleRecord]:
-    """Best-effort parser for AgentDojo / RepoShield JSON logs.
+    """Best-effort parser for AgentDojo / AgentBrake JSON logs.
 
     This parser is deliberately tolerant: AgentDojo and Inspect log formats vary.
     It extracts sample-level records only when utility/security or equivalent
@@ -515,7 +515,7 @@ def sample_from_trace_dict(data: dict[str, Any], path: Path) -> SampleRecord:
     firewall_audit = (
         data.get("agentdojo_firewall_audit_summary")
         or data.get("firewall_audit")
-        or data.get("reposhield_audit_summary")
+        or data.get("agentbrake_audit_summary")
         or {}
     )
     if not isinstance(firewall_audit, dict):
@@ -933,7 +933,7 @@ def write_candidate_files(out_dir: Path, patches: list[CandidatePatch]) -> None:
 
 def render_iteration_report(summary: dict[str, Any]) -> str:
     lines: list[str] = []
-    lines.append("# RepoShield-AgentDojo Firewall Safe Iteration Report")
+    lines.append("# AgentBrake-AgentDojo Firewall Safe Iteration Report")
     lines.append("")
     lines.append(f"- generated_at: `{summary['generated_at']}`")
     lines.append(f"- mode: `{summary['mode']}`")

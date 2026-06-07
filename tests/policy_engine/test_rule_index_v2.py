@@ -1,8 +1,8 @@
-from reposhield.policy_engine.compiler import PolicyRuleCompiler
-from reposhield.policy_engine.evaluator import RuleEvaluator
-from reposhield.policy_engine.fact_normalizer import FactNormalizer, IndexKey
-from reposhield.policy_engine.facts import PolicyFact, PolicyFactSet
-from reposhield.policy_engine.rule_index import RuleIndex
+from agentbrake.policy_engine.compiler import PolicyRuleCompiler
+from agentbrake.policy_engine.evaluator import RuleEvaluator
+from agentbrake.policy_engine.fact_normalizer import FactNormalizer, IndexKey
+from agentbrake.policy_engine.facts import PolicyFact, PolicyFactSet
+from agentbrake.policy_engine.rule_index import RuleIndex
 
 
 def test_fact_normalizer_emits_stable_index_keys():

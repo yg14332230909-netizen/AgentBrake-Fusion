@@ -10,7 +10,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_REPORTS = ROOT / "experiments" / "agentdojo" / "reports" / "deepseekv4_flash" / "e2e_full_agentdojo"
 PHASE2_SCRIPT = Path(__file__).with_name("22_summarize_e2e_phase2.py")
-METHODS = ("no_defense", "tool_filter", "reposhield_strict", "reposhield_gateway_eval", "reposhield_oracle_user_eval")
+METHODS = ("no_defense", "tool_filter", "agentbrake_strict", "agentbrake_gateway_eval", "agentbrake_oracle_user_eval")
 
 
 def main() -> int:
@@ -128,7 +128,7 @@ def build_excluded_manifest(reports_dir: Path, rows: list[dict[str, Any]]) -> di
 def build_replay_vs_e2e_comparison(reports_dir: Path, summary: dict[str, Any], attack_active: dict[str, Any]) -> dict[str, Any]:
     phase1_path = ROOT / "experiments" / "agentdojo" / "reports" / "deepseekv4_flash" / "replay" / "agentdojo_derived_replay_summary.json"
     phase1 = json.loads(phase1_path.read_text(encoding="utf-8")) if phase1_path.exists() else {}
-    strict = (summary.get("methods") or {}).get("reposhield_strict") or {}
+    strict = (summary.get("methods") or {}).get("agentbrake_strict") or {}
     return {
         "comparison_scope": "full_agentdojo_all_pairs",
         "metrics_source": "e2e_full_summary.json",
@@ -141,9 +141,9 @@ def build_replay_vs_e2e_comparison(reports_dir: Path, summary: dict[str, Any], a
             "false_positive_rate": phase1.get("false_positive_rate"),
         },
         "full_e2e": {
-            "reposhield_strict_targeted_asr": strict.get("targeted_asr"),
-            "reposhield_strict_user_utility": strict.get("user_utility"),
-            "reposhield_strict_secure_utility": strict.get("secure_utility"),
+            "agentbrake_strict_targeted_asr": strict.get("targeted_asr"),
+            "agentbrake_strict_user_utility": strict.get("user_utility"),
+            "agentbrake_strict_secure_utility": strict.get("secure_utility"),
             "attack_active_case_count": attack_active.get("case_count"),
         },
         "artifact_dir": relative(reports_dir, ROOT),
@@ -289,8 +289,8 @@ def render_comparison_md(report: dict[str, Any]) -> str:
             f"- metrics_source: {report['metrics_source']}",
             f"- full_phase2_case_count: {report['full_phase2_case_count']}",
             f"- linked_subset_case_count: {report['linked_subset_case_count']}",
-            f"- strict_targeted_asr: {report['full_e2e'].get('reposhield_strict_targeted_asr')}",
-            f"- strict_secure_utility: {report['full_e2e'].get('reposhield_strict_secure_utility')}",
+            f"- strict_targeted_asr: {report['full_e2e'].get('agentbrake_strict_targeted_asr')}",
+            f"- strict_secure_utility: {report['full_e2e'].get('agentbrake_strict_secure_utility')}",
         ]
     ) + "\n"
 
@@ -305,8 +305,8 @@ def render_validation_commands(reports_dir: Path) -> str:
             "python experiments/agentdojo/scripts/26_summarize_full_agentdojo_e2e.py --help",
             "python experiments/agentdojo/scripts/27_check_full_agentdojo_acceptance.py --help",
             "python experiments/agentdojo/scripts/25_plan_full_agentdojo_e2e.py --out-dir " + rel,
-        "python experiments/agentdojo/scripts/21_run_e2e_phase2.py --case-plan " + rel + "/full_agentdojo_case_plan.json --out-dir " + rel + " --methods no_defense tool_filter reposhield_strict reposhield_gateway_eval reposhield_oracle_user_eval --dry-run --save-full-trace",
-        "python experiments/agentdojo/scripts/21_run_e2e_phase2.py --case-plan " + rel + "/full_agentdojo_case_plan.json --out-dir " + rel + " --methods no_defense tool_filter reposhield_strict reposhield_gateway_eval reposhield_oracle_user_eval --save-full-trace --skip-existing",
+        "python experiments/agentdojo/scripts/21_run_e2e_phase2.py --case-plan " + rel + "/full_agentdojo_case_plan.json --out-dir " + rel + " --methods no_defense tool_filter agentbrake_strict agentbrake_gateway_eval agentbrake_oracle_user_eval --dry-run --save-full-trace",
+        "python experiments/agentdojo/scripts/21_run_e2e_phase2.py --case-plan " + rel + "/full_agentdojo_case_plan.json --out-dir " + rel + " --methods no_defense tool_filter agentbrake_strict agentbrake_gateway_eval agentbrake_oracle_user_eval --save-full-trace --skip-existing",
             "python experiments/agentdojo/scripts/26_summarize_full_agentdojo_e2e.py --reports-dir " + rel,
             "python experiments/agentdojo/scripts/27_check_full_agentdojo_acceptance.py --reports-dir " + rel,
             "python - <<'PY'\nfrom pathlib import Path\npatterns = ['E:' + chr(92), 'C:' + chr(92), '/' + 'home/', 'file' + '://']\nroot = Path('experiments/agentdojo/reports/deepseekv4_flash')\nhits = []\nfor path in root.rglob('*'):\n    if path.is_file() and path.suffix.lower() in {'.json', '.jsonl', '.md', '.txt', '.csv', '.yml', '.yaml'}:\n        text = path.read_text(encoding='utf-8', errors='ignore')\n        for pat in patterns:\n            if pat in text:\n                hits.append((str(path), pat))\nif hits:\n    print('LOCAL_PATH_SCAN_FAIL')\n    for hit in hits:\n        print(hit)\n    raise SystemExit(1)\nprint('LOCAL_PATH_SCAN_PASS')\nPY",

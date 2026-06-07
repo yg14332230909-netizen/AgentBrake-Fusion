@@ -27,7 +27,7 @@
       "policy_latency_p95_ms": null,
       "latency_status": "missing"
     },
-    "reposhield_gateway_eval": {
+    "agentbrake_gateway_eval": {
       "case_count": 949,
       "targeted_asr": 0.0,
       "security_rate": 1.0,
@@ -48,7 +48,7 @@
       "policy_latency_p95_ms": 2.132,
       "latency_status": "present"
     },
-    "reposhield_oracle_user_eval": {
+    "agentbrake_oracle_user_eval": {
       "case_count": 949,
       "targeted_asr": 0.0,
       "security_rate": 1.0,
@@ -69,7 +69,7 @@
       "policy_latency_p95_ms": 2.278,
       "latency_status": "present"
     },
-    "reposhield_strict": {
+    "agentbrake_strict": {
       "case_count": 949,
       "targeted_asr": 0.002107481559536354,
       "security_rate": 0.9978925184404637,
@@ -135,7 +135,7 @@
         "policy_latency_p95_ms": null,
         "latency_status": "missing"
       },
-      "reposhield_gateway_eval": {
+      "agentbrake_gateway_eval": {
         "case_count": 144,
         "targeted_asr": 0.0,
         "security_rate": 1.0,
@@ -156,7 +156,7 @@
         "policy_latency_p95_ms": 2.042,
         "latency_status": "present"
       },
-      "reposhield_oracle_user_eval": {
+      "agentbrake_oracle_user_eval": {
         "case_count": 144,
         "targeted_asr": 0.0,
         "security_rate": 1.0,
@@ -177,7 +177,7 @@
         "policy_latency_p95_ms": 2.238,
         "latency_status": "present"
       },
-      "reposhield_strict": {
+      "agentbrake_strict": {
         "case_count": 144,
         "targeted_asr": 0.0,
         "security_rate": 1.0,
@@ -242,7 +242,7 @@
         "policy_latency_p95_ms": null,
         "latency_status": "missing"
       },
-      "reposhield_gateway_eval": {
+      "agentbrake_gateway_eval": {
         "case_count": 105,
         "targeted_asr": 0.0,
         "security_rate": 1.0,
@@ -263,7 +263,7 @@
         "policy_latency_p95_ms": 2.951,
         "latency_status": "present"
       },
-      "reposhield_oracle_user_eval": {
+      "agentbrake_oracle_user_eval": {
         "case_count": 105,
         "targeted_asr": 0.0,
         "security_rate": 1.0,
@@ -284,7 +284,7 @@
         "policy_latency_p95_ms": 2.803,
         "latency_status": "present"
       },
-      "reposhield_strict": {
+      "agentbrake_strict": {
         "case_count": 105,
         "targeted_asr": 0.009523809523809525,
         "security_rate": 0.9904761904761905,
@@ -349,7 +349,7 @@
         "policy_latency_p95_ms": null,
         "latency_status": "missing"
       },
-      "reposhield_gateway_eval": {
+      "agentbrake_gateway_eval": {
         "case_count": 140,
         "targeted_asr": 0.0,
         "security_rate": 1.0,
@@ -370,7 +370,7 @@
         "policy_latency_p95_ms": 2.847,
         "latency_status": "present"
       },
-      "reposhield_oracle_user_eval": {
+      "agentbrake_oracle_user_eval": {
         "case_count": 140,
         "targeted_asr": 0.0,
         "security_rate": 1.0,
@@ -391,7 +391,7 @@
         "policy_latency_p95_ms": 2.643,
         "latency_status": "present"
       },
-      "reposhield_strict": {
+      "agentbrake_strict": {
         "case_count": 140,
         "targeted_asr": 0.0,
         "security_rate": 1.0,
@@ -456,7 +456,7 @@
         "policy_latency_p95_ms": null,
         "latency_status": "missing"
       },
-      "reposhield_gateway_eval": {
+      "agentbrake_gateway_eval": {
         "case_count": 560,
         "targeted_asr": 0.0,
         "security_rate": 1.0,
@@ -477,7 +477,7 @@
         "policy_latency_p95_ms": 1.27,
         "latency_status": "present"
       },
-      "reposhield_oracle_user_eval": {
+      "agentbrake_oracle_user_eval": {
         "case_count": 560,
         "targeted_asr": 0.0,
         "security_rate": 1.0,
@@ -498,7 +498,7 @@
         "policy_latency_p95_ms": 1.264,
         "latency_status": "present"
       },
-      "reposhield_strict": {
+      "agentbrake_strict": {
         "case_count": 560,
         "targeted_asr": 0.0017857142857142857,
         "security_rate": 0.9982142857142857,
@@ -591,224 +591,224 @@
       "failure_category": "user_task_failed_without_intervention",
       "count": 134
     },
-    "reposhield_gateway_eval|banking|confirmation_executed_and_attack_blocked_but_user_failed": {
-      "method": "reposhield_gateway_eval",
+    "agentbrake_gateway_eval|banking|confirmation_executed_and_attack_blocked_but_user_failed": {
+      "method": "agentbrake_gateway_eval",
       "suite": "banking",
       "failure_category": "confirmation_executed_and_attack_blocked_but_user_failed",
       "count": 2
     },
-    "reposhield_gateway_eval|banking|model_stopped_after_block": {
-      "method": "reposhield_gateway_eval",
+    "agentbrake_gateway_eval|banking|model_stopped_after_block": {
+      "method": "agentbrake_gateway_eval",
       "suite": "banking",
       "failure_category": "model_stopped_after_block",
       "count": 9
     },
-    "reposhield_gateway_eval|banking|user_task_failed_without_intervention": {
-      "method": "reposhield_gateway_eval",
+    "agentbrake_gateway_eval|banking|user_task_failed_without_intervention": {
+      "method": "agentbrake_gateway_eval",
       "suite": "banking",
       "failure_category": "user_task_failed_without_intervention",
       "count": 19
     },
-    "reposhield_gateway_eval|slack|confirmation_executed_and_attack_blocked_but_user_failed": {
-      "method": "reposhield_gateway_eval",
+    "agentbrake_gateway_eval|slack|confirmation_executed_and_attack_blocked_but_user_failed": {
+      "method": "agentbrake_gateway_eval",
       "suite": "slack",
       "failure_category": "confirmation_executed_and_attack_blocked_but_user_failed",
       "count": 24
     },
-    "reposhield_gateway_eval|slack|model_stopped_after_block": {
-      "method": "reposhield_gateway_eval",
+    "agentbrake_gateway_eval|slack|model_stopped_after_block": {
+      "method": "agentbrake_gateway_eval",
       "suite": "slack",
       "failure_category": "model_stopped_after_block",
       "count": 48
     },
-    "reposhield_gateway_eval|slack|repeated_same_blocked_action": {
-      "method": "reposhield_gateway_eval",
+    "agentbrake_gateway_eval|slack|repeated_same_blocked_action": {
+      "method": "agentbrake_gateway_eval",
       "suite": "slack",
       "failure_category": "repeated_same_blocked_action",
       "count": 1
     },
-    "reposhield_gateway_eval|travel|confirmation_executed_and_attack_blocked_but_user_failed": {
-      "method": "reposhield_gateway_eval",
+    "agentbrake_gateway_eval|travel|confirmation_executed_and_attack_blocked_but_user_failed": {
+      "method": "agentbrake_gateway_eval",
       "suite": "travel",
       "failure_category": "confirmation_executed_and_attack_blocked_but_user_failed",
       "count": 6
     },
-    "reposhield_gateway_eval|travel|model_stopped_after_block": {
-      "method": "reposhield_gateway_eval",
+    "agentbrake_gateway_eval|travel|model_stopped_after_block": {
+      "method": "agentbrake_gateway_eval",
       "suite": "travel",
       "failure_category": "model_stopped_after_block",
       "count": 5
     },
-    "reposhield_gateway_eval|travel|user_task_failed_without_intervention": {
-      "method": "reposhield_gateway_eval",
+    "agentbrake_gateway_eval|travel|user_task_failed_without_intervention": {
+      "method": "agentbrake_gateway_eval",
       "suite": "travel",
       "failure_category": "user_task_failed_without_intervention",
       "count": 28
     },
-    "reposhield_gateway_eval|workspace|model_stopped_after_block": {
-      "method": "reposhield_gateway_eval",
+    "agentbrake_gateway_eval|workspace|model_stopped_after_block": {
+      "method": "agentbrake_gateway_eval",
       "suite": "workspace",
       "failure_category": "model_stopped_after_block",
       "count": 27
     },
-    "reposhield_gateway_eval|workspace|repeated_same_blocked_action": {
-      "method": "reposhield_gateway_eval",
+    "agentbrake_gateway_eval|workspace|repeated_same_blocked_action": {
+      "method": "agentbrake_gateway_eval",
       "suite": "workspace",
       "failure_category": "repeated_same_blocked_action",
       "count": 2
     },
-    "reposhield_gateway_eval|workspace|user_task_failed_without_intervention": {
-      "method": "reposhield_gateway_eval",
+    "agentbrake_gateway_eval|workspace|user_task_failed_without_intervention": {
+      "method": "agentbrake_gateway_eval",
       "suite": "workspace",
       "failure_category": "user_task_failed_without_intervention",
       "count": 75
     },
-    "reposhield_oracle_user_eval|banking|confirmation_executed_and_attack_blocked_but_user_failed": {
-      "method": "reposhield_oracle_user_eval",
+    "agentbrake_oracle_user_eval|banking|confirmation_executed_and_attack_blocked_but_user_failed": {
+      "method": "agentbrake_oracle_user_eval",
       "suite": "banking",
       "failure_category": "confirmation_executed_and_attack_blocked_but_user_failed",
       "count": 3
     },
-    "reposhield_oracle_user_eval|banking|model_stopped_after_block": {
-      "method": "reposhield_oracle_user_eval",
+    "agentbrake_oracle_user_eval|banking|model_stopped_after_block": {
+      "method": "agentbrake_oracle_user_eval",
       "suite": "banking",
       "failure_category": "model_stopped_after_block",
       "count": 9
     },
-    "reposhield_oracle_user_eval|banking|user_task_failed_without_intervention": {
-      "method": "reposhield_oracle_user_eval",
+    "agentbrake_oracle_user_eval|banking|user_task_failed_without_intervention": {
+      "method": "agentbrake_oracle_user_eval",
       "suite": "banking",
       "failure_category": "user_task_failed_without_intervention",
       "count": 15
     },
-    "reposhield_oracle_user_eval|slack|confirmation_executed_and_attack_blocked_but_user_failed": {
-      "method": "reposhield_oracle_user_eval",
+    "agentbrake_oracle_user_eval|slack|confirmation_executed_and_attack_blocked_but_user_failed": {
+      "method": "agentbrake_oracle_user_eval",
       "suite": "slack",
       "failure_category": "confirmation_executed_and_attack_blocked_but_user_failed",
       "count": 24
     },
-    "reposhield_oracle_user_eval|slack|model_stopped_after_block": {
-      "method": "reposhield_oracle_user_eval",
+    "agentbrake_oracle_user_eval|slack|model_stopped_after_block": {
+      "method": "agentbrake_oracle_user_eval",
       "suite": "slack",
       "failure_category": "model_stopped_after_block",
       "count": 46
     },
-    "reposhield_oracle_user_eval|slack|repeated_same_blocked_action": {
-      "method": "reposhield_oracle_user_eval",
+    "agentbrake_oracle_user_eval|slack|repeated_same_blocked_action": {
+      "method": "agentbrake_oracle_user_eval",
       "suite": "slack",
       "failure_category": "repeated_same_blocked_action",
       "count": 2
     },
-    "reposhield_oracle_user_eval|slack|user_task_failed_without_intervention": {
-      "method": "reposhield_oracle_user_eval",
+    "agentbrake_oracle_user_eval|slack|user_task_failed_without_intervention": {
+      "method": "agentbrake_oracle_user_eval",
       "suite": "slack",
       "failure_category": "user_task_failed_without_intervention",
       "count": 1
     },
-    "reposhield_oracle_user_eval|travel|confirmation_executed_and_attack_blocked_but_user_failed": {
-      "method": "reposhield_oracle_user_eval",
+    "agentbrake_oracle_user_eval|travel|confirmation_executed_and_attack_blocked_but_user_failed": {
+      "method": "agentbrake_oracle_user_eval",
       "suite": "travel",
       "failure_category": "confirmation_executed_and_attack_blocked_but_user_failed",
       "count": 6
     },
-    "reposhield_oracle_user_eval|travel|model_stopped_after_block": {
-      "method": "reposhield_oracle_user_eval",
+    "agentbrake_oracle_user_eval|travel|model_stopped_after_block": {
+      "method": "agentbrake_oracle_user_eval",
       "suite": "travel",
       "failure_category": "model_stopped_after_block",
       "count": 6
     },
-    "reposhield_oracle_user_eval|travel|user_task_failed_without_intervention": {
-      "method": "reposhield_oracle_user_eval",
+    "agentbrake_oracle_user_eval|travel|user_task_failed_without_intervention": {
+      "method": "agentbrake_oracle_user_eval",
       "suite": "travel",
       "failure_category": "user_task_failed_without_intervention",
       "count": 20
     },
-    "reposhield_oracle_user_eval|workspace|model_stopped_after_block": {
-      "method": "reposhield_oracle_user_eval",
+    "agentbrake_oracle_user_eval|workspace|model_stopped_after_block": {
+      "method": "agentbrake_oracle_user_eval",
       "suite": "workspace",
       "failure_category": "model_stopped_after_block",
       "count": 27
     },
-    "reposhield_oracle_user_eval|workspace|repeated_same_blocked_action": {
-      "method": "reposhield_oracle_user_eval",
+    "agentbrake_oracle_user_eval|workspace|repeated_same_blocked_action": {
+      "method": "agentbrake_oracle_user_eval",
       "suite": "workspace",
       "failure_category": "repeated_same_blocked_action",
       "count": 1
     },
-    "reposhield_oracle_user_eval|workspace|user_task_failed_without_intervention": {
-      "method": "reposhield_oracle_user_eval",
+    "agentbrake_oracle_user_eval|workspace|user_task_failed_without_intervention": {
+      "method": "agentbrake_oracle_user_eval",
       "suite": "workspace",
       "failure_category": "user_task_failed_without_intervention",
       "count": 77
     },
-    "reposhield_strict|banking|confirmation_not_executed": {
-      "method": "reposhield_strict",
+    "agentbrake_strict|banking|confirmation_not_executed": {
+      "method": "agentbrake_strict",
       "suite": "banking",
       "failure_category": "confirmation_not_executed",
       "count": 2
     },
-    "reposhield_strict|banking|model_stopped_after_block": {
-      "method": "reposhield_strict",
+    "agentbrake_strict|banking|model_stopped_after_block": {
+      "method": "agentbrake_strict",
       "suite": "banking",
       "failure_category": "model_stopped_after_block",
       "count": 9
     },
-    "reposhield_strict|banking|user_task_failed_without_intervention": {
-      "method": "reposhield_strict",
+    "agentbrake_strict|banking|user_task_failed_without_intervention": {
+      "method": "agentbrake_strict",
       "suite": "banking",
       "failure_category": "user_task_failed_without_intervention",
       "count": 12
     },
-    "reposhield_strict|slack|attack_succeeded": {
-      "method": "reposhield_strict",
+    "agentbrake_strict|slack|attack_succeeded": {
+      "method": "agentbrake_strict",
       "suite": "slack",
       "failure_category": "attack_succeeded",
       "count": 1
     },
-    "reposhield_strict|slack|model_stopped_after_block": {
-      "method": "reposhield_strict",
+    "agentbrake_strict|slack|model_stopped_after_block": {
+      "method": "agentbrake_strict",
       "suite": "slack",
       "failure_category": "model_stopped_after_block",
       "count": 60
     },
-    "reposhield_strict|slack|user_task_failed_without_intervention": {
-      "method": "reposhield_strict",
+    "agentbrake_strict|slack|user_task_failed_without_intervention": {
+      "method": "agentbrake_strict",
       "suite": "slack",
       "failure_category": "user_task_failed_without_intervention",
       "count": 11
     },
-    "reposhield_strict|travel|confirmation_not_executed": {
-      "method": "reposhield_strict",
+    "agentbrake_strict|travel|confirmation_not_executed": {
+      "method": "agentbrake_strict",
       "suite": "travel",
       "failure_category": "confirmation_not_executed",
       "count": 6
     },
-    "reposhield_strict|travel|model_stopped_after_block": {
-      "method": "reposhield_strict",
+    "agentbrake_strict|travel|model_stopped_after_block": {
+      "method": "agentbrake_strict",
       "suite": "travel",
       "failure_category": "model_stopped_after_block",
       "count": 5
     },
-    "reposhield_strict|travel|user_task_failed_without_intervention": {
-      "method": "reposhield_strict",
+    "agentbrake_strict|travel|user_task_failed_without_intervention": {
+      "method": "agentbrake_strict",
       "suite": "travel",
       "failure_category": "user_task_failed_without_intervention",
       "count": 27
     },
-    "reposhield_strict|workspace|attack_succeeded": {
-      "method": "reposhield_strict",
+    "agentbrake_strict|workspace|attack_succeeded": {
+      "method": "agentbrake_strict",
       "suite": "workspace",
       "failure_category": "attack_succeeded",
       "count": 1
     },
-    "reposhield_strict|workspace|model_stopped_after_block": {
-      "method": "reposhield_strict",
+    "agentbrake_strict|workspace|model_stopped_after_block": {
+      "method": "agentbrake_strict",
       "suite": "workspace",
       "failure_category": "model_stopped_after_block",
       "count": 29
     },
-    "reposhield_strict|workspace|user_task_failed_without_intervention": {
-      "method": "reposhield_strict",
+    "agentbrake_strict|workspace|user_task_failed_without_intervention": {
+      "method": "agentbrake_strict",
       "suite": "workspace",
       "failure_category": "user_task_failed_without_intervention",
       "count": 72

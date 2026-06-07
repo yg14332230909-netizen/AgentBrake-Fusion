@@ -1,8 +1,8 @@
-# RepoShield / PepoShield v0.2 使用说明书
+# AgentBrake / AgentBrake v0.2 使用说明书
 
 ## 一、定位
 
-RepoShield 是代码智能体的外挂式安全控制平面。它拦截并审计：
+AgentBrake 是代码智能体的外挂式安全控制平面。它拦截并审计：
 
 ```text
 上下文来源 → 任务合同 → agent 动作 → 沙箱预演 → secret / package / MCP / memory / approval → 策略决策 → 审计回放
@@ -13,7 +13,7 @@ RepoShield 是代码智能体的外挂式安全控制平面。它拦截并审计
 ## 二、安装
 
 ```bash
-cd reposhield_plugin_v0.2
+cd agentbrake_plugin_v0.2
 python -m venv .venv
 source .venv/bin/activate
 pip install -e '.[test]'
@@ -23,25 +23,25 @@ pytest -q
 也可以不安装，用源码运行：
 
 ```bash
-PYTHONPATH=src python -m reposhield --help
+PYTHONPATH=src python -m agentbrake --help
 ```
 
 ## 三、命令列表
 
 ```bash
-reposhield scan                  # 资产与攻击面扫描
-reposhield parse                 # raw action -> ActionIR
-reposhield guard                 # 单动作安全决策
-reposhield demo                  # 固定 attack chain demo
-reposhield run-agent             # generic/aider adapter
-reposhield generate-stage2-samples
-reposhield bench                 # 单个样本
-reposhield bench-suite           # 样本集
-reposhield bench-report          # bench HTML 报告
-reposhield incident-report       # 审计 HTML 报告
-reposhield sandbox-profiles      # 沙箱 profiles
-reposhield audit-verify          # audit hash-chain 验证
-reposhield replay-verify         # replay bundle 验证
+agentbrake scan                  # 资产与攻击面扫描
+agentbrake parse                 # raw action -> ActionIR
+agentbrake guard                 # 单动作安全决策
+agentbrake demo                  # 固定 attack chain demo
+agentbrake run-agent             # generic/aider adapter
+agentbrake generate-stage2-samples
+agentbrake bench                 # 单个样本
+agentbrake bench-suite           # 样本集
+agentbrake bench-report          # bench HTML 报告
+agentbrake incident-report       # 审计 HTML 报告
+agentbrake sandbox-profiles      # 沙箱 profiles
+agentbrake audit-verify          # audit hash-chain 验证
+agentbrake replay-verify         # replay bundle 验证
 ```
 
 ## 四、典型流程
@@ -49,7 +49,7 @@ reposhield replay-verify         # replay bundle 验证
 ### 1. 扫描仓库
 
 ```bash
-reposhield scan --repo ./demo-repo
+agentbrake scan --repo ./demo-repo
 ```
 
 输出包括：
@@ -69,7 +69,7 @@ external sinks
 ### 2. 给单个动作做安全决策
 
 ```bash
-reposhield guard \
+agentbrake guard \
   --repo ./demo-repo \
   --task '修复登录按钮点击无响应的问题，并运行测试' \
   --source-file ./issue.md \
@@ -88,7 +88,7 @@ required_controls = block, package_preflight
 ### 3. 运行 demo
 
 ```bash
-reposhield demo --workdir /tmp/reposhield_demo
+agentbrake demo --workdir /tmp/agentbrake_demo
 ```
 
 输出应包含：
@@ -106,7 +106,7 @@ executed:
 ### 4. 运行 adapter
 
 ```bash
-reposhield run-agent \
+agentbrake run-agent \
   --adapter aider \
   --repo ./demo-repo \
   --task '修复登录按钮点击无响应的问题，并运行测试'
@@ -117,8 +117,8 @@ reposhield run-agent \
 ### 5. 运行 bench-suite
 
 ```bash
-reposhield generate-stage2-samples --output samples_stage2 --count 40
-reposhield bench-suite --samples samples_stage2 --output out/bench
+agentbrake generate-stage2-samples --output samples_stage2 --count 40
+agentbrake bench-suite --samples samples_stage2 --output out/bench
 ```
 
 查看：
@@ -131,9 +131,9 @@ out/bench/bench_suite_report.html
 ### 6. 审计与回放
 
 ```bash
-reposhield audit-verify --audit /tmp/reposhield_demo/audit.jsonl
-reposhield replay-verify --bundle /tmp/reposhield_demo/replay_bundle
-reposhield incident-report --audit /tmp/reposhield_demo/audit.jsonl --output incident.html
+agentbrake audit-verify --audit /tmp/agentbrake_demo/audit.jsonl
+agentbrake replay-verify --bundle /tmp/agentbrake_demo/replay_bundle
+agentbrake incident-report --audit /tmp/agentbrake_demo/audit.jsonl --output incident.html
 ```
 
 ## 五、策略结果说明

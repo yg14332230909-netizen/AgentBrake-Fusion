@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from reposhield.eval.agentdojo.evidence.taxonomy import AgentDojoToolTaxonomy
+from agentbrake.eval.agentdojo.evidence.taxonomy import AgentDojoToolTaxonomy
 
 try:
     from agentdojo.task_suite import get_suite  # type: ignore

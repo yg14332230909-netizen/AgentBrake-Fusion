@@ -65,12 +65,12 @@ v0.2 当前验证结果：
 ## 生成 HTML 报告
 
 ```bash
-reposhield bench-suite --samples samples_stage2 --output out/bench
-reposhield bench-report --input out/bench/bench_suite_report.json --output out/bench/report.html
+agentbrake bench-suite --samples samples_stage2 --output out/bench
+agentbrake bench-report --input out/bench/bench_suite_report.json --output out/bench/report.html
 ```
 
 事件审计报告：
 
 ```bash
-reposhield incident-report --audit out/bench/RS-V2-002/audit.jsonl --output incident.html
+agentbrake incident-report --audit out/bench/RS-V2-002/audit.jsonl --output incident.html
 ```

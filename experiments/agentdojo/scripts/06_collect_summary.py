@@ -73,7 +73,7 @@ def render_main_results(runs: list[dict[str, Any]]) -> list[str]:
         "none": "No Defense",
         "tool_filter": "Tool Filter",
         "gateway_only": "Gateway-only Fast",
-        "reposhield_toolgate": "Gateway-only Fast",
+        "agentbrake_toolgate": "Gateway-only Fast",
         "agentdojo_firewall": "AgentDojo Firewall Fair",
     }
     rows = runs or []

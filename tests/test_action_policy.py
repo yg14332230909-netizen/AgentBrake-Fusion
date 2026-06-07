@@ -1,10 +1,10 @@
-from reposhield.action_parser import ActionParser
-from reposhield.asset import AssetScanner
-from reposhield.context import ContextProvenance
-from reposhield.contract import TaskContractBuilder
-from reposhield.package_guard import PackageGuard
-from reposhield.policy import PolicyEngine
-from reposhield.sentry import SecretSentry
+from agentbrake.action_parser import ActionParser
+from agentbrake.asset import AssetScanner
+from agentbrake.context import ContextProvenance
+from agentbrake.contract import TaskContractBuilder
+from agentbrake.package_guard import PackageGuard
+from agentbrake.policy import PolicyEngine
+from agentbrake.sentry import SecretSentry
 
 
 def make_repo(tmp_path):
@@ -125,8 +125,8 @@ def test_package_guard_detects_pip_extra_index_registry(tmp_path):
 
 def test_package_guard_uses_offline_provenance_oracle(tmp_path):
     repo = make_repo(tmp_path)
-    (repo / ".reposhield").mkdir()
-    (repo / ".reposhield" / "package_metadata.json").write_text(
+    (repo / ".agentbrake").mkdir()
+    (repo / ".agentbrake" / "package_metadata.json").write_text(
         '{"lodash":{"provenance":"verified","sigstore":true,"integrity":"sha512-demo"},"badpkg":{"deny":true,"reputation":"low"}}',
         encoding="utf-8",
     )

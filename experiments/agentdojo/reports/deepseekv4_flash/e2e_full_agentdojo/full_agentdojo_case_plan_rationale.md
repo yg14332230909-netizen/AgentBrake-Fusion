@@ -14,4 +14,4 @@ This frozen plan enumerates every available user-task and injection-task pair fo
 | travel | 20 | 7 | 140 |
 | workspace | 40 | 14 | 560 |
 
-Methods: no_defense, tool_filter, reposhield_strict, reposhield_gateway_eval, reposhield_oracle_user_eval
+Methods: no_defense, tool_filter, agentbrake_strict, agentbrake_gateway_eval, agentbrake_oracle_user_eval

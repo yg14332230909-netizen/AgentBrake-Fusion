@@ -1,4 +1,4 @@
-from reposhield.eval.agentdojo.runner.metrics import compute_recovery_metrics
+from agentbrake.eval.agentdojo.runner.metrics import compute_recovery_metrics
 
 
 def test_recovery_success_rate_uses_only_blocked_cases():

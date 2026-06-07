@@ -1,6 +1,6 @@
-from reposhield.policy_engine.compiler import PolicyRuleCompiler
-from reposhield.policy_engine.facts import PolicyFact, PolicyFactSet
-from reposhield.policy_engine.rule_index import RuleIndex
+from agentbrake.policy_engine.compiler import PolicyRuleCompiler
+from agentbrake.policy_engine.facts import PolicyFact, PolicyFactSet
+from agentbrake.policy_engine.rule_index import RuleIndex
 
 
 def test_rule_index_uses_multiple_fact_dimensions():

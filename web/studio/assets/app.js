@@ -1,4 +1,4 @@
-const API_TOKEN = localStorage.getItem("reposhieldToken") || "reposhield-local";
+const API_TOKEN = localStorage.getItem("agentbrakeToken") || "agentbrake-local";
 
 const state = {
   runs: [],

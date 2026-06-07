@@ -7,8 +7,8 @@
 ## 二、一键接入命令
 
 ```bash
-reposhield connect --agent aider --repo . --mode standard
-reposhield start --repo .
+agentbrake connect --agent aider --repo . --mode standard
+agentbrake start --repo .
 ```
 
 ## 三、Agent 侧配置
@@ -17,14 +17,14 @@ reposhield start --repo .
 
 ```text
 OPENAI_BASE_URL=http://127.0.0.1:8765/v1
-OPENAI_API_KEY=reposhield-local
+OPENAI_API_KEY=agentbrake-local
 ```
 
 ## 四、如何验证成功
 
 ```bash
-reposhield doctor --repo .
-reposhield coverage --repo .
+agentbrake doctor --repo .
+agentbrake coverage --repo .
 ```
 
 ## 五、保护覆盖范围
@@ -33,7 +33,7 @@ Standard 模式覆盖模型响应、tool_calls 和常见命令 shim。
 
 ## 六、当前不能保护什么
 
-Aider 的直接文件编辑路径若不经过 RepoShield file-guard，只能由 Gateway 侧证据和后续审计间接观察。
+Aider 的直接文件编辑路径若不经过 AgentBrake file-guard，只能由 Gateway 侧证据和后续审计间接观察。
 
 ## 七、常见问题
 

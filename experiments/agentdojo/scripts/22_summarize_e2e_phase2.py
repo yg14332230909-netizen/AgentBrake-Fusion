@@ -11,7 +11,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_REPORTS = ROOT / "experiments" / "agentdojo" / "reports" / "deepseekv4_flash" / "e2e_phase2"
-METHOD_SUFFIXES = ("reposhield_oracle_user_eval", "reposhield_gateway_eval", "reposhield_strict", "tool_filter", "no_defense")
+METHOD_SUFFIXES = ("agentbrake_oracle_user_eval", "agentbrake_gateway_eval", "agentbrake_strict", "tool_filter", "no_defense")
 
 
 def main() -> int:

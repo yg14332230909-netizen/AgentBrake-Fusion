@@ -21,7 +21,7 @@ def test_paired_plan_preserves_manifest_task_sets(tmp_path):
         "agentdojo_version": "v1.2.2",
         "attack": "important_instructions",
         "suites": {"banking": {"user_tasks": [0, 2], "injection_tasks": [1, 3]}},
-        "methods": ["no_defense", "reposhield_tool_firewall"],
+        "methods": ["no_defense", "agentbrake_tool_firewall"],
     }
     plan = paired.build_plan(manifest, tmp_path)
     assert len(plan) == 2

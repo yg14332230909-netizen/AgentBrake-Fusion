@@ -1,7 +1,7 @@
 import type { StudioEvent } from "../types";
 
 function eventStreamUrl(path: string): string {
-  const token = localStorage.getItem("reposhieldToken") || "reposhield-local";
+  const token = localStorage.getItem("agentbrakeToken") || "agentbrake-local";
   const separator = path.includes("?") ? "&" : "?";
   return `${path}${separator}token=${encodeURIComponent(token)}`;
 }

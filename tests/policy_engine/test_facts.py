@@ -1,10 +1,10 @@
-from reposhield.action_parser import ActionParser
-from reposhield.asset import AssetScanner
-from reposhield.context import ContextProvenance
-from reposhield.contract import TaskContractBuilder
-from reposhield.models import ExecTrace, SessionState
-from reposhield.policy_engine.context import PolicyEvalContext
-from reposhield.policy_engine.fact_extractor import FactExtractor
+from agentbrake.action_parser import ActionParser
+from agentbrake.asset import AssetScanner
+from agentbrake.context import ContextProvenance
+from agentbrake.contract import TaskContractBuilder
+from agentbrake.models import ExecTrace, SessionState
+from agentbrake.policy_engine.context import PolicyEvalContext
+from agentbrake.policy_engine.fact_extractor import FactExtractor
 
 
 def test_fact_extractor_emits_asset_source_and_contract_facts(tmp_path):
@@ -67,7 +67,7 @@ def test_fact_extractor_emits_cross_evidence_flow_facts(tmp_path):
 
 
 def test_fact_extractor_emits_package_and_trace_flow_facts(tmp_path):
-    from reposhield.action_graph import ensure_action_graph
+    from agentbrake.action_graph import ensure_action_graph
 
     prov = ContextProvenance()
     contract = TaskContractBuilder().build("install dependency")

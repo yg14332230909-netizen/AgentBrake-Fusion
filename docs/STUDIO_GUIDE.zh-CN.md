@@ -1,9 +1,9 @@
-# RepoShield Studio 指南
+# AgentBrake Studio 指南
 
 Studio 有两种形态：
 
-- `reposhield studio`：生成静态 HTML 报告，适合离线归档、论文材料和演示包。
-- `reposhield studio-server`：启动交互式 Studio Pro，本地实时观察真实 agent / Gateway 请求。
+- `agentbrake studio`：生成静态 HTML 报告，适合离线归档、论文材料和演示包。
+- `agentbrake studio-server`：启动交互式 Studio Pro，本地实时观察真实 agent / Gateway 请求。
 
 ## 完成度口径
 
@@ -18,9 +18,9 @@ Studio 有两种形态：
 ## 启动 Studio Pro
 
 ```bash
-PYTHONPATH=src python -m reposhield studio-server \
-  --audit .reposhield/gateway_audit.jsonl \
-  --approvals .reposhield/gateway_approvals.jsonl \
+PYTHONPATH=src python -m agentbrake studio-server \
+  --audit .agentbrake/gateway_audit.jsonl \
+  --approvals .agentbrake/gateway_approvals.jsonl \
   --bench-report reports/gateway_bench/gateway_bench_report.json \
   --host 127.0.0.1 \
   --port 8780 \
@@ -39,7 +39,7 @@ Studio Pro 会订阅全局 SSE：
 /api/events/stream
 ```
 
-真实 Codex / OpenClaw / OpenHands / Aider 或其他 OpenAI-compatible agent 经过 RepoShield Gateway 产生新事件时，前端会自动更新运行列表、时间线和当前运行视图。页面会显示同步状态，并保留短间隔轮询作为兜底。
+真实 Codex / OpenClaw / OpenHands / Aider 或其他 OpenAI-compatible agent 经过 AgentBrake Gateway 产生新事件时，前端会自动更新运行列表、时间线和当前运行视图。页面会显示同步状态，并保留短间隔轮询作为兜底。
 
 ## 页面分区
 
@@ -79,17 +79,17 @@ Evidence -> Facts -> RuleIndex -> PolicyGraph -> Decision
 
 清空前页面会询问是否备份：
 
-- 选择备份：写入 `.reposhield/studio_backups/<timestamp>/`
+- 选择备份：写入 `.agentbrake/studio_backups/<timestamp>/`
 - 选择不备份：直接清空，不创建备份目录
 
 ## 静态 Studio Lite
 
 ```bash
-PYTHONPATH=src python -m reposhield studio \
+PYTHONPATH=src python -m agentbrake studio \
   --audit reports/gateway_demo_run/gateway_audit.jsonl \
   --bench-report reports/stage3_gateway_bench/gateway_bench_report.json \
   --output reports/stage3_studio.html \
-  --title "RepoShield v0.3 Studio"
+  --title "AgentBrake v0.3 Studio"
 ```
 
 静态报告适合离线展示；如果要观察真实 agent 运行过程，优先使用 `studio-server`。

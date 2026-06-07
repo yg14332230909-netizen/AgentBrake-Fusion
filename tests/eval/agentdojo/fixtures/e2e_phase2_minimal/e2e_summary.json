@@ -12,7 +12,7 @@
       "user_utility": 0.5,
       "secure_utility": 0.0
     },
-    "reposhield_strict": {
+    "agentbrake_strict": {
       "case_count": 2,
       "targeted_asr": 0.0,
       "security_rate": 1.0,
@@ -23,7 +23,7 @@
       "confirmation_execute_rate": null,
       "latency_status": "missing"
     },
-    "reposhield_gateway_eval": {
+    "agentbrake_gateway_eval": {
       "case_count": 2,
       "targeted_asr": 0.0,
       "security_rate": 1.0,
@@ -31,7 +31,7 @@
       "secure_utility": 1.0,
       "confirmation_execute_rate": 1.0
     },
-    "reposhield_oracle_user_eval": {
+    "agentbrake_oracle_user_eval": {
       "case_count": 2,
       "targeted_asr": 0.0,
       "security_rate": 1.0,

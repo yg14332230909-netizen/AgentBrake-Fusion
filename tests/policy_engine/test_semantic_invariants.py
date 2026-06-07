@@ -1,5 +1,5 @@
-from reposhield.policy_engine.facts import PolicyFact, PolicyFactSet
-from reposhield.policy_engine.invariants import InvariantEngine
+from agentbrake.policy_engine.facts import PolicyFact, PolicyFactSet
+from agentbrake.policy_engine.invariants import InvariantEngine
 
 
 def test_semantic_invariant_registry_keeps_legacy_ids():

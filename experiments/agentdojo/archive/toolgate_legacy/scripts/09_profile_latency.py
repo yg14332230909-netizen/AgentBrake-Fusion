@@ -20,9 +20,9 @@ def main() -> int:
     ]
     for row in summary.get("audit_rows", []):
         run = next((r for r in summary.get("runs", []) if r.get("run_name") == row.get("run_name")), {})
-        audit = run.get("reposhield_audit_summary") or {}
+        audit = run.get("agentbrake_audit_summary") or {}
         lines.append(
-            f"| {row.get('run_name')} | {fmt(audit.get('reposhield_p50_policy_latency_ms'))} | {fmt(audit.get('reposhield_p95_policy_latency_ms'))} | {fmt(row.get('audit_p95_ms'))} | {fmt(run.get('total_runtime_min'))} |"
+            f"| {row.get('run_name')} | {fmt(audit.get('agentbrake_p50_policy_latency_ms'))} | {fmt(audit.get('agentbrake_p95_policy_latency_ms'))} | {fmt(row.get('audit_p95_ms'))} | {fmt(run.get('total_runtime_min'))} |"
         )
     (REPORTS / "latency_profile.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     return 0

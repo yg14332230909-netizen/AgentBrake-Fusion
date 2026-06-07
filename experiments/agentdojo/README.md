@@ -22,13 +22,13 @@ experiments/agentdojo/archive/
 
 ---
 
-# RepoShield-ADJ AgentDojo Tool Firewall
+# AgentBrake-ADJ AgentDojo Tool Firewall
 
-This is the recommended AgentDojo evaluation path.  It inserts RepoShield at the
+This is the recommended AgentDojo evaluation path.  It inserts AgentBrake at the
 AgentDojo tool boundary rather than only in front of the model API.
 
 ```text
-AgentDojo tool output -> sanitizer -> LLM -> tool call -> RepoShield ToolGate -> original tool or safe blocked result
+AgentDojo tool output -> sanitizer -> LLM -> tool call -> AgentBrake ToolGate -> original tool or safe blocked result
 ```
 
 ## Why this ActionGraph is different

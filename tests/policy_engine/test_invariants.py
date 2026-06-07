@@ -1,11 +1,11 @@
 from dataclasses import replace
 
-from reposhield.action_parser import ActionParser
-from reposhield.asset import AssetScanner
-from reposhield.context import ContextProvenance
-from reposhield.contract import TaskContractBuilder
-from reposhield.models import ActionIR, PackageEvent, SecretTaintEvent
-from reposhield.policy import PolicyEngine
+from agentbrake.action_parser import ActionParser
+from agentbrake.asset import AssetScanner
+from agentbrake.context import ContextProvenance
+from agentbrake.contract import TaskContractBuilder
+from agentbrake.models import ActionIR, PackageEvent, SecretTaintEvent
+from agentbrake.policy import PolicyEngine
 
 
 def _repo(tmp_path):

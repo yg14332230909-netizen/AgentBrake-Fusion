@@ -1,4 +1,4 @@
-# RepoShield AgentDojo Phase 1.2 Effect Improvement Delta
+# AgentBrake AgentDojo Phase 1.2 Effect Improvement Delta
 
 - case_count: 200
 - unsafe cases: 69

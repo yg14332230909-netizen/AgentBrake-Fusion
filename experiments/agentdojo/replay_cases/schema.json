@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "RepoShield replay schema pointer",
+  "title": "AgentBrake replay schema pointer",
   "description": "Use schema_smoke_v1.json for smoke replay cases and schema_agentdojo_derived_v1.json for formal AgentDojo-derived replay cases.",
   "oneOf": [
     {"$ref": "schema_smoke_v1.json"},

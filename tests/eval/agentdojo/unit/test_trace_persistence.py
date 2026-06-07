@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from reposhield.eval.agentdojo.runner.run_tool_firewall_eval import _redact_trace_value, save_case_trace
+from agentbrake.eval.agentdojo.runner.run_tool_firewall_eval import _redact_trace_value, save_case_trace
 
 
 class DummyLogger:

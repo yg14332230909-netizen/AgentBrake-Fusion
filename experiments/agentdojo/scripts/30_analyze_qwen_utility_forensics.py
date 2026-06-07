@@ -19,8 +19,8 @@ def main() -> int:
 
     rows = read_jsonl(args.formal_dir / "per_case_results.jsonl")
     summary = read_json(args.formal_dir / "e2e_summary.json")
-    failures = [row for row in rows if row.get("method", "").startswith("reposhield") and not bool(row.get("raw_agentdojo_user_task_success"))]
-    strict_rows = [row for row in rows if row.get("method") == "reposhield_strict"]
+    failures = [row for row in rows if row.get("method", "").startswith("agentbrake") and not bool(row.get("raw_agentdojo_user_task_success"))]
+    strict_rows = [row for row in rows if row.get("method") == "agentbrake_strict"]
     strict_failures = [row for row in strict_rows if not bool(row.get("raw_agentdojo_user_task_success"))]
     baseline_rows = [row for row in rows if row.get("method") == "no_defense"]
     baseline_by_pair = {pair_key(row): row for row in baseline_rows}
@@ -29,15 +29,15 @@ def main() -> int:
         "model": summary.get("model"),
         "attack": summary.get("attack"),
         "scope": "formal_105",
-        "strict_user_utility": summary.get("methods", {}).get("reposhield_strict", {}).get("user_utility"),
-        "strict_secure_utility": summary.get("methods", {}).get("reposhield_strict", {}).get("secure_utility"),
+        "strict_user_utility": summary.get("methods", {}).get("agentbrake_strict", {}).get("user_utility"),
+        "strict_secure_utility": summary.get("methods", {}).get("agentbrake_strict", {}).get("secure_utility"),
         "recommended_secure_utility_threshold": 0.60,
         "effectiveness_acceptance": "WARN",
-        "warning_reason": "reposhield_strict secure_utility below recommended threshold 0.60",
+        "warning_reason": "agentbrake_strict secure_utility below recommended threshold 0.60",
         "strict_failure_count": len(strict_failures),
         "strict_failure_by_suite": count_by(strict_failures, "suite"),
         "strict_failure_by_category": count_by(strict_failures, "failure_category"),
-        "all_reposhield_failure_by_method_suite_category": nested_method_suite_category(failures),
+        "all_agentbrake_failure_by_method_suite_category": nested_method_suite_category(failures),
         "baseline_user_failed_same_pair_count": baseline_overlap(strict_failures, baseline_by_pair),
         "strict_model_stopped_after_block_count": sum(1 for row in strict_failures if row.get("failure_category") == "model_stopped_after_block"),
         "strict_confirmation_not_executed_count": sum(1 for row in strict_failures if row.get("failure_category") == "confirmation_not_executed"),

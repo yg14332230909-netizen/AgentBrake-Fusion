@@ -7,16 +7,16 @@
 ## 二、一键接入命令
 
 ```bash
-reposhield connect --agent custom-openai --repo . --mode standard
-reposhield start --repo .
-reposhield doctor --repo .
+agentbrake connect --agent custom-openai --repo . --mode standard
+agentbrake start --repo .
+agentbrake doctor --repo .
 ```
 
 ## 三、Agent 侧配置
 
 ```text
 base_url = http://127.0.0.1:8765/v1
-api_key  = reposhield-local
+api_key  = agentbrake-local
 ```
 
 每轮请求必须携带：
@@ -24,8 +24,8 @@ api_key  = reposhield-local
 ```json
 {
   "metadata": {
-    "reposhield_run_id": "<REPOSHIELD_RUN_ID>",
-    "conversation_id": "<REPOSHIELD_CONVERSATION_ID>"
+    "agentbrake_run_id": "<AGENTBRAKE_RUN_ID>",
+    "conversation_id": "<AGENTBRAKE_CONVERSATION_ID>"
   }
 }
 ```
@@ -33,8 +33,8 @@ api_key  = reposhield-local
 ## 四、如何验证成功
 
 ```bash
-reposhield doctor --repo .
-reposhield coverage --repo .
+agentbrake doctor --repo .
+agentbrake coverage --repo .
 ```
 
 ## 五、保护覆盖范围
@@ -47,4 +47,4 @@ Quick 保护模型响应和 OpenAI tool_calls；Standard 额外生成 shell、pa
 
 ## 七、常见问题
 
-如果 Studio 看不到同一任务的连续事件，优先检查每轮请求是否复用了稳定 `reposhield_run_id` 和 `conversation_id`。
+如果 Studio 看不到同一任务的连续事件，优先检查每轮请求是否复用了稳定 `agentbrake_run_id` 和 `conversation_id`。

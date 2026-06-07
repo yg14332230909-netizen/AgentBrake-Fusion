@@ -1,11 +1,11 @@
 # Gateway Bench 指南
 
-v0.3 新增 Gateway mode Bench，用于评估 OpenAI-compatible tool_call 链路下 RepoShield 的拦截能力、解析覆盖率和证据完整性。
+v0.3 新增 Gateway mode Bench，用于评估 OpenAI-compatible tool_call 链路下 AgentBrake 的拦截能力、解析覆盖率和证据完整性。
 
 ## 生成样本
 
 ```bash
-PYTHONPATH=src python -m reposhield generate-stage3-samples \
+PYTHONPATH=src python -m agentbrake generate-stage3-samples \
   --output samples_stage3 \
   --count 80
 ```
@@ -34,7 +34,7 @@ gateway_publish
 ## 运行评测
 
 ```bash
-PYTHONPATH=src python -m reposhield gateway-bench \
+PYTHONPATH=src python -m agentbrake gateway-bench \
   --samples samples_stage3 \
   --output reports/stage3_gateway_bench
 ```

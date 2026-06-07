@@ -5,53 +5,53 @@ import time
 from pathlib import Path
 from urllib.request import Request, urlopen
 
-from reposhield.cli import main
-from reposhield.gateway import serve_gateway, simulate_gateway_request
-from reposhield.gateway.session_identity import resolve_session_identity
-from reposhield.integration import build_start_summary, connect_repo, run_doctor, run_real_agent_smoke_test
-from reposhield.integration.profiles import integration_matrix, profile_for_agent
-from reposhield.integration.start import launch_start_services, status_services, stop_services
-from reposhield.integration.templates import load_config
-from reposhield.studio.server import serve_studio_pro
+from agentbrake.cli import main
+from agentbrake.gateway import serve_gateway, simulate_gateway_request
+from agentbrake.gateway.session_identity import resolve_session_identity
+from agentbrake.integration import build_start_summary, connect_repo, run_doctor, run_real_agent_smoke_test
+from agentbrake.integration.profiles import integration_matrix, profile_for_agent
+from agentbrake.integration.start import launch_start_services, status_services, stop_services
+from agentbrake.integration.templates import load_config
+from agentbrake.studio.server import serve_studio_pro
 
 
 def test_connect_quick_generates_config_env_and_instructions(tmp_path: Path):
     result = connect_repo(tmp_path, agent="codex", mode="quick")
 
     assert result.ok
-    assert (tmp_path / ".reposhield" / "config.yaml").exists()
-    assert (tmp_path / ".reposhield" / "agent.env").exists()
-    assert (tmp_path / ".reposhield" / "agent-instructions.md").exists()
-    config = load_config(tmp_path / ".reposhield" / "config.yaml")
+    assert (tmp_path / ".agentbrake" / "config.yaml").exists()
+    assert (tmp_path / ".agentbrake" / "agent.env").exists()
+    assert (tmp_path / ".agentbrake" / "agent-instructions.md").exists()
+    config = load_config(tmp_path / ".agentbrake" / "config.yaml")
     assert config["mode"] == "quick"
     assert config["agent"] == "codex"
     assert config["agent_config"]["wire_api"] == "responses"
     assert config["agent_config"]["smoke_endpoint"] == "/v1/responses"
     assert config["session"]["run_id"].startswith("run_")
     assert not config["shims"]["enabled"]
-    env_text = (tmp_path / ".reposhield" / "agent.env").read_text(encoding="utf-8")
+    env_text = (tmp_path / ".agentbrake" / "agent.env").read_text(encoding="utf-8")
     assert "OPENAI_BASE_URL=" in env_text
-    assert "REPOSHIELD_CONVERSATION_ID=" in env_text
+    assert "AGENTBRAKE_CONVERSATION_ID=" in env_text
 
 
 def test_connect_standard_generates_guarded_tool_shims(tmp_path: Path):
     connect_repo(tmp_path, agent="generic", mode="standard")
-    config = load_config(tmp_path / ".reposhield" / "config.yaml")
+    config = load_config(tmp_path / ".agentbrake" / "config.yaml")
 
     assert config["shims"]["enabled"]
-    assert (tmp_path / ".reposhield" / "shims" / "npm").exists()
-    assert (tmp_path / ".reposhield" / "shims" / "curl").exists()
-    assert (tmp_path / ".reposhield" / "scripts" / "run_gateway.sh").exists()
+    assert (tmp_path / ".agentbrake" / "shims" / "npm").exists()
+    assert (tmp_path / ".agentbrake" / "shims" / "curl").exists()
+    assert (tmp_path / ".agentbrake" / "scripts" / "run_gateway.sh").exists()
 
 
 def test_connect_full_generates_studio_approval_and_demo(tmp_path: Path):
     connect_repo(tmp_path, agent="openclaw", mode="full")
-    config = load_config(tmp_path / ".reposhield" / "config.yaml")
+    config = load_config(tmp_path / ".agentbrake" / "config.yaml")
 
     assert config["studio"]["enabled"]
     assert config["approval"]["enabled"]
-    assert (tmp_path / ".reposhield" / "demo" / "normal_request.json").exists()
-    assert (tmp_path / ".reposhield" / "demo" / "attack_request.json").exists()
+    assert (tmp_path / ".agentbrake" / "demo" / "normal_request.json").exists()
+    assert (tmp_path / ".agentbrake" / "demo" / "attack_request.json").exists()
     summary = build_start_summary(tmp_path)
     assert [service["name"] for service in summary["services"]] == ["gateway", "studio", "approval_api"]
 
@@ -60,8 +60,8 @@ def test_connect_dry_run_does_not_write_files(tmp_path: Path):
     result = connect_repo(tmp_path, agent="generic", mode="full", dry_run=True)
 
     assert result.dry_run
-    assert not (tmp_path / ".reposhield").exists()
-    assert ".reposhield/config.yaml" in result.skipped
+    assert not (tmp_path / ".agentbrake").exists()
+    assert ".agentbrake/config.yaml" in result.skipped
 
 
 def test_connect_accepts_custom_openai_and_gateway_options(tmp_path: Path):
@@ -72,7 +72,7 @@ def test_connect_accepts_custom_openai_and_gateway_options(tmp_path: Path):
         upstream_base_url="https://api.example.test/v1",
         policy_pack="policies/policy_pack_gateway.yaml",
     )
-    config = load_config(tmp_path / ".reposhield" / "config.yaml")
+    config = load_config(tmp_path / ".agentbrake" / "config.yaml")
 
     assert config["agent"] == "custom-openai"
     assert config["gateway"]["upstream_base_url"] == "https://api.example.test/v1"
@@ -177,7 +177,7 @@ def test_agent_integration_docs_and_demo_package_exist():
         assert (root / "docs" / "integrations" / f"{name}.md").exists()
     demo = root / "examples" / "agent-integration-demo"
     assert (demo / "README.md").exists()
-    assert (demo / "start_reposhield.sh").exists()
+    assert (demo / "start_agentbrake.sh").exists()
     assert (demo / "demo_repo" / "package.json").exists()
     assert (demo / "expected_outputs" / "attack-secret-exfil.md").exists()
 
@@ -186,7 +186,7 @@ def test_doctor_includes_repair_hints_for_missing_config(tmp_path: Path):
     report = run_doctor(tmp_path)
 
     assert not report.ok
-    assert "reposhield connect" in report.checks[0]["repair"]
+    assert "agentbrake connect" in report.checks[0]["repair"]
     assert report.next_commands
 
 
@@ -201,7 +201,7 @@ def test_profiles_load_from_external_yaml():
 
 def test_real_agent_smoke_reports_unsupported_profile(tmp_path: Path):
     connect_repo(tmp_path, agent="generic", mode="quick")
-    config = load_config(tmp_path / ".reposhield" / "config.yaml")
+    config = load_config(tmp_path / ".agentbrake" / "config.yaml")
     result = run_real_agent_smoke_test(config, profile_for_agent("generic"))
     assert not result["ok"]
     assert result["detail"] == "profile has no real_agent_command"
@@ -209,7 +209,7 @@ def test_real_agent_smoke_reports_unsupported_profile(tmp_path: Path):
 
 def test_real_agent_smoke_refuses_when_gateway_is_not_running(tmp_path: Path):
     connect_repo(tmp_path, agent="codex", mode="quick")
-    config = load_config(tmp_path / ".reposhield" / "config.yaml")
+    config = load_config(tmp_path / ".agentbrake" / "config.yaml")
     result = run_real_agent_smoke_test(config, profile_for_agent("codex"), command=["python", "-c", "print('OK')"], timeout=1)
 
     assert not result["ok"]
@@ -221,9 +221,9 @@ def test_status_and_stop_include_repair_when_not_connected(tmp_path: Path):
     stop = stop_services(tmp_path)
 
     assert not status["ok"]
-    assert "reposhield connect" in status["repair"]
+    assert "agentbrake connect" in status["repair"]
     assert not stop["ok"]
-    assert "reposhield connect" in stop["repair"]
+    assert "agentbrake connect" in stop["repair"]
 
 
 def test_doctor_probes_live_gateway(tmp_path: Path):
@@ -231,12 +231,12 @@ def test_doctor_probes_live_gateway(tmp_path: Path):
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
-    config = load_config(tmp_path / ".reposhield" / "config.yaml")
+    config = load_config(tmp_path / ".agentbrake" / "config.yaml")
     config["gateway"]["port"] = port
-    (tmp_path / ".reposhield" / "config.yaml").write_text(json.dumps(config), encoding="utf-8")
+    (tmp_path / ".agentbrake" / "config.yaml").write_text(json.dumps(config), encoding="utf-8")
     thread = threading.Thread(
         target=serve_gateway,
-        kwargs={"repo_root": tmp_path, "host": "127.0.0.1", "port": port, "audit_path": tmp_path / ".reposhield" / "gateway_audit.jsonl"},
+        kwargs={"repo_root": tmp_path, "host": "127.0.0.1", "port": port, "audit_path": tmp_path / ".agentbrake" / "gateway_audit.jsonl"},
         daemon=True,
     )
     thread.start()
@@ -252,12 +252,12 @@ def test_doctor_uses_agent_specific_responses_smoke(tmp_path: Path):
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
-    config = load_config(tmp_path / ".reposhield" / "config.yaml")
+    config = load_config(tmp_path / ".agentbrake" / "config.yaml")
     config["gateway"]["port"] = port
-    (tmp_path / ".reposhield" / "config.yaml").write_text(json.dumps(config), encoding="utf-8")
+    (tmp_path / ".agentbrake" / "config.yaml").write_text(json.dumps(config), encoding="utf-8")
     thread = threading.Thread(
         target=serve_gateway,
-        kwargs={"repo_root": tmp_path, "host": "127.0.0.1", "port": port, "audit_path": tmp_path / ".reposhield" / "gateway_audit.jsonl"},
+        kwargs={"repo_root": tmp_path, "host": "127.0.0.1", "port": port, "audit_path": tmp_path / ".agentbrake" / "gateway_audit.jsonl"},
         daemon=True,
     )
     thread.start()
@@ -273,8 +273,8 @@ def test_studio_exposes_coverage_endpoint(tmp_path: Path):
     connect_repo(tmp_path, agent="generic", mode="full")
     simulate_gateway_request(
         tmp_path,
-        {"model": "reposhield/local-heuristic", "messages": [{"role": "user", "content": "fix login"}]},
-        audit_path=tmp_path / ".reposhield" / "gateway_audit.jsonl",
+        {"model": "agentbrake/local-heuristic", "messages": [{"role": "user", "content": "fix login"}]},
+        audit_path=tmp_path / ".agentbrake" / "gateway_audit.jsonl",
     )
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
@@ -282,8 +282,8 @@ def test_studio_exposes_coverage_endpoint(tmp_path: Path):
     thread = threading.Thread(
         target=serve_studio_pro,
         kwargs={
-            "audit_path": tmp_path / ".reposhield" / "gateway_audit.jsonl",
-            "approvals_path": tmp_path / ".reposhield" / "gateway_approvals.jsonl",
+            "audit_path": tmp_path / ".agentbrake" / "gateway_audit.jsonl",
+            "approvals_path": tmp_path / ".agentbrake" / "gateway_approvals.jsonl",
             "repo_root": tmp_path,
             "host": "127.0.0.1",
             "port": port,
@@ -292,7 +292,7 @@ def test_studio_exposes_coverage_endpoint(tmp_path: Path):
     )
     thread.start()
     time.sleep(0.25)
-    req = Request(f"http://127.0.0.1:{port}/api/coverage", headers={"Authorization": "Bearer reposhield-local"})
+    req = Request(f"http://127.0.0.1:{port}/api/coverage", headers={"Authorization": "Bearer agentbrake-local"})
 
     with urlopen(req, timeout=5) as resp:
         payload = json.loads(resp.read().decode("utf-8"))

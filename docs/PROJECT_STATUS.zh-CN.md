@@ -1,10 +1,10 @@
-# RepoShield 项目状态与商用化评估
+# AgentBrake 项目状态与商用化评估
 
 更新时间：2026-05-24
 
 ## 总体判断
 
-RepoShield 当前是 **研究级强化原型 / 早期工程 MVP**。
+AgentBrake 当前是 **研究级强化原型 / 早期工程 MVP**。
 
 它已经具备完整的本地安全治理主链路：Gateway、ActionIR、TaskContract、ContextGraph、SecretSentry、PackageGuard、MCP/Memory gate、Sandbox preflight、PolicyGraph / RuleIndex、ApprovalCenter、AuditLog、Replay、Studio 和 Bench。
 
@@ -110,7 +110,7 @@ AuditLog 使用 hash-chain，事件有 `schema_version`。Replay 不只检查文
 
 ### 2. 供应链情报
 
-当前具备 command parser、registry 检查、lockfile evidence 和本地 `.reposhield/package_metadata.json` oracle。
+当前具备 command parser、registry 检查、lockfile evidence 和本地 `.agentbrake/package_metadata.json` oracle。
 
 商用仍需要：
 
@@ -161,7 +161,7 @@ AuditLog 使用 hash-chain，事件有 `schema_version`。Replay 不只检查文
 
 推荐使用：
 
-> RepoShield is a research-grade pre-execution governance gateway for coding agents, with a working engineering MVP covering gateway interception, tool-call governance, provenance-aware policy decisions, sandbox preflight, approval binding, and tamper-evident audit logs.
+> AgentBrake is a research-grade pre-execution governance gateway for coding agents, with a working engineering MVP covering gateway interception, tool-call governance, provenance-aware policy decisions, sandbox preflight, approval binding, and tamper-evident audit logs.
 
 不建议现在宣称：
 

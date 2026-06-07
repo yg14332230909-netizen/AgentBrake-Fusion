@@ -1,6 +1,6 @@
 ﻿from __future__ import annotations
 
-from reposhield.eval.agentdojo.tool_taxonomy import classify_agentdojo_tool
+from agentbrake.eval.agentdojo.tool_taxonomy import classify_agentdojo_tool
 
 
 def test_agentdojo_tool_taxonomy_maps_core_tools():

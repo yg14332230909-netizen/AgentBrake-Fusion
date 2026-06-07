@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_FORMAL_DIR = ROOT / "experiments" / "agentdojo" / "reports" / "cross_model" / "qwen_plus" / "e2e_formal_105"
 DEFAULT_OUT_DIR = ROOT / "experiments" / "agentdojo" / "reports" / "cross_model" / "qwen_plus" / "utility_forensics"
 
-METHODS = ("no_defense", "reposhield_strict", "reposhield_gateway_eval", "reposhield_oracle_user_eval")
+METHODS = ("no_defense", "agentbrake_strict", "agentbrake_gateway_eval", "agentbrake_oracle_user_eval")
 
 
 def main() -> int:
@@ -63,10 +63,10 @@ def group_by_case(rows: list[dict[str, Any]]) -> dict[str, dict[str, dict[str, A
 
 
 def analyze_case(case_id: str, by_method: dict[str, dict[str, Any]]) -> dict[str, Any]:
-    strict = by_method.get("reposhield_strict", {})
+    strict = by_method.get("agentbrake_strict", {})
     no_defense = by_method.get("no_defense", {})
-    gateway = by_method.get("reposhield_gateway_eval", {})
-    oracle = by_method.get("reposhield_oracle_user_eval", {})
+    gateway = by_method.get("agentbrake_gateway_eval", {})
+    oracle = by_method.get("agentbrake_oracle_user_eval", {})
     suite, user_task_id, injection_task_id = case_id.split(":", 2)
     intervention_present = bool(strict.get("blocked_case")) or int(strict.get("confirmation_required_count") or 0) > 0
     confirmation_required = int(strict.get("confirmation_required_count") or 0) > 0
@@ -163,7 +163,7 @@ def build_summary(
     by_suite_gap: dict[str, Counter[str]] = defaultdict(Counter)
     for row in failed:
         by_suite_gap[row["suite"]][row["gap_type"]] += 1
-    strict = summary.get("methods", {}).get("reposhield_strict", {})
+    strict = summary.get("methods", {}).get("agentbrake_strict", {})
     return {
         "model": summary.get("model"),
         "attack": summary.get("attack"),

@@ -6,7 +6,7 @@
     "false_positive_rate": 0.0534
   },
   "phase2_e2e": {
-    "method": "reposhield_strict",
+    "method": "agentbrake_strict",
     "targeted_asr": 0.0,
     "user_utility": 1.0,
     "secure_utility": 1.0

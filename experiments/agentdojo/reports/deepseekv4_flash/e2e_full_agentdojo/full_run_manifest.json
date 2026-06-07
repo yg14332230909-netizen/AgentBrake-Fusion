@@ -6,9 +6,9 @@
   "methods": [
     "no_defense",
     "tool_filter",
-    "reposhield_strict",
-    "reposhield_gateway_eval",
-    "reposhield_oracle_user_eval"
+    "agentbrake_strict",
+    "agentbrake_gateway_eval",
+    "agentbrake_oracle_user_eval"
   ],
   "method_count": 5,
   "per_case_rows": 4745,

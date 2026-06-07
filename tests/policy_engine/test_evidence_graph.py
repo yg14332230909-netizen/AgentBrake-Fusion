@@ -1,6 +1,6 @@
-from reposhield.policy_engine.evidence_graph import PolicyEvaluationTrace
-from reposhield.policy_engine.facts import PolicyFact, PolicyFactSet
-from reposhield.policy_engine.rule_schema import RuleHit
+from agentbrake.policy_engine.evidence_graph import PolicyEvaluationTrace
+from agentbrake.policy_engine.facts import PolicyFact, PolicyFactSet
+from agentbrake.policy_engine.rule_schema import RuleHit
 
 
 def test_policy_eval_trace_contains_causal_graph_edges():
@@ -32,7 +32,7 @@ def test_policy_eval_trace_contains_causal_graph_edges():
     trace = PolicyEvaluationTrace.build(
         action_id="act_1",
         engine_mode="policygraph-enforce",
-        policy_version="reposhield-policygraph-v0.4",
+        policy_version="agentbrake-policygraph-v0.4",
         fact_set=PolicyFactSet([fact]),
         final_decision="block",
         hits=[hit],
@@ -64,7 +64,7 @@ def test_policy_eval_trace_preserves_graph_history_and_trace_metadata():
     trace = PolicyEvaluationTrace.build(
         action_id="act_2",
         engine_mode="policygraph-enforce",
-        policy_version="reposhield-policygraph-v0.4",
+        policy_version="agentbrake-policygraph-v0.4",
         fact_set=PolicyFactSet([graph_fact, history_fact, trace_fact]),
         final_decision="block",
         hits=[],

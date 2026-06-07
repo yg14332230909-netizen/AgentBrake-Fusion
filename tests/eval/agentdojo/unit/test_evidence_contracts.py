@@ -1,7 +1,7 @@
-from reposhield.eval.agentdojo.compat.types import ToolCallContext
-from reposhield.eval.agentdojo.evidence.contracts import PaymentIntentContract, payment_contract_from_user_task
-from reposhield.eval.agentdojo.evidence.entity_extractor import extract_entities
-from reposhield.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
+from agentbrake.eval.agentdojo.compat.types import ToolCallContext
+from agentbrake.eval.agentdojo.evidence.contracts import PaymentIntentContract, payment_contract_from_user_task
+from agentbrake.eval.agentdojo.evidence.entity_extractor import extract_entities
+from agentbrake.eval.agentdojo.gate.tool_firewall import AgentDojoToolFirewall
 
 
 def test_payment_intent_contract_defaults_match_policy_requirements():

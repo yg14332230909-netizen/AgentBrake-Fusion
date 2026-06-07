@@ -1,6 +1,6 @@
-from reposhield.action_parser import ActionParser
-from reposhield.models import ExecTrace, PolicyDecision, SessionState
-from reposhield.session_state import PersistentSessionStateStore, SessionStateStore
+from agentbrake.action_parser import ActionParser
+from agentbrake.models import ExecTrace, PolicyDecision, SessionState
+from agentbrake.session_state import PersistentSessionStateStore, SessionStateStore
 
 
 def _decision(value: str) -> PolicyDecision:

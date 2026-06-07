@@ -1,12 +1,12 @@
 from pathlib import Path
 
-from reposhield.openclaw_quickstart import generate_openclaw_quickstart
+from agentbrake.openclaw_quickstart import generate_openclaw_quickstart
 
 
 def test_openclaw_quickstart_generates_start_files(tmp_path: Path):
     repo = tmp_path / "repo"
     repo.mkdir()
-    result = generate_openclaw_quickstart(repo, tmp_path / "reposhield", model="gpt-test")
+    result = generate_openclaw_quickstart(repo, tmp_path / "agentbrake", model="gpt-test")
 
     ps1 = Path(result["start_powershell"])
     cmd = Path(result["start_cmd"])
@@ -20,6 +20,6 @@ def test_openclaw_quickstart_generates_start_files(tmp_path: Path):
     assert provider.exists()
     assert "gateway-start" in ps1.read_text(encoding="utf-8")
     assert "gateway-start" in sh.read_text(encoding="utf-8")
-    assert "REPOSHIELD_REPO" in env_example.read_text(encoding="utf-8")
-    assert "reposhield-local" in provider.read_text(encoding="utf-8")
+    assert "AGENTBRAKE_REPO" in env_example.read_text(encoding="utf-8")
+    assert "agentbrake-local" in provider.read_text(encoding="utf-8")
     assert result["base_url"] == "http://127.0.0.1:8765/v1"

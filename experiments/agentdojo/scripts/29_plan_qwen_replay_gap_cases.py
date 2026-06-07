@@ -70,7 +70,7 @@ def main() -> int:
     current_safe = int(manifest.get("safe_case_count", 0) or 0)
     current_unsafe = int(manifest.get("unsafe_case_count", 0) or 0)
     plan = {
-        "schema_version": "reposhield_qwen_replay_gap_plan_v1",
+        "schema_version": "agentbrake_qwen_replay_gap_plan_v1",
         "model_key": "qwen_plus",
         "model_id": "qwen-plus",
         "provider": "alibaba_dashscope",

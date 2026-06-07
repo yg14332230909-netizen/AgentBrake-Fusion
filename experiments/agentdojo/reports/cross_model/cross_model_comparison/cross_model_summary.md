@@ -1,4 +1,4 @@
-﻿# Cross-Model Formal Comparison
+# Cross-Model Formal Comparison
 
 | model | scope | no_defense_asr | strict_asr | strict_user_utility | strict_secure_utility | strict_vs_tool_filter_gap | overall |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |

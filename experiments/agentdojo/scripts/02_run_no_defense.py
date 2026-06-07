@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from experiments.agentdojo.scripts._common import run_eval
 

@@ -1,6 +1,6 @@
-from reposhield.models import PolicyDecision
-from reposhield.policy_engine.decision_lattice import DECISION_RANK, DecisionLattice
-from reposhield.policy_engine.rule_schema import RuleHit
+from agentbrake.models import PolicyDecision
+from agentbrake.policy_engine.decision_lattice import DECISION_RANK, DecisionLattice
+from agentbrake.policy_engine.rule_schema import RuleHit
 
 
 def test_decision_lattice_order_matches_policygraph_doc():

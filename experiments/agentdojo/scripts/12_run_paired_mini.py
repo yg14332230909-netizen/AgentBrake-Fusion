@@ -13,12 +13,12 @@ DEFAULT_OUT = ROOT / "experiments" / "agentdojo" / "reports" / "paired_mini"
 SUPPORTED_METHODS = {
     "no_defense": "none",
     "agentdojo_tool_filter": "tool_filter",
-    "reposhield_tool_firewall": "agentdojo_firewall",
+    "agentbrake_tool_firewall": "agentdojo_firewall",
 }
 
 OPTIONAL_METHODS = {
-    "gateway_only": "reposhield_gateway_only",
-    "reposhield_full": "agentdojo_firewall_full",
+    "gateway_only": "agentbrake_gateway_only",
+    "agentbrake_full": "agentdojo_firewall_full",
     "simple_denylist": "simple_denylist",
 }
 
@@ -42,7 +42,7 @@ def main() -> int:
     if args.confirmation_mode:
         method_options = dict(manifest.get("method_options") or {})
         for method in manifest.get("methods", []):
-            if method.startswith("reposhield_tool_firewall"):
+            if method.startswith("agentbrake_tool_firewall"):
                 method_options.setdefault(method, {})["confirmation_mode"] = args.confirmation_mode
         manifest["method_options"] = method_options
     args.out_dir.mkdir(parents=True, exist_ok=True)
@@ -70,7 +70,7 @@ def build_plan(
             command = [
                     sys.executable,
                     "-m",
-                    "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+                    "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
                     "--suite",
                     suite,
                     "--model",

@@ -8,13 +8,13 @@ from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
-from reposhield.audit import AuditLog
-from reposhield.gateway import OpenAICompatibleUpstream, RepoShieldGateway, serve_gateway, simulate_gateway_request
-from reposhield.gateway.openai_compat import chat_completion_stream_events, responses_api_response, responses_api_stream_events
-from reposhield.gateway_bench import generate_stage3_gateway_samples, run_gateway_suite
-from reposhield.instruction_ir import InstructionBuilder, InstructionLowerer
-from reposhield.plugins import ToolParserRegistry
-from reposhield.registry import TaintStore, TwoLayerRegistry
+from agentbrake.audit import AuditLog
+from agentbrake.gateway import OpenAICompatibleUpstream, AgentBrakeGateway, serve_gateway, simulate_gateway_request
+from agentbrake.gateway.openai_compat import chat_completion_stream_events, responses_api_response, responses_api_stream_events
+from agentbrake.gateway_bench import generate_stage3_gateway_samples, run_gateway_suite
+from agentbrake.instruction_ir import InstructionBuilder, InstructionLowerer
+from agentbrake.plugins import ToolParserRegistry
+from agentbrake.registry import TaintStore, TwoLayerRegistry
 
 
 def make_repo(tmp_path: Path) -> Path:
@@ -25,7 +25,7 @@ def make_repo(tmp_path: Path) -> Path:
     (repo / "src" / "login.js").write_text("function bindLogin(button, submit) {\n}\nmodule.exports = { bindLogin };\n", encoding="utf-8")
     (repo / "tests" / "login.test.js").write_text("console.log('ok')\n", encoding="utf-8")
     (repo / "package.json").write_text('{"scripts":{"test":"node tests/login.test.js"},"dependencies":{}}\n', encoding="utf-8")
-    (repo / ".env").write_text("RS_CANARY_NPM_TOKEN=npm_REPOSHIELD_STAGE3_CANARY\n", encoding="utf-8")
+    (repo / ".env").write_text("RS_CANARY_NPM_TOKEN=npm_AGENTBRAKE_STAGE3_CANARY\n", encoding="utf-8")
     (repo / ".github" / "workflows" / "release.yml").write_text("name: release\n", encoding="utf-8")
     return repo
 
@@ -48,7 +48,7 @@ def test_instruction_ir_lowers_openai_tool_call_to_action(tmp_path: Path):
 def test_gateway_blocks_untrusted_context_tool_call(tmp_path: Path):
     repo = make_repo(tmp_path)
     request = {
-        "model": "reposhield/local-heuristic",
+        "model": "agentbrake/local-heuristic",
         "task": "修复登录按钮点击无响应的问题，并运行测试。",
         "messages": [{"role": "user", "content": "修复登录按钮点击无响应的问题，并运行测试。"}],
         "metadata": {
@@ -66,7 +66,7 @@ def test_gateway_blocks_untrusted_context_tool_call(tmp_path: Path):
     assert guarded
     assert guarded[0]["action"]["semantic_action"] == "install_git_dependency"
     assert guarded[0]["runtime"]["effective_decision"] == "block"
-    assert "RepoShield blocked" in result["response"]["choices"][0]["message"]["content"]
+    assert "AgentBrake blocked" in result["response"]["choices"][0]["message"]["content"]
 
 
 def test_openai_compatible_upstream_normalizes_chat_completion_message():
@@ -161,7 +161,7 @@ def test_gateway_uses_injected_openai_compatible_upstream_and_blocks(tmp_path: P
                 ],
             }
 
-    gw = RepoShieldGateway(repo, audit_path=tmp_path / "audit.jsonl", upstream=InjectedUpstream())
+    gw = AgentBrakeGateway(repo, audit_path=tmp_path / "audit.jsonl", upstream=InjectedUpstream())
     result = gw.handle_chat_completion(
         {
             "model": "gpt-test",
@@ -176,7 +176,7 @@ def test_gateway_uses_injected_openai_compatible_upstream_and_blocks(tmp_path: P
     assert result["guarded_results"][0]["runtime"]["effective_decision"] == "block"
     assert "instruction_id" in result["guarded_results"][0]["action"]["metadata"]
     assert "approval_request" in result["guarded_results"][0]
-    events = (repo / ".reposhield" / "gateway_approvals.jsonl").read_text(encoding="utf-8")
+    events = (repo / ".agentbrake" / "gateway_approvals.jsonl").read_text(encoding="utf-8")
     assert "request" in events
 
 
@@ -185,7 +185,7 @@ def test_chat_completion_stream_events_emit_sse_done(tmp_path: Path):
     result = simulate_gateway_request(
         repo,
         {
-            "model": "reposhield/local-heuristic",
+            "model": "agentbrake/local-heuristic",
             "stream": True,
             "messages": [{"role": "user", "content": "fix login and test"}],
         },
@@ -202,7 +202,7 @@ def test_chat_completion_stream_events_emit_indexed_tool_call_chunks():
     events = chat_completion_stream_events(
         {
             "id": "chatcmpl_test",
-            "model": "reposhield/local",
+            "model": "agentbrake/local",
             "choices": [
                 {
                     "message": {
@@ -225,13 +225,13 @@ def test_responses_api_response_has_response_shape(tmp_path: Path):
     repo = make_repo(tmp_path)
     result = simulate_gateway_request(
         repo,
-        {"model": "reposhield/local-heuristic", "messages": [{"role": "user", "content": "fix login"}]},
+        {"model": "agentbrake/local-heuristic", "messages": [{"role": "user", "content": "fix login"}]},
         audit_path=tmp_path / "audit.jsonl",
     )
     response = responses_api_response(result["response"], result["trace_id"])
     assert response["object"] == "response"
     assert response["output"]
-    assert response["metadata"]["reposhield_trace_id"] == result["trace_id"]
+    assert response["metadata"]["agentbrake_trace_id"] == result["trace_id"]
     assert set(response["usage"]) == {"input_tokens", "output_tokens", "total_tokens"}
 
 
@@ -239,7 +239,7 @@ def test_responses_api_stream_events_emit_completed_event(tmp_path: Path):
     repo = make_repo(tmp_path)
     result = simulate_gateway_request(
         repo,
-        {"model": "reposhield/local-heuristic", "messages": [{"role": "user", "content": "fix login"}]},
+        {"model": "agentbrake/local-heuristic", "messages": [{"role": "user", "content": "fix login"}]},
         audit_path=tmp_path / "audit.jsonl",
     )
     response = responses_api_response(result["response"], result["trace_id"])
@@ -253,7 +253,7 @@ def test_responses_api_stream_events_emit_completed_event(tmp_path: Path):
 
 def test_gateway_resets_contract_and_context_graph_per_request(tmp_path: Path):
     repo = make_repo(tmp_path)
-    gw = RepoShieldGateway(repo, audit_path=tmp_path / "audit.jsonl")
+    gw = AgentBrakeGateway(repo, audit_path=tmp_path / "audit.jsonl")
     first = gw.handle_chat_completion(
         {
             "messages": [{"role": "user", "content": "fix login"}],
@@ -276,7 +276,7 @@ def test_gateway_resets_contract_and_context_graph_per_request(tmp_path: Path):
 
 def test_gateway_persists_session_state_across_requests_with_same_run_id(tmp_path: Path):
     repo = make_repo(tmp_path)
-    gw = RepoShieldGateway(repo, audit_path=tmp_path / "audit.jsonl")
+    gw = AgentBrakeGateway(repo, audit_path=tmp_path / "audit.jsonl")
     first = gw.handle_chat_completion(
         {
             "metadata": {"run_id": "run_cross_gateway"},
@@ -318,12 +318,12 @@ def test_gateway_persists_session_state_across_requests_with_same_run_id(tmp_pat
         code in second["guarded_results"][0]["decision"]["reason_codes"]
         for code in {"attempted_secret_egress_requires_governance", "secret_egress_attempt"}
     )
-    assert (repo / ".reposhield" / "session_state.jsonl").exists()
+    assert (repo / ".agentbrake" / "session_state.jsonl").exists()
 
 
 def test_gateway_derives_stable_session_from_conversation_id(tmp_path: Path):
     repo = make_repo(tmp_path)
-    gw = RepoShieldGateway(repo, audit_path=tmp_path / "audit.jsonl")
+    gw = AgentBrakeGateway(repo, audit_path=tmp_path / "audit.jsonl")
     request_base = {"metadata": {"conversation_id": "conv_login_fix"}, "messages": [{"role": "user", "content": "inspect"}]}
 
     first = gw.handle_chat_completion(
@@ -371,7 +371,7 @@ def test_gateway_derives_stable_session_from_conversation_id(tmp_path: Path):
 def test_gateway_concurrent_requests_keep_audit_hash_chain_valid(tmp_path: Path):
     repo = make_repo(tmp_path)
     audit_path = tmp_path / "audit.jsonl"
-    gw = RepoShieldGateway(repo, audit_path=audit_path)
+    gw = AgentBrakeGateway(repo, audit_path=audit_path)
 
     def call(i: int):
         return gw.handle_chat_completion({"trace_id": f"trace_{i}", "messages": [{"role": "user", "content": "fix login and run tests"}]})
@@ -390,7 +390,7 @@ def test_gateway_does_not_release_allow_in_sandbox_tool_calls(tmp_path: Path):
     repo = make_repo(tmp_path)
     result = simulate_gateway_request(
         repo,
-        {"model": "reposhield/local-heuristic", "messages": [{"role": "user", "content": "fix login and run tests"}]},
+        {"model": "agentbrake/local-heuristic", "messages": [{"role": "user", "content": "fix login and run tests"}]},
         audit_path=tmp_path / "audit.jsonl",
     )
     assert any(g["runtime"]["effective_decision"] == "allow_in_sandbox" for g in result["guarded_results"])
@@ -443,7 +443,7 @@ def test_serve_gateway_rejects_oversized_request_body_before_reading(tmp_path: P
     request = (
         "POST /v1/chat/completions HTTP/1.1\r\n"
         f"Host: 127.0.0.1:{port}\r\n"
-        "Authorization: Bearer reposhield-local\r\n"
+        "Authorization: Bearer agentbrake-local\r\n"
         "Content-Type: application/json\r\n"
         "Content-Length: 3145728\r\n"
         "Connection: close\r\n"
@@ -473,22 +473,22 @@ def test_serve_gateway_returns_run_id_header(tmp_path: Path):
         data=json.dumps(
             {
                 "messages": [{"role": "user", "content": "fix login"}],
-                "metadata": {"reposhield_run_id": "run_http_header_test", "conversation_id": "conv_http_header_test"},
+                "metadata": {"agentbrake_run_id": "run_http_header_test", "conversation_id": "conv_http_header_test"},
             }
         ).encode("utf-8"),
-        headers={"Content-Type": "application/json", "Authorization": "Bearer reposhield-local"},
+        headers={"Content-Type": "application/json", "Authorization": "Bearer agentbrake-local"},
         method="POST",
     )
     with urlopen(req, timeout=5) as resp:
         body = json.loads(resp.read().decode("utf-8"))
-        assert resp.headers["X-RepoShield-Run-Id"] == "run_http_header_test"
-        assert resp.headers["X-RepoShield-Trace-Id"] == "run_http_header_test"
-    assert body["reposhield"]["trace_id"] == "run_http_header_test"
+        assert resp.headers["X-AgentBrake-Run-Id"] == "run_http_header_test"
+        assert resp.headers["X-AgentBrake-Trace-Id"] == "run_http_header_test"
+    assert body["agentbrake"]["trace_id"] == "run_http_header_test"
 
 
 def test_gateway_non_loopback_requires_explicit_token(tmp_path: Path, monkeypatch):
     repo = make_repo(tmp_path)
-    monkeypatch.delenv("REPOSHIELD_GATEWAY_API_KEY", raising=False)
+    monkeypatch.delenv("AGENTBRAKE_GATEWAY_API_KEY", raising=False)
     try:
         serve_gateway(repo, host="0.0.0.0", port=0, audit_path=tmp_path / "audit.jsonl")
     except RuntimeError as exc:
@@ -525,28 +525,28 @@ def test_serve_gateway_streaming_sends_prelude_before_slow_upstream(tmp_path: Pa
     req = Request(
         f"http://127.0.0.1:{port}/v1/chat/completions",
         data=json.dumps({"model": "slow-test", "stream": True, "messages": [{"role": "user", "content": "hello"}]}).encode("utf-8"),
-        headers={"Content-Type": "application/json", "Authorization": "Bearer reposhield-local"},
+        headers={"Content-Type": "application/json", "Authorization": "Bearer agentbrake-local"},
         method="POST",
     )
     start = time.monotonic()
     with urlopen(req, timeout=5) as resp:
-        assert resp.headers["X-RepoShield-Run-Id"]
+        assert resp.headers["X-AgentBrake-Run-Id"]
         first_line = resp.readline()
         elapsed = time.monotonic() - start
         rest = resp.read().decode("utf-8")
     assert elapsed < 0.4
     assert first_line.startswith(b"data: ")
     assert '"role": "assistant"' in first_line.decode("utf-8")
-    assert "reposhield heartbeat" in rest
+    assert "agentbrake heartbeat" in rest
     assert "slow ok" in rest
     assert "data: [DONE]" in rest
 
 
 def test_gateway_plus_guarded_tools_can_release_allow_in_sandbox_tool_calls(tmp_path: Path):
     repo = make_repo(tmp_path)
-    gw = RepoShieldGateway(repo, audit_path=tmp_path / "audit.jsonl", release_mode="gateway_plus_guarded_tools")
+    gw = AgentBrakeGateway(repo, audit_path=tmp_path / "audit.jsonl", release_mode="gateway_plus_guarded_tools")
     result = gw.handle_chat_completion(
-        {"model": "reposhield/local-heuristic", "messages": [{"role": "user", "content": "fix login and run tests"}]}
+        {"model": "agentbrake/local-heuristic", "messages": [{"role": "user", "content": "fix login and run tests"}]}
     )
     assert any(g["runtime"]["effective_decision"] == "allow_in_sandbox" for g in result["guarded_results"])
     message = result["response"]["choices"][0]["message"]
@@ -603,7 +603,7 @@ def test_policy_runtime_observe_only_does_not_effectively_block(tmp_path: Path):
 def test_gateway_disabled_policy_requires_explicit_unsafe_flag(tmp_path: Path):
     repo = make_repo(tmp_path)
     try:
-        RepoShieldGateway(repo, audit_path=tmp_path / "audit.jsonl", policy_mode="disabled")
+        AgentBrakeGateway(repo, audit_path=tmp_path / "audit.jsonl", policy_mode="disabled")
     except ValueError as exc:
         assert "unsafe_allow_disabled" in str(exc)
     else:

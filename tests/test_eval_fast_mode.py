@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from reposhield.audit import AuditLog
-from reposhield.control_plane import RepoShieldControlPlane
-from reposhield.eval.fast_mode import load_eval_fast_mode_config
-from reposhield.models import ActionIR
+from agentbrake.audit import AuditLog
+from agentbrake.control_plane import AgentBrakeControlPlane
+from agentbrake.eval.fast_mode import load_eval_fast_mode_config
+from agentbrake.models import ActionIR
 
 
 def test_fast_mode_config_defaults_from_env(monkeypatch):
-    monkeypatch.setenv("REPOSHIELD_EVAL_FAST_MODE", "1")
+    monkeypatch.setenv("AGENTBRAKE_EVAL_FAST_MODE", "1")
     cfg = load_eval_fast_mode_config()
     assert cfg.enabled is True
     assert cfg.disable_preflight is True
@@ -15,11 +15,11 @@ def test_fast_mode_config_defaults_from_env(monkeypatch):
 
 
 def test_control_plane_emits_performance_trace_and_skips_preflight_in_fast_mode(tmp_path, monkeypatch):
-    monkeypatch.setenv("REPOSHIELD_EVAL_FAST_MODE", "1")
-    monkeypatch.setenv("REPOSHIELD_DISABLE_PREFLIGHT", "1")
+    monkeypatch.setenv("AGENTBRAKE_EVAL_FAST_MODE", "1")
+    monkeypatch.setenv("AGENTBRAKE_DISABLE_PREFLIGHT", "1")
     repo = tmp_path / "repo"
     repo.mkdir()
-    cp = RepoShieldControlPlane(repo, audit_path=tmp_path / "audit.jsonl")
+    cp = AgentBrakeControlPlane(repo, audit_path=tmp_path / "audit.jsonl")
     cp.build_contract("fix login")
     action = ActionIR(
         "act_fast_1",

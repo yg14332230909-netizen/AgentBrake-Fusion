@@ -1,36 +1,36 @@
-﻿# RepoShield / PepoShield v0.3
+﻿# AgentBrake / AgentBrake v0.3
 
-RepoShield is a pre-execution governance gateway for coding agents. It sits in front of model API responses, tool calls, shell commands, file operations, MCP tools, and package-manager actions, then decides whether each action can run on the host, only in a sandbox, only after approval, or not at all.
+AgentBrake is a pre-execution governance gateway for coding agents. It sits in front of model API responses, tool calls, shell commands, file operations, MCP tools, and package-manager actions, then decides whether each action can run on the host, only in a sandbox, only after approval, or not at all.
 
 Short version:
 
 ```text
-RepoShield = a pre-execution safety gate for coding agents
+AgentBrake = a pre-execution safety gate for coding agents
 ```
 
 ## Formal Agent Integration
 
-RepoShield now provides a simplified real-agent onboarding path:
+AgentBrake now provides a simplified real-agent onboarding path:
 
 ```bash
-reposhield connect --repo . --agent codex --mode quick
-reposhield connect --repo . --agent codex --mode standard
-reposhield connect --repo . --agent openclaw --mode full
-reposhield doctor --repo .
-reposhield coverage --repo .
-reposhield status --repo .
-reposhield stop --repo .
+agentbrake connect --repo . --agent codex --mode quick
+agentbrake connect --repo . --agent codex --mode standard
+agentbrake connect --repo . --agent openclaw --mode full
+agentbrake doctor --repo .
+agentbrake coverage --repo .
+agentbrake status --repo .
+agentbrake stop --repo .
 ```
 
-- **Quick**: Gateway + generated `.reposhield/config.yaml`, `agent.env`, and agent instructions.
+- **Quick**: Gateway + generated `.agentbrake/config.yaml`, `agent.env`, and agent instructions.
 - **Standard**: Quick + guarded tool shims for shell, package-manager, Python, and Git commands.
 - **Full**: Standard + Studio, Approval API, and a generated demo request package.
 
-Multi-turn agents must pass a stable `metadata.reposhield_run_id` and `metadata.conversation_id` on every turn. RepoShield also returns `X-RepoShield-Run-Id` from the Gateway so clients can confirm which run was resolved.
+Multi-turn agents must pass a stable `metadata.agentbrake_run_id` and `metadata.conversation_id` on every turn. AgentBrake also returns `X-AgentBrake-Run-Id` from the Gateway so clients can confirm which run was resolved.
 
 ## 核心算法：多源证据综合判断算法（R-MPF）
 
-RepoShield's core decision procedure is the **多源证据综合判断算法
+AgentBrake's core decision procedure is the **多源证据综合判断算法
 （R-MPF）**. R-MPF, short for Repository-aware Multi-Evidence Policy Fusion,
 makes coding-agent decisions from repository context, user intent, tool
 semantics, source trust, asset risk, package risk, sandbox observations, and
@@ -116,13 +116,13 @@ generation internal model:
   `action_hash_v2` can bind optional action graph metadata; audit events use
   `audit-event-v2` and include `action_graph`, `session_state_update`, and
   `constraint_lattice_trace` event types.
-- **Feature flags**: `REPOSHIELD_ENABLE_ACTION_GRAPH`,
-  `REPOSHIELD_ENABLE_SESSION_STATE`, and
-  `REPOSHIELD_ENABLE_CONSTRAINT_LATTICE` provide rollback-friendly switches.
+- **Feature flags**: `AGENTBRAKE_ENABLE_ACTION_GRAPH`,
+  `AGENTBRAKE_ENABLE_SESSION_STATE`, and
+  `AGENTBRAKE_ENABLE_CONSTRAINT_LATTICE` provide rollback-friendly switches.
 
 ## Current Status
 
-RepoShield is currently a **research-grade strengthened prototype / early engineering MVP**.
+AgentBrake is currently a **research-grade strengthened prototype / early engineering MVP**.
 
 It is suitable for papers, demos, internal experiments, gateway interception studies, and limited local trials. It is not yet a production-ready commercial security product.
 
@@ -162,7 +162,7 @@ python -m compileall -q src tests
 Run the agent trace compatibility matrix:
 
 ```bash
-reposhield trace-matrix \
+agentbrake trace-matrix \
   --traces tests/fixtures/agent_traces \
   --output reports/trace_matrix
 ```
@@ -170,16 +170,16 @@ reposhield trace-matrix \
 Validate a policy pack and start the local approval control plane:
 
 ```bash
-reposhield policy-validate --policy-pack policies/policy_pack_gateway.yaml
-reposhield approval-api-start --store .reposhield/gateway_approvals.jsonl --host 127.0.0.1 --port 8776
+agentbrake policy-validate --policy-pack policies/policy_pack_gateway.yaml
+agentbrake approval-api-start --store .agentbrake/gateway_approvals.jsonl --host 127.0.0.1 --port 8776
 ```
 
 Render Studio Lite with audit, approval, benchmark, and trace-matrix evidence:
 
 ```bash
-reposhield studio \
-  --audit .reposhield/gateway_audit.jsonl \
-  --approvals .reposhield/gateway_approvals.jsonl \
+agentbrake studio \
+  --audit .agentbrake/gateway_audit.jsonl \
+  --approvals .agentbrake/gateway_approvals.jsonl \
   --trace-matrix-report reports/trace_matrix/trace_matrix_report.json \
   --bench-report reports/gateway_bench/gateway_bench_report.json \
   --output reports/studio.html
@@ -187,8 +187,8 @@ reposhield studio \
 
 ## Live Studio
 
-RepoShield Studio Pro is an interactive local dashboard for observing coding-agent
-runs behind RepoShield Gateway. It visualizes source provenance, InstructionIR,
+AgentBrake Studio Pro is an interactive local dashboard for observing coding-agent
+runs behind AgentBrake Gateway. It visualizes source provenance, InstructionIR,
 ActionIR, policy decisions, approval state, evidence graphs, benchmark summaries,
 and attack scenarios in real time.
 
@@ -221,9 +221,9 @@ fallback for run summaries and approval/benchmark side panels.
 Start the local dashboard:
 
 ```bash
-reposhield studio-server \
-  --audit .reposhield/gateway_audit.jsonl \
-  --approvals .reposhield/gateway_approvals.jsonl \
+agentbrake studio-server \
+  --audit .agentbrake/gateway_audit.jsonl \
+  --approvals .agentbrake/gateway_approvals.jsonl \
   --bench-report reports/gateway_bench/gateway_bench_report.json \
   --host 127.0.0.1 \
   --port 8780 \
@@ -233,25 +233,25 @@ reposhield studio-server \
 Run a deterministic attack story for the dashboard:
 
 ```bash
-reposhield studio-demo \
+agentbrake studio-demo \
   --scenario attack-dependency-confusion \
-  --audit .reposhield/gateway_audit.jsonl
+  --audit .agentbrake/gateway_audit.jsonl
 ```
 
 Recommended demo walkthrough:
 
 ```bash
 # 1. Start Studio Pro
-reposhield studio-server \
-  --audit .reposhield/gateway_audit.jsonl \
-  --approvals .reposhield/gateway_approvals.jsonl \
+agentbrake studio-server \
+  --audit .agentbrake/gateway_audit.jsonl \
+  --approvals .agentbrake/gateway_approvals.jsonl \
   --host 127.0.0.1 \
   --port 8780 \
   --demo-mode
 
 # 2. Open http://127.0.0.1:8780
 # 3. In Attack Lab, run normal-login-fix and attack-dependency-confusion,
-#    or point a real OpenClaw/OpenAI-compatible agent at RepoShield Gateway.
+#    or point a real OpenClaw/OpenAI-compatible agent at AgentBrake Gateway.
 # 4. Watch the run list and timeline update automatically.
 # 5. Open Trace Graph and click the action node.
 # 6. Inspect Action Detail, Policy Debugger, Sandbox Evidence, and Approval Center.
@@ -260,15 +260,15 @@ reposhield studio-server \
 Export a redacted evidence bundle:
 
 ```bash
-reposhield studio-export \
-  --audit .reposhield/gateway_audit.jsonl \
+agentbrake studio-export \
+  --audit .agentbrake/gateway_audit.jsonl \
   --run-id run_attack_dependency_confusion \
   --output reports/evidence/run_attack_dependency_confusion
 ```
 
 ## What It Protects
 
-Coding agents can read repositories, edit files, run shell commands, install packages, call MCP tools, and sometimes touch CI/CD or release workflows. RepoShield protects that path from untrusted context such as GitHub issues, PR comments, README text, branch names, MCP output, memory, package scripts, and model-generated tool calls.
+Coding agents can read repositories, edit files, run shell commands, install packages, call MCP tools, and sometimes touch CI/CD or release workflows. AgentBrake protects that path from untrusted context such as GitHub issues, PR comments, README text, branch names, MCP output, memory, package scripts, and model-generated tool calls.
 
 It is designed to catch risks such as:
 
@@ -308,14 +308,14 @@ It is designed to catch risks such as:
 
 ## Integration
 
-Recommended path: run RepoShield as an OpenAI-compatible gateway.
+Recommended path: run AgentBrake as an OpenAI-compatible gateway.
 
 ```text
 real agent
-  -> RepoShield Gateway
+  -> AgentBrake Gateway
   -> real upstream model
   -> assistant message / tool_calls
-  -> RepoShield policy checks
+  -> AgentBrake policy checks
   -> safe response back to agent
 ```
 
@@ -324,7 +324,7 @@ Start the gateway:
 ```bash
 export OPENAI_API_KEY=sk-...
 
-PYTHONPATH=src python -m reposhield gateway-start \
+PYTHONPATH=src python -m agentbrake gateway-start \
   --repo ./your-repo \
   --host 127.0.0.1 \
   --port 8765 \
@@ -335,19 +335,19 @@ Point your agent to:
 
 ```text
 base_url = http://127.0.0.1:8765/v1
-api_key  = reposhield-local
+api_key  = agentbrake-local
 model    = gpt-4.1
 ```
 
 This is intentionally host-neutral: any agent runtime that can use an
 OpenAI-compatible `base_url`, call MCP tools, or route shell/file operations
-through a wrapper can sit behind RepoShield. That includes Cline, Codex-like
+through a wrapper can sit behind AgentBrake. That includes Cline, Codex-like
 clients, OpenClaw, OpenHands, Aider-style CLIs, and custom internal agents.
 
 For repo-local setup, generate shims and instructions for a specific host:
 
 ```bash
-PYTHONPATH=src python -m reposhield init-agent \
+PYTHONPATH=src python -m agentbrake init-agent \
   --repo ./your-repo \
   --agent openclaw \
   --task "fix login button and run tests"
@@ -356,24 +356,24 @@ PYTHONPATH=src python -m reposhield init-agent \
 For OpenClaw, you can also generate a dedicated provider bundle:
 
 ```bash
-PYTHONPATH=src python -m reposhield openclaw-quickstart \
+PYTHONPATH=src python -m agentbrake openclaw-quickstart \
   --repo ./your-repo \
-  --reposhield-home . \
+  --agentbrake-home . \
   --model gpt-4.1
 ```
 
 If your upstream key belongs to a non-OpenAI compatible provider, set the
-matching upstream base URL when starting RepoShield. For example, LongCat uses:
+matching upstream base URL when starting AgentBrake. For example, LongCat uses:
 
 ```bash
-PYTHONPATH=src python -m reposhield gateway-start \
+PYTHONPATH=src python -m agentbrake gateway-start \
   --repo ./your-repo \
   --host 127.0.0.1 \
   --port 8765 \
   --upstream-base-url https://api.longcat.chat/openai
 ```
 
-When an agent exposes tool definitions, RepoShield can infer mappings instead
+When an agent exposes tool definitions, AgentBrake can infer mappings instead
 of requiring a hand-written adapter. Gateway requests automatically inspect
 OpenAI-compatible `tools`, `metadata.mcp_manifests`, and
 `metadata.agent_config` before parsing returned tool calls.
@@ -381,7 +381,7 @@ OpenAI-compatible `tools`, `metadata.mcp_manifests`, and
 You can preview the inferred mapping:
 
 ```bash
-PYTHONPATH=src python -m reposhield tool-introspect \
+PYTHONPATH=src python -m agentbrake tool-introspect \
   --input ./agent-tools.json \
   --format openai
 ```
@@ -389,7 +389,7 @@ PYTHONPATH=src python -m reposhield tool-introspect \
 For agents that can wrap their shell tool:
 
 ```bash
-PYTHONPATH=src python -m reposhield exec-guard \
+PYTHONPATH=src python -m agentbrake exec-guard \
   --repo ./your-repo \
   --task "fix login button and run tests" \
   -- npm test
@@ -406,7 +406,7 @@ PYTHONPATH=src python -m reposhield exec-guard \
 
 ## Production Gap
 
-RepoShield is not yet commercial-ready. The largest remaining gaps are:
+AgentBrake is not yet commercial-ready. The largest remaining gaps are:
 
 - production-grade sandboxing with container/namespace/seccomp/eBPF/network monitoring
 - live package metadata, tarball inspection, Sigstore/provenance, and typosquatting checks

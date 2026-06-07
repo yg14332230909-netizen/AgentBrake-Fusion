@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from reposhield.demo import run_demo
-from reposhield.replay import verify_bundle
+from agentbrake.demo import run_demo
+from agentbrake.replay import verify_bundle
 
 
 def test_demo_blocks_attack_and_fixes_utility(tmp_path):

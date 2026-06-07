@@ -86,7 +86,7 @@ function ActionGraphView({ action, graph }: { action: Record<string, unknown>; g
       <div className="product-view-head">
         <div>
           <span className="policy-eyebrow">ActionGraph View</span>
-          <h3>RepoShield 怎样拆解这次工具动作</h3>
+          <h3>AgentBrake 怎样拆解这次工具动作</h3>
           <p>{riskText(action, graph)}</p>
         </div>
         <div className="mini-metrics">
@@ -160,7 +160,7 @@ export function ActionDetailDrawer({ detail, onOpenJudgment }: { detail: ActionD
   if (!detail) return (
     <div className="action-empty-state">
       <h3>还没有选中具体动作</h3>
-      <p>在“本次运行”的时间线里点击“识别到动作”卡片，右侧会显示 RepoShield 如何理解这条工具调用。</p>
+      <p>在“本次运行”的时间线里点击“识别到动作”卡片，右侧会显示 AgentBrake 如何理解这条工具调用。</p>
       <p>这里适合回答：代理原本想做什么、被识别成什么风险动作、为什么危险、证据在哪里。</p>
     </div>
   );
@@ -177,7 +177,7 @@ export function ActionDetailDrawer({ detail, onOpenJudgment }: { detail: ActionD
     <div id="action-detail" className="action-detail-view">
       <section className="action-summary-card">
         <div>
-          <span className="policy-eyebrow">RepoShield 识别到的动作</span>
+          <span className="policy-eyebrow">AgentBrake 识别到的动作</span>
           <h3>{semanticAction}</h3>
           <p>{label === "block" ? "这个动作被判定为不能执行。" : "这个动作需要受限执行或进一步确认。"}</p>
         </div>

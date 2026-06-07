@@ -1,7 +1,7 @@
 ﻿from __future__ import annotations
 
-from reposhield.policy_engine.facts import PolicyFact, PolicyFactSet
-from reposhield.policy_engine.invariants import InvariantEngine
+from agentbrake.policy_engine.facts import PolicyFact, PolicyFactSet
+from agentbrake.policy_engine.invariants import InvariantEngine
 
 
 def test_agentdojo_financial_message_private_data_and_booking_invariants_fire():

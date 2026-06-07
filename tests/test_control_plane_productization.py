@@ -8,12 +8,12 @@ from dataclasses import asdict
 from pathlib import Path
 from urllib.request import Request, urlopen
 
-from reposhield.approval_api import serve_approval_api
-from reposhield.approvals import ApprovalCenter, ApprovalStore
-from reposhield.models import ActionIR, ApprovalRequest, ContextGraph, PolicyDecision, TaskContract
-from reposhield.policy_runtime import load_policy_pack, validate_policy_pack
-from reposhield.studio import render_studio_html
-from reposhield.trace_matrix import run_trace_matrix
+from agentbrake.approval_api import serve_approval_api
+from agentbrake.approvals import ApprovalCenter, ApprovalStore
+from agentbrake.models import ActionIR, ApprovalRequest, ContextGraph, PolicyDecision, TaskContract
+from agentbrake.policy_runtime import load_policy_pack, validate_policy_pack
+from agentbrake.studio import render_studio_html
+from agentbrake.trace_matrix import run_trace_matrix
 
 TRACE_FIXTURES = Path(__file__).parent / "fixtures" / "agent_traces"
 

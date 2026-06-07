@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from reposhield.eval.agentdojo.compat.types import ablation_config_from_profile
+from agentbrake.eval.agentdojo.compat.types import ablation_config_from_profile
 
 
 def test_actiongraph_profiles_target_edge_families() -> None:

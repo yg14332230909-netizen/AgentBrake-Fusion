@@ -3,12 +3,12 @@
     "phase2_case_id": "phase2_banking_user_task_0_injection_task_0",
     "case_id": "phase2_banking_user_task_0_injection_task_0",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_0_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_0_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -22,7 +22,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_0_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_0_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_0",
       "--injection-tasks",
@@ -31,19 +31,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_1_injection_task_1",
     "case_id": "phase2_banking_user_task_1_injection_task_1",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_1_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_1_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -57,7 +57,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_1_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_1_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_1",
       "--injection-tasks",
@@ -66,19 +66,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_2_injection_task_1",
     "case_id": "phase2_banking_user_task_2_injection_task_1",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_2_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_2_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -92,7 +92,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_2_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_2_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_2",
       "--injection-tasks",
@@ -101,19 +101,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_3_injection_task_4",
     "case_id": "phase2_banking_user_task_3_injection_task_4",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_3_injection_task_4_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_3_injection_task_4_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -127,7 +127,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_3_injection_task_4_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_3_injection_task_4_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_3",
       "--injection-tasks",
@@ -136,19 +136,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_6_injection_task_4",
     "case_id": "phase2_banking_user_task_6_injection_task_4",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_6_injection_task_4_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_6_injection_task_4_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -162,7 +162,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_6_injection_task_4_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_6_injection_task_4_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_6",
       "--injection-tasks",
@@ -171,19 +171,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_12_injection_task_0",
     "case_id": "phase2_banking_user_task_12_injection_task_0",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_12_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_12_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -197,7 +197,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_12_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_12_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_12",
       "--injection-tasks",
@@ -206,19 +206,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_15_injection_task_0",
     "case_id": "phase2_banking_user_task_15_injection_task_0",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_15_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_15_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -232,7 +232,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_15_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_15_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_15",
       "--injection-tasks",
@@ -241,19 +241,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_0_injection_task_1",
     "case_id": "phase2_banking_user_task_0_injection_task_1",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_0_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_0_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -267,7 +267,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_0_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_0_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_0",
       "--injection-tasks",
@@ -276,19 +276,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_2_injection_task_2",
     "case_id": "phase2_banking_user_task_2_injection_task_2",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_2_injection_task_2_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_2_injection_task_2_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -302,7 +302,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_2_injection_task_2_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_2_injection_task_2_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_2",
       "--injection-tasks",
@@ -311,19 +311,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_12_injection_task_1",
     "case_id": "phase2_banking_user_task_12_injection_task_1",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_12_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_12_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -337,7 +337,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_12_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_12_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_12",
       "--injection-tasks",
@@ -346,19 +346,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_2_injection_task_0",
     "case_id": "phase2_banking_user_task_2_injection_task_0",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_2_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_2_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -372,7 +372,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_2_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_2_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_2",
       "--injection-tasks",
@@ -381,19 +381,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_3_injection_task_0",
     "case_id": "phase2_banking_user_task_3_injection_task_0",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_3_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_3_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -407,7 +407,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_3_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_3_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_3",
       "--injection-tasks",
@@ -416,19 +416,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_5_injection_task_0",
     "case_id": "phase2_banking_user_task_5_injection_task_0",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_5_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_5_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -442,7 +442,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_5_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_5_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_5",
       "--injection-tasks",
@@ -451,19 +451,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_6_injection_task_0",
     "case_id": "phase2_banking_user_task_6_injection_task_0",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_6_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_6_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -477,7 +477,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_6_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_6_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_6",
       "--injection-tasks",
@@ -486,19 +486,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_11_injection_task_0",
     "case_id": "phase2_banking_user_task_11_injection_task_0",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_11_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_11_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -512,7 +512,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_11_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_11_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_11",
       "--injection-tasks",
@@ -521,19 +521,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_12_injection_task_5",
     "case_id": "phase2_banking_user_task_12_injection_task_5",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_12_injection_task_5_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_12_injection_task_5_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -547,7 +547,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_12_injection_task_5_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_12_injection_task_5_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_12",
       "--injection-tasks",
@@ -556,19 +556,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_15_injection_task_1",
     "case_id": "phase2_banking_user_task_15_injection_task_1",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_15_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_15_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -582,7 +582,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_15_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_15_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_15",
       "--injection-tasks",
@@ -591,19 +591,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_2_injection_task_5",
     "case_id": "phase2_banking_user_task_2_injection_task_5",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_2_injection_task_5_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_2_injection_task_5_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -617,7 +617,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_2_injection_task_5_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_2_injection_task_5_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_2",
       "--injection-tasks",
@@ -626,19 +626,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_3_injection_task_1",
     "case_id": "phase2_banking_user_task_3_injection_task_1",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_3_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_3_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -652,7 +652,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_3_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_3_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_3",
       "--injection-tasks",
@@ -661,19 +661,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_5_injection_task_1",
     "case_id": "phase2_banking_user_task_5_injection_task_1",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_5_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_5_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -687,7 +687,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_5_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_5_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_5",
       "--injection-tasks",
@@ -696,19 +696,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_6_injection_task_1",
     "case_id": "phase2_banking_user_task_6_injection_task_1",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_6_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_6_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -722,7 +722,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_6_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_6_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_6",
       "--injection-tasks",
@@ -731,19 +731,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_11_injection_task_1",
     "case_id": "phase2_banking_user_task_11_injection_task_1",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_11_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_11_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -757,7 +757,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_11_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_11_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_11",
       "--injection-tasks",
@@ -766,19 +766,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_12_injection_task_6",
     "case_id": "phase2_banking_user_task_12_injection_task_6",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_12_injection_task_6_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_12_injection_task_6_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -792,7 +792,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_12_injection_task_6_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_12_injection_task_6_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_12",
       "--injection-tasks",
@@ -801,19 +801,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_15_injection_task_2",
     "case_id": "phase2_banking_user_task_15_injection_task_2",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_15_injection_task_2_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_15_injection_task_2_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -827,7 +827,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_15_injection_task_2_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_15_injection_task_2_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_15",
       "--injection-tasks",
@@ -836,19 +836,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_2_injection_task_6",
     "case_id": "phase2_banking_user_task_2_injection_task_6",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_2_injection_task_6_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_2_injection_task_6_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -862,7 +862,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_2_injection_task_6_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_2_injection_task_6_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_2",
       "--injection-tasks",
@@ -871,19 +871,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_banking_user_task_3_injection_task_2",
     "case_id": "phase2_banking_user_task_3_injection_task_2",
     "suite": "banking",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_3_injection_task_2_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_banking_user_task_3_injection_task_2_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "banking",
       "--model",
@@ -897,7 +897,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_banking_user_task_3_injection_task_2_reposhield_oracle_user_eval",
+      "phase2_banking_user_task_3_injection_task_2_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_3",
       "--injection-tasks",
@@ -906,19 +906,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_0_injection_task_2",
     "case_id": "phase2_slack_user_task_0_injection_task_2",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_0_injection_task_2_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_0_injection_task_2_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -932,7 +932,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_0_injection_task_2_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_0_injection_task_2_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_0",
       "--injection-tasks",
@@ -941,19 +941,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_2_injection_task_4",
     "case_id": "phase2_slack_user_task_2_injection_task_4",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_2_injection_task_4_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_2_injection_task_4_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -967,7 +967,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_2_injection_task_4_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_2_injection_task_4_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_2",
       "--injection-tasks",
@@ -976,19 +976,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_4_injection_task_3",
     "case_id": "phase2_slack_user_task_4_injection_task_3",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_4_injection_task_3_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_4_injection_task_3_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1002,7 +1002,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_4_injection_task_3_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_4_injection_task_3_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_4",
       "--injection-tasks",
@@ -1011,19 +1011,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_7_injection_task_3",
     "case_id": "phase2_slack_user_task_7_injection_task_3",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_7_injection_task_3_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_7_injection_task_3_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1037,7 +1037,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_7_injection_task_3_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_7_injection_task_3_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_7",
       "--injection-tasks",
@@ -1046,19 +1046,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_9_injection_task_5",
     "case_id": "phase2_slack_user_task_9_injection_task_5",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_9_injection_task_5_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_9_injection_task_5_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1072,7 +1072,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_9_injection_task_5_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_9_injection_task_5_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_9",
       "--injection-tasks",
@@ -1081,19 +1081,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_10_injection_task_3",
     "case_id": "phase2_slack_user_task_10_injection_task_3",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_10_injection_task_3_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_10_injection_task_3_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1107,7 +1107,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_10_injection_task_3_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_10_injection_task_3_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_10",
       "--injection-tasks",
@@ -1116,19 +1116,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_15_injection_task_1",
     "case_id": "phase2_slack_user_task_15_injection_task_1",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_15_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_15_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1142,7 +1142,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_15_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_15_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_15",
       "--injection-tasks",
@@ -1151,19 +1151,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_16_injection_task_3",
     "case_id": "phase2_slack_user_task_16_injection_task_3",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_16_injection_task_3_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_16_injection_task_3_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1177,7 +1177,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_16_injection_task_3_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_16_injection_task_3_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_16",
       "--injection-tasks",
@@ -1186,19 +1186,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_17_injection_task_2",
     "case_id": "phase2_slack_user_task_17_injection_task_2",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_17_injection_task_2_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_17_injection_task_2_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1212,7 +1212,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_17_injection_task_2_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_17_injection_task_2_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_17",
       "--injection-tasks",
@@ -1221,19 +1221,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_20_injection_task_2",
     "case_id": "phase2_slack_user_task_20_injection_task_2",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_20_injection_task_2_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_20_injection_task_2_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1247,7 +1247,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_20_injection_task_2_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_20_injection_task_2_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_20",
       "--injection-tasks",
@@ -1256,19 +1256,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_1_injection_task_1",
     "case_id": "phase2_slack_user_task_1_injection_task_1",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_1_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_1_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1282,7 +1282,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_1_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_1_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_1",
       "--injection-tasks",
@@ -1291,19 +1291,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_2_injection_task_1",
     "case_id": "phase2_slack_user_task_2_injection_task_1",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_2_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_2_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1317,7 +1317,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_2_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_2_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_2",
       "--injection-tasks",
@@ -1326,19 +1326,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_4_injection_task_1",
     "case_id": "phase2_slack_user_task_4_injection_task_1",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_4_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_4_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1352,7 +1352,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_4_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_4_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_4",
       "--injection-tasks",
@@ -1361,19 +1361,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_11_injection_task_1",
     "case_id": "phase2_slack_user_task_11_injection_task_1",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_11_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_11_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1387,7 +1387,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_11_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_11_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_11",
       "--injection-tasks",
@@ -1396,19 +1396,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_15_injection_task_4",
     "case_id": "phase2_slack_user_task_15_injection_task_4",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_15_injection_task_4_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_15_injection_task_4_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1422,7 +1422,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_15_injection_task_4_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_15_injection_task_4_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_15",
       "--injection-tasks",
@@ -1431,19 +1431,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_16_injection_task_1",
     "case_id": "phase2_slack_user_task_16_injection_task_1",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_16_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_16_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1457,7 +1457,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_16_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_16_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_16",
       "--injection-tasks",
@@ -1466,19 +1466,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_17_injection_task_1",
     "case_id": "phase2_slack_user_task_17_injection_task_1",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_17_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_17_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1492,7 +1492,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_17_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_17_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_17",
       "--injection-tasks",
@@ -1501,19 +1501,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_20_injection_task_1",
     "case_id": "phase2_slack_user_task_20_injection_task_1",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_20_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_20_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1527,7 +1527,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_20_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_20_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_20",
       "--injection-tasks",
@@ -1536,19 +1536,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_1_injection_task_2",
     "case_id": "phase2_slack_user_task_1_injection_task_2",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_1_injection_task_2_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_1_injection_task_2_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1562,7 +1562,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_1_injection_task_2_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_1_injection_task_2_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_1",
       "--injection-tasks",
@@ -1571,19 +1571,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_2_injection_task_2",
     "case_id": "phase2_slack_user_task_2_injection_task_2",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_2_injection_task_2_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_2_injection_task_2_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1597,7 +1597,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_2_injection_task_2_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_2_injection_task_2_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_2",
       "--injection-tasks",
@@ -1606,19 +1606,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_4_injection_task_2",
     "case_id": "phase2_slack_user_task_4_injection_task_2",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_4_injection_task_2_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_4_injection_task_2_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1632,7 +1632,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_4_injection_task_2_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_4_injection_task_2_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_4",
       "--injection-tasks",
@@ -1641,19 +1641,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_11_injection_task_2",
     "case_id": "phase2_slack_user_task_11_injection_task_2",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_11_injection_task_2_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_11_injection_task_2_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1667,7 +1667,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_11_injection_task_2_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_11_injection_task_2_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_11",
       "--injection-tasks",
@@ -1676,19 +1676,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_16_injection_task_2",
     "case_id": "phase2_slack_user_task_16_injection_task_2",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_16_injection_task_2_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_16_injection_task_2_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1702,7 +1702,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_16_injection_task_2_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_16_injection_task_2_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_16",
       "--injection-tasks",
@@ -1711,19 +1711,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_1_injection_task_3",
     "case_id": "phase2_slack_user_task_1_injection_task_3",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_1_injection_task_3_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_1_injection_task_3_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1737,7 +1737,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_1_injection_task_3_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_1_injection_task_3_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_1",
       "--injection-tasks",
@@ -1746,19 +1746,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_2_injection_task_3",
     "case_id": "phase2_slack_user_task_2_injection_task_3",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_2_injection_task_3_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_2_injection_task_3_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1772,7 +1772,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_2_injection_task_3_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_2_injection_task_3_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_2",
       "--injection-tasks",
@@ -1781,19 +1781,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_11_injection_task_3",
     "case_id": "phase2_slack_user_task_11_injection_task_3",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_11_injection_task_3_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_11_injection_task_3_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -1807,7 +1807,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_11_injection_task_3_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_11_injection_task_3_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_11",
       "--injection-tasks",
@@ -1816,19 +1816,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_0_injection_task_2",
     "case_id": "phase2_travel_user_task_0_injection_task_2",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_0_injection_task_2_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_0_injection_task_2_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -1842,7 +1842,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_0_injection_task_2_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_0_injection_task_2_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_0",
       "--injection-tasks",
@@ -1851,19 +1851,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_3_injection_task_4",
     "case_id": "phase2_travel_user_task_3_injection_task_4",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_3_injection_task_4_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_3_injection_task_4_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -1877,7 +1877,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_3_injection_task_4_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_3_injection_task_4_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_3",
       "--injection-tasks",
@@ -1886,19 +1886,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_0_injection_task_6",
     "case_id": "phase2_travel_user_task_0_injection_task_6",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_0_injection_task_6_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_0_injection_task_6_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -1912,7 +1912,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_0_injection_task_6_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_0_injection_task_6_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_0",
       "--injection-tasks",
@@ -1921,19 +1921,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_0_injection_task_0",
     "case_id": "phase2_travel_user_task_0_injection_task_0",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_0_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_0_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -1947,7 +1947,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_0_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_0_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_0",
       "--injection-tasks",
@@ -1956,19 +1956,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_1_injection_task_0",
     "case_id": "phase2_travel_user_task_1_injection_task_0",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_1_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_1_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -1982,7 +1982,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_1_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_1_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_1",
       "--injection-tasks",
@@ -1991,19 +1991,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_2_injection_task_1",
     "case_id": "phase2_travel_user_task_2_injection_task_1",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_2_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_2_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2017,7 +2017,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_2_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_2_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_2",
       "--injection-tasks",
@@ -2026,19 +2026,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_3_injection_task_6",
     "case_id": "phase2_travel_user_task_3_injection_task_6",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_3_injection_task_6_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_3_injection_task_6_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2052,7 +2052,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_3_injection_task_6_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_3_injection_task_6_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_3",
       "--injection-tasks",
@@ -2061,19 +2061,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_0_injection_task_1",
     "case_id": "phase2_travel_user_task_0_injection_task_1",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_0_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_0_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2087,7 +2087,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_0_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_0_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_0",
       "--injection-tasks",
@@ -2096,19 +2096,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_1_injection_task_1",
     "case_id": "phase2_travel_user_task_1_injection_task_1",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_1_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_1_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2122,7 +2122,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_1_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_1_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_1",
       "--injection-tasks",
@@ -2131,19 +2131,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_2_injection_task_2",
     "case_id": "phase2_travel_user_task_2_injection_task_2",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_2_injection_task_2_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_2_injection_task_2_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2157,7 +2157,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_2_injection_task_2_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_2_injection_task_2_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_2",
       "--injection-tasks",
@@ -2166,19 +2166,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_0_injection_task_3",
     "case_id": "phase2_travel_user_task_0_injection_task_3",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_0_injection_task_3_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_0_injection_task_3_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2192,7 +2192,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_0_injection_task_3_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_0_injection_task_3_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_0",
       "--injection-tasks",
@@ -2201,19 +2201,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_1_injection_task_2",
     "case_id": "phase2_travel_user_task_1_injection_task_2",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_1_injection_task_2_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_1_injection_task_2_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2227,7 +2227,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_1_injection_task_2_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_1_injection_task_2_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_1",
       "--injection-tasks",
@@ -2236,19 +2236,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_2_injection_task_3",
     "case_id": "phase2_travel_user_task_2_injection_task_3",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_2_injection_task_3_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_2_injection_task_3_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2262,7 +2262,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_2_injection_task_3_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_2_injection_task_3_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_2",
       "--injection-tasks",
@@ -2271,19 +2271,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_0_injection_task_4",
     "case_id": "phase2_travel_user_task_0_injection_task_4",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_0_injection_task_4_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_0_injection_task_4_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2297,7 +2297,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_0_injection_task_4_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_0_injection_task_4_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_0",
       "--injection-tasks",
@@ -2306,19 +2306,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_1_injection_task_3",
     "case_id": "phase2_travel_user_task_1_injection_task_3",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_1_injection_task_3_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_1_injection_task_3_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2332,7 +2332,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_1_injection_task_3_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_1_injection_task_3_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_1",
       "--injection-tasks",
@@ -2341,19 +2341,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_2_injection_task_4",
     "case_id": "phase2_travel_user_task_2_injection_task_4",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_2_injection_task_4_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_2_injection_task_4_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2367,7 +2367,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_2_injection_task_4_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_2_injection_task_4_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_2",
       "--injection-tasks",
@@ -2376,19 +2376,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_0_injection_task_5",
     "case_id": "phase2_travel_user_task_0_injection_task_5",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_0_injection_task_5_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_0_injection_task_5_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2402,7 +2402,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_0_injection_task_5_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_0_injection_task_5_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_0",
       "--injection-tasks",
@@ -2411,19 +2411,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_1_injection_task_4",
     "case_id": "phase2_travel_user_task_1_injection_task_4",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_1_injection_task_4_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_1_injection_task_4_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2437,7 +2437,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_1_injection_task_4_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_1_injection_task_4_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_1",
       "--injection-tasks",
@@ -2446,19 +2446,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_2_injection_task_5",
     "case_id": "phase2_travel_user_task_2_injection_task_5",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_2_injection_task_5_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_2_injection_task_5_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2472,7 +2472,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_2_injection_task_5_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_2_injection_task_5_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_2",
       "--injection-tasks",
@@ -2481,19 +2481,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_1_injection_task_5",
     "case_id": "phase2_travel_user_task_1_injection_task_5",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_1_injection_task_5_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_1_injection_task_5_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2507,7 +2507,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_1_injection_task_5_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_1_injection_task_5_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_1",
       "--injection-tasks",
@@ -2516,19 +2516,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_2_injection_task_6",
     "case_id": "phase2_travel_user_task_2_injection_task_6",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_2_injection_task_6_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_2_injection_task_6_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2542,7 +2542,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_2_injection_task_6_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_2_injection_task_6_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_2",
       "--injection-tasks",
@@ -2551,19 +2551,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_1_injection_task_6",
     "case_id": "phase2_travel_user_task_1_injection_task_6",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_1_injection_task_6_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_1_injection_task_6_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2577,7 +2577,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_1_injection_task_6_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_1_injection_task_6_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_1",
       "--injection-tasks",
@@ -2586,19 +2586,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_2_injection_task_0",
     "case_id": "phase2_travel_user_task_2_injection_task_0",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_2_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_2_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2612,7 +2612,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_2_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_2_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_2",
       "--injection-tasks",
@@ -2621,19 +2621,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_3_injection_task_0",
     "case_id": "phase2_travel_user_task_3_injection_task_0",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_3_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_3_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2647,7 +2647,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_3_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_3_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_3",
       "--injection-tasks",
@@ -2656,19 +2656,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_3_injection_task_1",
     "case_id": "phase2_travel_user_task_3_injection_task_1",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_3_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_3_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2682,7 +2682,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_3_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_3_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_3",
       "--injection-tasks",
@@ -2691,19 +2691,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_travel_user_task_3_injection_task_2",
     "case_id": "phase2_travel_user_task_3_injection_task_2",
     "suite": "travel",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_3_injection_task_2_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_travel_user_task_3_injection_task_2_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "travel",
       "--model",
@@ -2717,7 +2717,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_travel_user_task_3_injection_task_2_reposhield_oracle_user_eval",
+      "phase2_travel_user_task_3_injection_task_2_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_3",
       "--injection-tasks",
@@ -2726,19 +2726,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_0_injection_task_2",
     "case_id": "phase2_workspace_user_task_0_injection_task_2",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_0_injection_task_2_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_0_injection_task_2_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -2752,7 +2752,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_0_injection_task_2_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_0_injection_task_2_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_0",
       "--injection-tasks",
@@ -2761,19 +2761,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_1_injection_task_13",
     "case_id": "phase2_workspace_user_task_1_injection_task_13",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_1_injection_task_13_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_1_injection_task_13_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -2787,7 +2787,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_1_injection_task_13_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_1_injection_task_13_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_1",
       "--injection-tasks",
@@ -2796,19 +2796,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_2_injection_task_2",
     "case_id": "phase2_workspace_user_task_2_injection_task_2",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_2_injection_task_2_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_2_injection_task_2_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -2822,7 +2822,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_2_injection_task_2_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_2_injection_task_2_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_2",
       "--injection-tasks",
@@ -2831,19 +2831,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_3_injection_task_6",
     "case_id": "phase2_workspace_user_task_3_injection_task_6",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_3_injection_task_6_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_3_injection_task_6_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -2857,7 +2857,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_3_injection_task_6_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_3_injection_task_6_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_3",
       "--injection-tasks",
@@ -2866,19 +2866,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_6_injection_task_0",
     "case_id": "phase2_workspace_user_task_6_injection_task_0",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_6_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_6_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -2892,7 +2892,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_6_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_6_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_6",
       "--injection-tasks",
@@ -2901,19 +2901,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_8_injection_task_0",
     "case_id": "phase2_workspace_user_task_8_injection_task_0",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_8_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_8_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -2927,7 +2927,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_8_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_8_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_8",
       "--injection-tasks",
@@ -2936,19 +2936,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_9_injection_task_0",
     "case_id": "phase2_workspace_user_task_9_injection_task_0",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_9_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_9_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -2962,7 +2962,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_9_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_9_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_9",
       "--injection-tasks",
@@ -2971,19 +2971,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_12_injection_task_0",
     "case_id": "phase2_workspace_user_task_12_injection_task_0",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_12_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_12_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -2997,7 +2997,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_12_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_12_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_12",
       "--injection-tasks",
@@ -3006,19 +3006,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_21_injection_task_1",
     "case_id": "phase2_workspace_user_task_21_injection_task_1",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_21_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_21_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -3032,7 +3032,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_21_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_21_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_21",
       "--injection-tasks",
@@ -3041,19 +3041,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_25_injection_task_0",
     "case_id": "phase2_workspace_user_task_25_injection_task_0",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_25_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_25_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -3067,7 +3067,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_25_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_25_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_25",
       "--injection-tasks",
@@ -3076,19 +3076,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_0_injection_task_3",
     "case_id": "phase2_workspace_user_task_0_injection_task_3",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_0_injection_task_3_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_0_injection_task_3_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -3102,7 +3102,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_0_injection_task_3_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_0_injection_task_3_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_0",
       "--injection-tasks",
@@ -3111,19 +3111,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_4_injection_task_0",
     "case_id": "phase2_workspace_user_task_4_injection_task_0",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_4_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_4_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -3137,7 +3137,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_4_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_4_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_4",
       "--injection-tasks",
@@ -3146,19 +3146,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_6_injection_task_2",
     "case_id": "phase2_workspace_user_task_6_injection_task_2",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_6_injection_task_2_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_6_injection_task_2_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -3172,7 +3172,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_6_injection_task_2_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_6_injection_task_2_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_6",
       "--injection-tasks",
@@ -3181,19 +3181,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_7_injection_task_0",
     "case_id": "phase2_workspace_user_task_7_injection_task_0",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_7_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_7_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -3207,7 +3207,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_7_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_7_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_7",
       "--injection-tasks",
@@ -3216,19 +3216,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_12_injection_task_2",
     "case_id": "phase2_workspace_user_task_12_injection_task_2",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_12_injection_task_2_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_12_injection_task_2_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -3242,7 +3242,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_12_injection_task_2_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_12_injection_task_2_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_12",
       "--injection-tasks",
@@ -3251,19 +3251,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_13_injection_task_0",
     "case_id": "phase2_workspace_user_task_13_injection_task_0",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_13_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_13_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -3277,7 +3277,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_13_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_13_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_13",
       "--injection-tasks",
@@ -3286,19 +3286,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_18_injection_task_0",
     "case_id": "phase2_workspace_user_task_18_injection_task_0",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_18_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_18_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -3312,7 +3312,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_18_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_18_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_18",
       "--injection-tasks",
@@ -3321,19 +3321,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_20_injection_task_0",
     "case_id": "phase2_workspace_user_task_20_injection_task_0",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_20_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_20_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -3347,7 +3347,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_20_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_20_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_20",
       "--injection-tasks",
@@ -3356,19 +3356,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_21_injection_task_0",
     "case_id": "phase2_workspace_user_task_21_injection_task_0",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_21_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_21_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -3382,7 +3382,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_21_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_21_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_21",
       "--injection-tasks",
@@ -3391,19 +3391,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_25_injection_task_1",
     "case_id": "phase2_workspace_user_task_25_injection_task_1",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_25_injection_task_1_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_25_injection_task_1_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -3417,7 +3417,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_25_injection_task_1_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_25_injection_task_1_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_25",
       "--injection-tasks",
@@ -3426,19 +3426,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_29_injection_task_0",
     "case_id": "phase2_workspace_user_task_29_injection_task_0",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_29_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_29_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -3452,7 +3452,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_29_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_29_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_29",
       "--injection-tasks",
@@ -3461,19 +3461,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_31_injection_task_0",
     "case_id": "phase2_workspace_user_task_31_injection_task_0",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_31_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_31_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -3487,7 +3487,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_31_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_31_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_31",
       "--injection-tasks",
@@ -3496,19 +3496,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_32_injection_task_0",
     "case_id": "phase2_workspace_user_task_32_injection_task_0",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_32_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_32_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -3522,7 +3522,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_32_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_32_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_32",
       "--injection-tasks",
@@ -3531,19 +3531,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_33_injection_task_0",
     "case_id": "phase2_workspace_user_task_33_injection_task_0",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_33_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_33_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -3557,7 +3557,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_33_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_33_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_33",
       "--injection-tasks",
@@ -3566,19 +3566,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_36_injection_task_0",
     "case_id": "phase2_workspace_user_task_36_injection_task_0",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_36_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_36_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -3592,7 +3592,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_36_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_36_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_36",
       "--injection-tasks",
@@ -3601,19 +3601,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_workspace_user_task_37_injection_task_0",
     "case_id": "phase2_workspace_user_task_37_injection_task_0",
     "suite": "workspace",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_37_injection_task_0_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_workspace_user_task_37_injection_task_0_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "workspace",
       "--model",
@@ -3627,7 +3627,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_workspace_user_task_37_injection_task_0_reposhield_oracle_user_eval",
+      "phase2_workspace_user_task_37_injection_task_0_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_37",
       "--injection-tasks",
@@ -3636,19 +3636,19 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   },
   {
     "phase2_case_id": "phase2_slack_user_task_15_injection_task_2",
     "case_id": "phase2_slack_user_task_15_injection_task_2",
     "suite": "slack",
-    "method": "reposhield_oracle_user_eval",
-    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_15_injection_task_2_reposhield_oracle_user_eval.json",
+    "method": "agentbrake_oracle_user_eval",
+    "raw_output": "experiments/agentdojo/reports/cross_model/qwen_plus/e2e_formal_105/raw_runs/phase2_slack_user_task_15_injection_task_2_agentbrake_oracle_user_eval.json",
     "command": [
       "python",
       "-m",
-      "reposhield.eval.agentdojo.runner.run_tool_firewall_eval",
+      "agentbrake.eval.agentdojo.runner.run_tool_firewall_eval",
       "--suite",
       "slack",
       "--model",
@@ -3662,7 +3662,7 @@
       "--report-dir",
       "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\raw_runs",
       "--run-name",
-      "phase2_slack_user_task_15_injection_task_2_reposhield_oracle_user_eval",
+      "phase2_slack_user_task_15_injection_task_2_agentbrake_oracle_user_eval",
       "--user-tasks",
       "user_task_15",
       "--injection-tasks",
@@ -3671,7 +3671,7 @@
       "oracle_user_eval",
       "--save-full-trace",
       "--trace-dir",
-      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\reposhield_oracle_user_eval"
+      "experiments\\agentdojo\\reports\\cross_model\\qwen_plus\\e2e_formal_105\\full_traces\\agentbrake_oracle_user_eval"
     ]
   }
 ]
