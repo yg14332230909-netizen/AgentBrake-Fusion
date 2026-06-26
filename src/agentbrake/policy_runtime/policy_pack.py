@@ -8,12 +8,12 @@ from pathlib import Path
 from typing import Any, Literal
 
 from ..models import PolicyDecision
-from ..policy_engine.compiler import VALID_DECISIONS as VALID_GRAPH_DECISIONS
+from ..policy_engine.compiler import VALID_DECISIONS as VALID_MSJ_DECISIONS
 from ..policy_engine.compiler import VALID_OPERATORS
 
 PolicyMode = Literal["enforce", "observe_only", "warn", "disabled"]
 VALID_POLICY_MODES: set[str] = {"enforce", "observe_only", "warn", "disabled"}
-VALID_POLICY_DECISIONS: set[str] = {"allow", "allow_in_sandbox", "sandbox_then_approval", "block", "quarantine"}
+VALID_POLICY_DECISIONS: set[str] = {"allow", "allow_in_sandbox", "require_confirmation", "sandbox_then_approval", "block", "quarantine"}
 
 
 @dataclass(slots=True)
@@ -49,7 +49,7 @@ class PolicyRuntime:
         self.unsafe_allow_disabled = unsafe_allow_disabled
 
     def apply(self, decision: PolicyDecision, policy_name: str = "CoreAgentBrakePolicy") -> RuntimePolicyResult:
-        would_block = decision.decision in {"block", "quarantine", "sandbox_then_approval"}
+        would_block = decision.decision in {"block", "quarantine", "require_confirmation", "sandbox_then_approval"}
         hit = PolicyHit(
             policy_name,
             self.mode,
@@ -97,8 +97,9 @@ def validate_policy_pack(data: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     if not isinstance(data, dict):
         return ["policy pack must be an object"]
-    if str(data.get("version", "")).startswith("AgentBrake-Fusion-policygraph"):
-        return _validate_policygraph_pack(data)
+    version = str(data.get("version", ""))
+    if version.startswith(("agentbrake-fusion-msj", "AgentBrake-Fusion-msj", "agentbrake-policygraph", "AgentBrake-Fusion-policygraph")):
+        return _validate_msj_rule_pack(data)
     if not data.get("name") or not isinstance(data.get("name"), str):
         errors.append("name is required and must be a string")
     mode = data.get("mode", "enforce")
@@ -130,7 +131,7 @@ def validate_policy_pack(data: dict[str, Any]) -> list[str]:
     return errors
 
 
-def _validate_policygraph_pack(data: dict[str, Any]) -> list[str]:
+def _validate_msj_rule_pack(data: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     if not isinstance(data.get("name"), str) or not data.get("name"):
         errors.append("name is required and must be a string")
@@ -144,8 +145,8 @@ def _validate_policygraph_pack(data: dict[str, Any]) -> list[str]:
             continue
         if not rule.get("rule_id"):
             errors.append(f"{prefix}.rule_id is required")
-        if rule.get("decision") not in VALID_GRAPH_DECISIONS:
-            errors.append(f"{prefix}.decision must be one of {sorted(VALID_GRAPH_DECISIONS)}")
+        if rule.get("decision") not in VALID_MSJ_DECISIONS:
+            errors.append(f"{prefix}.decision must be one of {sorted(VALID_MSJ_DECISIONS)}")
         if not isinstance(rule.get("match", {}), dict):
             errors.append(f"{prefix}.match must be an object")
         for pidx, pred in enumerate(rule.get("predicates", []) or []):

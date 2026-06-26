@@ -1,4 +1,4 @@
-"""Internal product lattice for policy constraints."""
+"""Constraint Product Lattice for AgentBrake-Fusion decisions."""
 
 from __future__ import annotations
 
@@ -46,6 +46,8 @@ def constraints_for_decision(decision: Decision | str, controls: list[str] | Non
     elif decision == "sandbox_then_approval":
         c.execution_env = "sandbox"
         c.human_gate = "approval_required"
+    elif decision == "require_confirmation":
+        c.human_gate = "approval_required"
     elif decision == "allow_in_sandbox" or any(control in controls for control in {"sandbox", "sandbox_preflight", "package_preflight"}):
         c.execution_env = "sandbox"
     if any(control in controls for control in {"no_egress", "network_off", "block"}):
@@ -58,7 +60,7 @@ def constraints_for_decision(decision: Decision | str, controls: list[str] | Non
         c.human_gate = "approval_required"
     if any(control in controls for control in {"dry_run_only", "ttl"}):
         c.persistence_scope = "no_persist"
-    if decision in {"block", "quarantine", "sandbox_then_approval"} or controls:
+    if decision in {"block", "quarantine", "require_confirmation", "sandbox_then_approval"} or controls:
         c.audit_scope = "full"
     return c
 
@@ -67,7 +69,7 @@ def constraints_to_decision(c: DecisionConstraints) -> Decision:
     if c.execution_env == "none":
         return "block"
     if c.human_gate == "approval_required":
-        return "sandbox_then_approval"
+        return "sandbox_then_approval" if c.execution_env == "sandbox" else "require_confirmation"
     if c.execution_env == "sandbox":
         return "allow_in_sandbox"
     return "allow"

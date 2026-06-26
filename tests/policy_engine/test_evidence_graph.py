@@ -31,8 +31,8 @@ def test_policy_eval_trace_contains_causal_graph_edges():
 
     trace = PolicyEvaluationTrace.build(
         action_id="act_1",
-        engine_mode="policygraph-enforce",
-        policy_version="agentbrake-policygraph-v0.4",
+        engine_mode="msj-enforce",
+        policy_version="agentbrake-fusion-msj-v0.4",
         fact_set=PolicyFactSet([fact]),
         final_decision="block",
         hits=[hit],
@@ -40,6 +40,9 @@ def test_policy_eval_trace_contains_causal_graph_edges():
     )
 
     assert trace.fact_nodes
+    assert trace.trace_type == "BrakeTrace"
+    assert trace.decision_model == "AgentBrake-Fusion/MSJ Engine"
+    assert trace.constraint_product_lattice_path == trace.decision_lattice_path
     assert trace.predicate_nodes
     assert trace.rule_nodes
     assert {"from": fact.fact_id, "to": "pred_1", "relation": "matched"} in trace.edges
@@ -63,8 +66,8 @@ def test_policy_eval_trace_preserves_graph_history_and_trace_metadata():
 
     trace = PolicyEvaluationTrace.build(
         action_id="act_2",
-        engine_mode="policygraph-enforce",
-        policy_version="agentbrake-policygraph-v0.4",
+        engine_mode="msj-enforce",
+        policy_version="agentbrake-fusion-msj-v0.4",
         fact_set=PolicyFactSet([graph_fact, history_fact, trace_fact]),
         final_decision="block",
         hits=[],

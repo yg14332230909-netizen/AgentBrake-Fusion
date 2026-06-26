@@ -33,7 +33,7 @@ export function InvariantGateView({ judgment }: { judgment: JudgmentTraceViewMod
           );
         }) : (
           <div className="invariant-card normal">
-            <div><b>未命中核心安全门</b><span>当前动作没有触发不可降级不变量，后续由 RuleIndex、谓词规则和决策格继续判断。</span></div>
+            <div><b>未命中核心安全门</b><span>当前动作没有触发不可降级不变量，后续由 RuleIndex、谓词规则和约束乘积格继续判断。</span></div>
             <DecisionBadge label="allow" severity="normal" />
           </div>
         )}

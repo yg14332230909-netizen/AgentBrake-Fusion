@@ -97,7 +97,7 @@ class GuardedExecAdapter:
             result.notes.append("allowed_in_sandbox: command was preflighted instead of executed on host")
             return result
 
-        if decision.decision == "sandbox_then_approval":
+        if decision.decision in {"require_confirmation", "sandbox_then_approval"}:
             result.notes.append("approval_required: command was not executed")
             return result
 

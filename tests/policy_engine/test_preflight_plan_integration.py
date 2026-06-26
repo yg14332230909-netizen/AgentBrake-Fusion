@@ -1,7 +1,7 @@
 from agentbrake.control_plane import AgentBrakeControlPlane
 
 
-def test_control_plane_uses_policygraph_preflight_plan_for_tests(tmp_path):
+def test_control_plane_uses_msj_preflight_plan_for_tests(tmp_path):
     (tmp_path / "src").mkdir()
     (tmp_path / "tests").mkdir()
     (tmp_path / "package.json").write_text('{"scripts":{"test":"echo ok"}}', encoding="utf-8")

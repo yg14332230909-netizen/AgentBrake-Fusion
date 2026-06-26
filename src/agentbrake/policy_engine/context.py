@@ -1,4 +1,4 @@
-"""Evaluation context for the PolicyGraph engine."""
+"""Evaluation context for the MSJ Engine."""
 
 from __future__ import annotations
 

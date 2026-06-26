@@ -1,4 +1,4 @@
-"""Typed facts used by the PolicyGraph engine."""
+"""Typed facts used by the MSJ Engine fact space."""
 
 from __future__ import annotations
 

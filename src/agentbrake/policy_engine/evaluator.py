@@ -1,4 +1,4 @@
-"""Predicate evaluator for compiled PolicyGraph rules."""
+"""Predicate evaluator for compiled MSJ Engine rules."""
 
 from __future__ import annotations
 

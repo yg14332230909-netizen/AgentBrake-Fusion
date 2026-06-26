@@ -1,4 +1,4 @@
-"""Compatibility wrapper and PolicyGraph implementation."""
+"""MSJ Engine implementation for the outer AgentBrake-Fusion decision model."""
 
 from __future__ import annotations
 
@@ -22,8 +22,8 @@ from ..models import (
     new_id,
 )
 from .compiler import PolicyRuleCompiler
+from .constraint_product_lattice import ConstraintProductLattice
 from .context import PolicyEvalContext
-from .decision_lattice import DecisionLattice
 from .evaluator import RuleEvaluator
 from .evidence_graph import PolicyEvaluationTrace
 from .fact_extractor import FactExtractor
@@ -33,23 +33,25 @@ from .preflight_planner import PreflightPlan
 from .rule_index import RuleIndex
 from .rule_schema import RuleHit
 
-VALID_MODES = {"policygraph-enforce"}
+VALID_MODES = {"msj-enforce", "policygraph-enforce"}
 RISK_SCORE = {"low": 15, "medium": 40, "high": 70, "critical": 95}
+DECISION_MODEL_NAME = "AgentBrake-Fusion/MSJ Engine"
+TRACE_TYPE = "BrakeTrace"
 
 
-class PolicyGraphEngine:
-    policy_version = "agentbrake-policygraph-v0.4"
+class MSJEngine:
+    policy_version = "agentbrake-fusion-msj-v0.4"
 
     def __init__(self, domain_rules: list[dict[str, Any]] | None = None):
         self.matcher = IntentMatcher()
         self.extractor = FactExtractor()
         self.invariants = InvariantEngine()
-        self.lattice = DecisionLattice()
+        self.lattice = ConstraintProductLattice()
         compiled = PolicyRuleCompiler().compile(domain_rules or self._load_domain_rules())
         self.rule_index = RuleIndex(compiled)
         self.evaluator = RuleEvaluator()
 
-    def decide(self, ctx: PolicyEvalContext, *, mode: str = "policygraph-enforce") -> tuple[PolicyDecision, PolicyEvaluationTrace]:
+    def decide(self, ctx: PolicyEvalContext, *, mode: str = "msj-enforce") -> tuple[PolicyDecision, PolicyEvaluationTrace]:
         fact_set = self.extractor.extract(ctx)
         baseline = self._baseline_decision(ctx)
         invariant_hits = self.invariants.evaluate(fact_set)
@@ -74,7 +76,7 @@ class PolicyGraphEngine:
         controls = set(decision.required_controls)
         required = bool(controls & {"sandbox_preflight", "package_preflight", "network_allowlist", "network_off", "human_approval"})
         run_even_if_blocked = os.environ.get("AGENTBRAKE_PREFLIGHT_BLOCKED", "").lower() in {"1", "true", "full", "evidence"}
-        if decision.decision == "sandbox_then_approval":
+        if decision.decision in {"require_confirmation", "sandbox_then_approval"}:
             required = True
         if decision.decision == "block" and run_even_if_blocked:
             required = True
@@ -109,20 +111,38 @@ class PolicyGraphEngine:
         source_floor = next(iter(fact_set.values("source", "trust_floor")), None)
         preflight = asdict(self.plan_preflight(decision))
         graph_trace = {
-            "engine": "policygraph",
+            "engine": "msj_engine",
+            "decision_model": DECISION_MODEL_NAME,
+            "trace_type": TRACE_TYPE,
             "policy_eval_trace_id": trace.policy_eval_trace_id,
             "fact_set_id": fact_set.fact_set_id,
             "fact_hash": fact_set.content_hash,
             "fact_count": len(fact_set.facts),
+            "fact_space": {
+                "fact_set_id": fact_set.fact_set_id,
+                "fact_hash": fact_set.content_hash,
+                "evidence_namespaces": sorted({fact.namespace for fact in fact_set.facts}),
+            },
             "rule_hit_count": len(hits),
             "invariant_hits": [hit.rule_id for hit in hits if hit.invariant],
             "decision_lattice_path": lattice_path,
+            "constraint_product_lattice_path": lattice_path,
+            "constraint_product_lattice": {
+                "path": lattice_path,
+                "constraints": _last_constraints(lattice_path),
+            },
             "skipped_rules_summary": skipped,
             "source_trust_floor": source_floor,
             "touched_asset_types": touched_asset_types,
             "preflight_plan": preflight,
             "invariant_version": getattr(self.invariants, "version", "legacy"),
             "constraints": _last_constraints(lattice_path),
+            "brake_trace": {
+                "trace_id": trace.policy_eval_trace_id,
+                "decision_id": decision.decision_id,
+                "reason_codes": decision.reason_codes,
+                "recovery_controls": decision.required_controls,
+            },
         }
         return replace(
             decision,
@@ -130,6 +150,14 @@ class PolicyGraphEngine:
             evidence_refs=list(dict.fromkeys([*decision.evidence_refs, fact_set.fact_set_id, trace.policy_eval_trace_id])),
             rule_trace=[*decision.rule_trace, graph_trace],
             explanation=self._explanation(decision, hits),
+            metadata={
+                **decision.metadata,
+                "decision_model": DECISION_MODEL_NAME,
+                "judgment_engine": "MSJ Engine",
+                "fact_space_id": fact_set.fact_set_id,
+                "brake_trace_id": trace.policy_eval_trace_id,
+                "constraint_product": _last_constraints(lattice_path),
+            },
         )
 
     def _baseline_decision(self, ctx: PolicyEvalContext) -> PolicyDecision:
@@ -181,7 +209,7 @@ class PolicyGraphEngine:
             min(score, 100),
             reasons,
             controls,
-            "PolicyGraph baseline; domain rules and invariants determine the final decision.",
+            "MSJ Engine baseline; domain rules, invariants, evidence facts, and constraints determine the final decision.",
             intent,
             ctx.package_event,
             ctx.exec_trace,
@@ -222,8 +250,9 @@ class PolicyGraphEngine:
             policy_version=self.policy_version,
             rule_trace=[
                 {
-                    "engine": "policygraph",
-                    "stage": "baseline",
+                    "engine": "msj_engine",
+                    "stage": "fact_space_baseline",
+                    "decision_model": DECISION_MODEL_NAME,
                     "semantic_action": action.semantic_action,
                     "risk": action.risk,
                     "source_ids": action.source_ids,
@@ -237,7 +266,7 @@ class PolicyGraphEngine:
     def _explanation(decision: PolicyDecision, hits: list[RuleHit]) -> str:
         invariant_ids = [hit.rule_id for hit in hits if hit.invariant]
         if invariant_ids:
-            return f"PolicyGraph invariant(s) {', '.join(invariant_ids)} produced a non-downgradable {decision.decision} decision."
+            return f"MSJ Engine invariant(s) {', '.join(invariant_ids)} produced a non-downgradable {decision.decision} decision."
         return decision.explanation
 
     @staticmethod
@@ -251,21 +280,25 @@ class PolicyGraphEngine:
         return [dict(rule) for rule in rules]
 
 
+PolicyGraphEngine = MSJEngine
+
+
 class PolicyEngine:
-    """Backward-compatible PolicyEngine entrypoint backed only by PolicyGraph."""
+    """Backward-compatible PolicyEngine entrypoint backed by the outer MSJ Engine."""
 
     def __init__(self, mode: str | None = None) -> None:
-        self.mode = mode or os.environ.get("AGENTBRAKE_POLICY_ENGINE", "policygraph-enforce")
+        self.mode = _normalise_mode(mode or os.environ.get("AGENTBRAKE_POLICY_ENGINE", "msj-enforce"))
         if self.mode not in VALID_MODES:
-            self.mode = "policygraph-enforce"
-        self.policygraph = PolicyGraphEngine()
+            self.mode = "msj-enforce"
+        self.msj_engine = MSJEngine()
+        self.policygraph = self.msj_engine
         self.trace_mode = os.environ.get("AGENTBRAKE_POLICY_TRACE_MODE", "full")
         self._eval_events: list[dict[str, Any]] = []
         self._fact_events: list[dict[str, Any]] = []
 
     @property
     def policy_version(self) -> str:
-        return self.policygraph.policy_version
+        return self.msj_engine.policy_version
 
     def decide(
         self,
@@ -289,11 +322,12 @@ class PolicyEngine:
             "post_decide" if exec_trace else "pre_decide",
             session_state,
         )
-        graph_decision, trace = self.policygraph.decide(ctx, mode=self.mode)
+        graph_decision, trace = self.msj_engine.decide(ctx, mode=self.mode)
         event = _summary_trace(trace.to_dict()) if self.trace_mode == "summary" else trace.to_dict()
         self._eval_events.append(event)
         self._fact_events.append(
             {
+                "decision_model": DECISION_MODEL_NAME,
                 "fact_set_id": trace.fact_set_id,
                 "fact_hash": trace.fact_hash,
                 "fact_count": len(trace.fact_nodes),
@@ -305,7 +339,7 @@ class PolicyEngine:
         return graph_decision
 
     def plan_preflight(self, decision: PolicyDecision) -> PreflightPlan:
-        return self.policygraph.plan_preflight(decision)
+        return self.msj_engine.plan_preflight(decision)
 
     def consume_eval_events(self) -> list[dict[str, Any]]:
         events = self._eval_events
@@ -324,7 +358,13 @@ def _load_policy_yaml(path: Path) -> dict[str, Any]:
 
         return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     except ImportError as exc:
-        raise RuntimeError("PyYAML is required for PolicyGraph YAML policy packs") from exc
+        raise RuntimeError("PyYAML is required for MSJ Engine YAML policy packs") from exc
+
+
+def _normalise_mode(mode: str) -> str:
+    if mode in {"legacy", "policygraph", "policygraph-enforce"}:
+        return "msj-enforce"
+    return mode
 
 
 def _fact_namespace_counts(nodes: list[dict[str, Any]]) -> dict[str, int]:
@@ -373,6 +413,8 @@ def _last_constraints(lattice_path: list[dict[str, Any]]) -> dict[str, Any]:
 def _summary_trace(event: dict[str, Any]) -> dict[str, Any]:
     return {
         "policy_eval_trace_id": event.get("policy_eval_trace_id"),
+        "trace_type": event.get("trace_type"),
+        "decision_model": event.get("decision_model"),
         "action_id": event.get("action_id"),
         "engine_mode": event.get("engine_mode"),
         "policy_version": event.get("policy_version"),
@@ -393,6 +435,7 @@ def _summary_trace(event: dict[str, Any]) -> dict[str, Any]:
         "fact_count": len(event.get("fact_nodes", []) or []),
         "namespace_counts": _fact_namespace_counts(event.get("fact_nodes", []) or []),
         "decision_lattice_path": event.get("decision_lattice_path", []),
+        "constraint_product_lattice_path": event.get("constraint_product_lattice_path") or event.get("decision_lattice_path", []),
         "retrieval_trace": _summary_retrieval(event.get("retrieval_trace", {}) or {}),
         "created_at": event.get("created_at"),
     }

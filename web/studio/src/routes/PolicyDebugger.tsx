@@ -49,7 +49,7 @@ export function PolicyDebugger({ events }: { events: StudioEvent[] }) {
     <div className="policy-debugger">
       <div className="policy-explainer">
         <b>完整 Policy Debugger 看什么？</b>
-        <span>上半部分是人能读懂的结论，下半部分把 PolicyGraph 的事实、规则谓词、决策格路径和因果图串起来，方便定位误报、漏报或规则缺口。</span>
+        <span>上半部分是人能读懂的结论，下半部分把 MSJ Engine 的事实、规则谓词、约束乘积格路径和因果图串起来，方便定位误报、漏报或规则缺口。</span>
       </div>
 
       <div className="policy-debug-metrics">
@@ -98,7 +98,7 @@ export function PolicyDebugger({ events }: { events: StudioEvent[] }) {
                 </div>
               </section>
               <section>
-                <b>3. PolicyGraph 证据</b>
+                <b>3. MSJ Engine 证据</b>
                 <span>{trace ? `${trace.fact_nodes?.length || 0} 个事实、${trace.rule_nodes?.length || 0} 条规则` : "等待评估轨迹"}</span>
                 <small>{trace?.policy_eval_trace_id || "未找到 policy_eval_trace"}</small>
               </section>

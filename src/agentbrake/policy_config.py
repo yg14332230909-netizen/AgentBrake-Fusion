@@ -9,8 +9,8 @@ from typing import Any
 
 from .models import ActionIR, Decision, PolicyDecision
 
-VALID_DECISIONS: set[str] = {"allow", "allow_in_sandbox", "sandbox_then_approval", "block", "quarantine"}
-DECISION_RANK = {"allow": 0, "allow_in_sandbox": 1, "sandbox_then_approval": 2, "quarantine": 3, "block": 4}
+VALID_DECISIONS: set[str] = {"allow", "allow_in_sandbox", "require_confirmation", "sandbox_then_approval", "block", "quarantine"}
+DECISION_RANK = {"allow": 0, "allow_in_sandbox": 1, "require_confirmation": 2, "sandbox_then_approval": 3, "quarantine": 4, "block": 5}
 
 
 class ConfigurablePolicyOverrides:
@@ -114,7 +114,7 @@ class ConfigurablePolicyOverrides:
 
     @staticmethod
     def _is_unsafe_downgrade(current: Decision, requested: str) -> bool:
-        if current in {"block", "quarantine", "sandbox_then_approval"}:
+        if current in {"block", "quarantine", "sandbox_then_approval", "require_confirmation"}:
             return DECISION_RANK[requested] < DECISION_RANK[current]
         if current == "allow_in_sandbox" and requested == "allow":
             return True

@@ -133,7 +133,7 @@ def build_run_summaries(events: list[StudioEvent]) -> list[RunSummary]:
         decision = event.payload.get("decision") or event.payload.get("effective_decision")
         if decision:
             run.latest_decision = str(decision)
-        if decision in {"block", "quarantine", "sandbox_then_approval"} or event.payload.get("blocked_count"):
+        if decision in {"block", "quarantine", "require_confirmation", "sandbox_then_approval"} or event.payload.get("blocked_count"):
             run.blocked_count += 1
     return sorted(runs.values(), key=lambda r: r.updated_at, reverse=True)
 
@@ -166,7 +166,9 @@ def build_action_detail(events: list[StudioEvent], action_id: str) -> ActionDeta
         elif event.type == "policy_eval_trace":
             detail.policy_eval_trace = dict(event.payload)
             detail.policy_predicates = _predicate_matrix(event.payload)
-            detail.policy_lattice_path = list(event.payload.get("decision_lattice_path") or [])
+            detail.policy_lattice_path = list(
+                event.payload.get("constraint_product_lattice_path") or event.payload.get("decision_lattice_path") or []
+            )
             detail.policy_causal_graph = {
                 "fact_nodes": list(event.payload.get("fact_nodes") or []),
                 "predicate_nodes": list(event.payload.get("predicate_nodes") or []),
@@ -218,7 +220,9 @@ def judgment_view_model(detail: ActionDetail) -> dict[str, Any]:
         "invariant_hits": invariant_hits,
         "candidate_rules": _candidate_rules(trace, rule_nodes),
         "predicate_rows": predicate_rows,
-        "lattice_path": list(detail.policy_lattice_path or trace.get("decision_lattice_path") or []),
+        "lattice_path": list(
+            detail.policy_lattice_path or trace.get("constraint_product_lattice_path") or trace.get("decision_lattice_path") or []
+        ),
         "causal_graph": detail.policy_causal_graph
         or {
             "fact_nodes": fact_nodes,
@@ -396,7 +400,7 @@ def _source_module_for_event(event_type: str) -> str:
         "package_event": "PackageGuard",
         "mcp_invocation": "MCPProxy",
         "memory_event": "MemoryStore",
-    }.get(event_type, "PolicyGraph")
+    }.get(event_type, "MSJ Engine")
 
 
 def _why_text(detail: ActionDetail, final_decision: str, invariant_hits: list[dict[str, Any]]) -> str:
@@ -500,7 +504,7 @@ def _severity(event_type: str, payload: dict[str, Any]) -> str:
     risk = str(payload.get("risk") or "")
     if decision in {"block", "quarantine"} or risk == "critical" or semantic in DANGEROUS:
         return "critical"
-    if decision in {"sandbox_then_approval", "allow_in_sandbox"} or risk == "high":
+    if decision in {"require_confirmation", "sandbox_then_approval", "allow_in_sandbox"} or risk == "high":
         return "warning"
     if event_type in {"gateway_response", "gateway_pre_call", "gateway_post_call"}:
         return "info"

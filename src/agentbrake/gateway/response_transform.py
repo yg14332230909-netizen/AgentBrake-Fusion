@@ -15,7 +15,9 @@ def transform_response(
     release_mode: str = "gateway_only",
 ) -> dict[str, Any]:
     blocked = [
-        r for r in guarded_results if r.get("runtime", {}).get("effective_decision") in {"block", "quarantine", "sandbox_then_approval"}
+        r
+        for r in guarded_results
+        if r.get("runtime", {}).get("effective_decision") in {"block", "quarantine", "require_confirmation", "sandbox_then_approval"}
     ]
     if blocked:
         message = safe_block_message("AgentBrake-Fusion Gateway policy result:", blocked, trace_id)

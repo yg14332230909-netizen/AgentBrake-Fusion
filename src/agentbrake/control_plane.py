@@ -400,12 +400,13 @@ class AgentBrakeControlPlane:
 
 def _constraint_lattice_payload(decision: PolicyDecision) -> dict[str, Any]:
     for step in reversed(decision.rule_trace):
-        if isinstance(step, dict) and step.get("engine") == "constraint_lattice":
+        if isinstance(step, dict) and step.get("engine") in {"constraint_product_lattice", "constraint_lattice"}:
             return {
-                "schema_version": "constraint-lattice-trace-v1",
+                "schema_version": "constraint-product-lattice-trace-v1",
                 "decision_id": decision.decision_id,
                 "action_id": decision.action_id,
                 "mapped_decision": step.get("mapped_decision", decision.decision),
                 "constraints": step.get("constraints") or {},
+                "decision_model": decision.metadata.get("decision_model", "AgentBrake-Fusion/MSJ Engine"),
             }
     return {}

@@ -84,7 +84,7 @@ class ReferenceCodingAgent:
                     action_id=_action.action_id,
                 )
                 self.sandboxed.append(call.raw_action)
-            elif decision.decision == "sandbox_then_approval":
+            elif decision.decision in {"require_confirmation", "sandbox_then_approval"}:
                 self.approval_required.append(call.raw_action)
                 self.blocked.append(call.raw_action)
             else:

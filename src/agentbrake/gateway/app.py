@@ -208,7 +208,7 @@ class AgentBrakeGateway:
                 "decision": asdict(decision),
                 "runtime": runtime.to_dict(),
             }
-            if runtime.effective_decision in {"block", "quarantine", "sandbox_then_approval"}:
+            if runtime.effective_decision in {"block", "quarantine", "require_confirmation", "sandbox_then_approval"}:
                 assert cp.contract is not None
                 plan = {"trace_id": trace.trace_id, "instructions": [instruction_to_dict(i) for i in instructions]}
                 approval = self.approvals.create_request(cp.contract, action2, decision, cp.provenance.graph, plan=plan)
@@ -252,7 +252,10 @@ class AgentBrakeGateway:
                 "trace_id": trace.trace_id,
                 "turn_id": turn_id,
                 "blocked_count": sum(
-                    1 for g in guarded if g.get("runtime", {}).get("effective_decision") in {"block", "quarantine", "sandbox_then_approval"}
+                    1
+                    for g in guarded
+                    if g.get("runtime", {}).get("effective_decision")
+                    in {"block", "quarantine", "require_confirmation", "sandbox_then_approval"}
                 ),
                 "response_hash": sha256_json(response),
             },

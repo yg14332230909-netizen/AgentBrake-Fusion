@@ -162,8 +162,8 @@ function relationExplanation(relation: string): string {
     matched: "当前证据满足了规则里的某个检查条件。",
     evaluates: "策略引擎正在用事实检查谓词条件。",
     upgrades: "更强的规则结论把决策推向更严格等级。",
-    final: "决策格输出最终安全结论。",
-    finalizes: "决策格输出最终安全结论。",
+    final: "约束乘积格输出最终安全结论。",
+    finalizes: "约束乘积格输出最终安全结论。",
     constraint_join: "多个治理要求被合并，保留更严格的约束。",
   };
   return labels[relation] || "这条箭头表示前一个节点对后一个节点有因果或证据支撑关系。";

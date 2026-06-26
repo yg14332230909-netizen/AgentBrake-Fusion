@@ -12,7 +12,7 @@ export function AlgorithmTracePanel({ judgment }: { judgment: JudgmentTraceViewM
     { title: "Invariants", value: judgment.invariant_hits.length, text: "先检查不可降级安全门，命中后不能被普通规则放行" },
     { title: "EvidenceIndex", value: postings.length, text: "用事实键召回候选规则，并保留残余规则兜底" },
     { title: "PredicateEval", value: matchedPredicates, text: "逐条判断候选规则的条件是否成立" },
-    { title: "DecisionLattice", value: latticeSteps, text: `把多个结论按风险格合并为 ${displayLabel(judgment.final_decision)}` },
+    { title: "Constraint Product Lattice", value: latticeSteps, text: `把多个结论按约束乘积格合并为 ${displayLabel(judgment.final_decision)}` },
     { title: "EvidenceGraph", value: judgment.evidence_refs.length, text: "输出可审计证据引用和因果图" },
   ];
   return (

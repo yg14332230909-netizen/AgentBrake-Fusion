@@ -13,7 +13,7 @@ export function EvidenceIntakePanel({ judgment, activeFactRefs = [] }: { judgmen
         {judgment.evidence_groups.map((group) => (
           <article className={`evidence-group-card ${group.severity}`} key={group.group_id}>
             <b>{group.label}</b>
-            <span className="muted">{group.items.length} 条证据 · {group.items[0]?.source_module || "PolicyGraph"}</span>
+            <span className="muted">{group.items.length} 条证据 · {group.items[0]?.source_module || "MSJ Engine"}</span>
             {group.items.length ? group.items.slice(0, 5).map((item) => (
               <div className={`evidence-item ${item.evidence_refs.some((ref) => refs.has(ref)) ? "highlight" : ""}`} key={item.id}>
                 <span>{item.label}</span>

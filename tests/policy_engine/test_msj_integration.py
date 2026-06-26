@@ -5,9 +5,10 @@ from agentbrake.contract import TaskContractBuilder
 from agentbrake.models import PolicyDecision
 from agentbrake.policy import PolicyEngine
 from agentbrake.policy_config import ConfigurablePolicyOverrides
+from agentbrake.policy_engine import MSJEngine, PolicyGraphEngine
 
 
-def test_policygraph_is_the_only_engine_and_records_eval_trace(tmp_path):
+def test_outer_msj_engine_records_braketrace(tmp_path):
     (tmp_path / ".env").write_text("TOKEN=x", encoding="utf-8")
     contract = TaskContractBuilder().build("fix login")
     graph = AssetScanner(tmp_path, env={}).scan()
@@ -19,10 +20,17 @@ def test_policygraph_is_the_only_engine_and_records_eval_trace(tmp_path):
     events = engine.consume_eval_events()
 
     assert decision.decision == "block"
-    assert decision.policy_version == "agentbrake-policygraph-v0.4"
+    assert decision.policy_version == "agentbrake-fusion-msj-v0.4"
+    assert decision.metadata["decision_model"] == "AgentBrake-Fusion/MSJ Engine"
     assert events
-    assert events[-1]["engine_mode"] == "policygraph-enforce"
+    assert events[-1]["engine_mode"] == "msj-enforce"
+    assert events[-1]["trace_type"] == "BrakeTrace"
+    assert events[-1]["decision_model"] == "AgentBrake-Fusion/MSJ Engine"
     assert events[-1]["invariant_hits"] == ["INV-SECRET-001"]
+
+
+def test_policygraph_engine_alias_points_to_msj_engine():
+    assert PolicyGraphEngine is MSJEngine
 
 
 def test_invariant_decision_cannot_be_downgraded_by_admin_signed_override():

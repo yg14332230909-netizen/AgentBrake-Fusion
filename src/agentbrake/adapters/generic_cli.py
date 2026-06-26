@@ -113,7 +113,7 @@ class GenericCLIAdapter:
                 )
                 result.sandboxed.append(call.raw_action)
                 result.simulated.append(call.raw_action)
-            elif decision.decision == "sandbox_then_approval":
+            elif decision.decision in {"require_confirmation", "sandbox_then_approval"}:
                 result.approval_required.append(call.raw_action)
             else:
                 result.blocked.append(call.raw_action)

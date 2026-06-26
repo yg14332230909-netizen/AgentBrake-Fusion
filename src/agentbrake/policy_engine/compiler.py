@@ -1,4 +1,4 @@
-"""Tiny PolicyGraph DSL compiler."""
+"""Tiny MSJ Engine policy rule compiler."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from .fact_normalizer import canonical_expected_values
 from .fact_registry import fact_spec
 from .rule_schema import CompiledPolicyRule, IndexHint, RuleSignature
 
-VALID_DECISIONS = {"allow", "allow_in_sandbox", "sandbox_then_approval", "quarantine", "block"}
+VALID_DECISIONS = {"allow", "allow_in_sandbox", "require_confirmation", "sandbox_then_approval", "quarantine", "block"}
 VALID_OPERATORS = {"eq", "in", "exists", "not_exists", "contains", "regex", "gte", "lte"}
 
 

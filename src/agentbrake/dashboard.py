@@ -17,7 +17,7 @@ def render_dashboard(audit_path: str | Path, output_path: str | Path, approvals_
         e
         for e in events
         if e.get("event_type") == "policy_decision"
-        and e.get("payload", {}).get("decision") in {"block", "quarantine", "sandbox_then_approval"}
+        and e.get("payload", {}).get("decision") in {"block", "quarantine", "require_confirmation", "sandbox_then_approval"}
     ]
     rows = []
     for event in blocked[-50:]:

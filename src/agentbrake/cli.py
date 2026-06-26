@@ -68,7 +68,7 @@ def cmd_guard(args: argparse.Namespace) -> int:
         return 0
     if decision.decision == "allow_in_sandbox":
         return 3
-    if decision.decision == "sandbox_then_approval":
+    if decision.decision in {"require_confirmation", "sandbox_then_approval"}:
         return 3
     return 2
 
@@ -265,7 +265,7 @@ def cmd_exec_guard(args: argparse.Namespace) -> int:
         return int(result.exit_code or 0)
     if decision == "allow_in_sandbox":
         return 3
-    if decision == "sandbox_then_approval":
+    if decision in {"require_confirmation", "sandbox_then_approval"}:
         return 3
     return 2
 
@@ -286,7 +286,7 @@ def cmd_file_guard(args: argparse.Namespace) -> int:
     _print_json({"action": asdict(action), "decision": asdict(decision), "audit_log": str(cp.audit.log_path)})
     if decision.decision == "allow":
         return 0
-    if decision.decision in {"allow_in_sandbox", "sandbox_then_approval"}:
+    if decision.decision in {"allow_in_sandbox", "require_confirmation", "sandbox_then_approval"}:
         return 3
     return 2
 

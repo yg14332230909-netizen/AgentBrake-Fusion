@@ -88,6 +88,7 @@ export interface PolicyEvalTrace extends PolicyCausalGraph {
   fact_hash?: string;
   invariant_hits?: string[];
   decision_lattice_path?: Array<Record<string, unknown>>;
+  constraint_product_lattice_path?: Array<Record<string, unknown>>;
   skipped_rules_summary?: Record<string, unknown>;
   constraints?: Record<string, unknown>;
 }
@@ -102,7 +103,7 @@ export type JudgmentSourceModule =
   | "MemoryStore"
   | "SandboxRunner"
   | "TaskContract"
-  | "PolicyGraph";
+  | "MSJ Engine";
 
 export interface JudgmentEvidenceItem {
   id: string;

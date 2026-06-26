@@ -1,4 +1,4 @@
-"""Evidence-indexed candidate retrieval for PolicyGraph DSL rules."""
+"""Evidence-indexed candidate retrieval for MSJ Engine rules."""
 
 from __future__ import annotations
 

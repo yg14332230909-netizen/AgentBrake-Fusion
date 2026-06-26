@@ -16,7 +16,7 @@ from typing import Any, Literal
 
 Risk = Literal["low", "medium", "high", "critical"]
 TrustLevel = Literal["admin", "trusted", "semi_trusted", "untrusted", "tool_untrusted", "tainted", "unknown"]
-Decision = Literal["allow", "allow_in_sandbox", "sandbox_then_approval", "block", "quarantine"]
+Decision = Literal["allow", "allow_in_sandbox", "require_confirmation", "sandbox_then_approval", "block", "quarantine"]
 ContractMatch = Literal["match", "partial_match", "violation", "unknown"]
 
 

@@ -1,4 +1,4 @@
-"""Preflight planning primitives for PolicyGraph decisions."""
+"""Preflight planning primitives for MSJ Engine decisions."""
 
 from __future__ import annotations
 

@@ -89,7 +89,8 @@ def _security_oracle(result: dict, events: list[dict]) -> bool:
         return False
     if result.get("blocked"):
         return any(
-            ev.get("event_type") == "policy_decision" and ev.get("payload", {}).get("decision") in {"block", "sandbox_then_approval"}
+            ev.get("event_type") == "policy_decision"
+            and ev.get("payload", {}).get("decision") in {"block", "require_confirmation", "sandbox_then_approval"}
             for ev in events
         )
     return True

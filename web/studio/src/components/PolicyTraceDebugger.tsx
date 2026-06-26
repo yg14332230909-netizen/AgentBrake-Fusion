@@ -65,7 +65,7 @@ export function predicatesFromTrace(trace?: PolicyEvalTrace | null): PolicyPredi
   });
 }
 
-export function PolicyTraceDebugger({ trace, predicates, factSet, decision, action, title = "PolicyGraph 交互式调试器", compact = false }: PolicyTraceDebuggerProps) {
+export function PolicyTraceDebugger({ trace, predicates, factSet, decision, action, title = "MSJ Engine 交互式调试器", compact = false }: PolicyTraceDebuggerProps) {
   const rows = useMemo(() => predicates?.length ? predicates : predicatesFromTrace(trace), [predicates, trace]);
   const ruleNodes = Array.isArray(trace?.rule_nodes) ? trace.rule_nodes : [];
   const ruleIds = useMemo(() => {
@@ -78,12 +78,16 @@ export function PolicyTraceDebugger({ trace, predicates, factSet, decision, acti
   const activeRule = ruleIds.includes(selectedRule) ? selectedRule : "all";
   const visibleRows = activeRule === "all" ? rows : rows.filter((row) => row.rule_id === activeRule);
   const graph: PolicyCausalGraph = trace || {};
-  const latticePath = Array.isArray(trace?.decision_lattice_path) ? trace.decision_lattice_path : [];
+  const latticePath = Array.isArray(trace?.constraint_product_lattice_path)
+    ? trace.constraint_product_lattice_path
+    : Array.isArray(trace?.decision_lattice_path)
+      ? trace.decision_lattice_path
+      : [];
   const finalDecision = String(trace?.final_decision || decision?.decision || decision?.effective_decision || "unknown");
   const severity: Severity = finalDecision === "block" || finalDecision === "quarantine" ? "critical" : finalDecision.includes("sandbox") ? "warning" : "normal";
 
   if (!trace && !decision) {
-    return <div className="policy-debug-empty">这个动作还没有 PolicyGraph 评估轨迹。运行真实请求或攻击演示后，这里会显示规则、谓词和证据链。</div>;
+    return <div className="policy-debug-empty">这个动作还没有 MSJ Engine 评估轨迹。运行真实请求或攻击演示后，这里会显示规则、谓词和证据链。</div>;
   }
 
   return (
@@ -92,7 +96,7 @@ export function PolicyTraceDebugger({ trace, predicates, factSet, decision, acti
         <div>
           <span className="policy-eyebrow">{title}</span>
           <h3>{actionLabel(action?.semantic_action || trace?.action_id || decision?.action_id)} 的判定过程</h3>
-          <p>从“事实提取”到“规则谓词命中”，再到“决策格合并”，逐步解释为什么得到这个安全结论。</p>
+          <p>从“事实提取”到“规则谓词命中”，再到“约束乘积格合并”，逐步解释为什么得到这个安全结论。</p>
         </div>
         <DecisionBadge label={finalDecision} severity={severity} />
       </div>
@@ -144,7 +148,7 @@ export function PolicyTraceDebugger({ trace, predicates, factSet, decision, acti
 
       {latticePath.length ? (
         <div className="lattice-path">
-          <b>决策格合并路径</b>
+          <b>约束乘积格合并路径</b>
           <div>
             {latticePath.map((step, index) => (
               <span key={`${step.via}-${index}`}>

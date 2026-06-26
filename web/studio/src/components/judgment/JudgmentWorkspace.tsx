@@ -4,7 +4,7 @@ import { AlgorithmTracePanel } from "./AlgorithmTracePanel";
 import { CausalEvidenceGraph } from "./CausalEvidenceGraph";
 import { CounterfactualPanel } from "./CounterfactualPanel";
 import { ConstraintPanel } from "./ConstraintPanel";
-import { DecisionLatticeStepper } from "./DecisionLatticeStepper";
+import { ConstraintProductLatticeStepper } from "./ConstraintProductLatticeStepper";
 import { EvidenceIntakePanel } from "./EvidenceIntakePanel";
 import { FactMatrix } from "./FactMatrix";
 import { InvariantGateView } from "./InvariantGateView";
@@ -29,7 +29,7 @@ export function JudgmentWorkspace({ judgment }: { judgment: JudgmentTraceViewMod
           <InvariantGateView judgment={judgment} />
           <RuleCandidatePruner judgment={judgment} />
           <PredicateMatrix judgment={judgment} />
-          <DecisionLatticeStepper judgment={judgment} />
+          <ConstraintProductLatticeStepper judgment={judgment} />
           <ConstraintPanel judgment={judgment} />
           <WhyDecisionPanel judgment={judgment} />
           <CounterfactualPanel judgment={judgment} />

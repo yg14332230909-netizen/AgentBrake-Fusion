@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Callable
 
-from .constraint_lattice import DecisionConstraints
+from .constraint_lattice import DecisionConstraints, constraints_to_decision
 from .facts import PolicyFact, PolicyFactSet
 from .rule_schema import RuleHit
 
@@ -275,7 +275,7 @@ def _hit(spec: SemanticInvariantSpec, evidence_facts: list[PolicyFact]) -> RuleH
         rule_id=spec.invariant_id,
         name=spec.name,
         category=spec.category,
-        decision="block" if spec.min_constraints.execution_env == "none" else "sandbox_then_approval",
+        decision=constraints_to_decision(spec.min_constraints),
         risk_score=spec.risk_score,
         reason_codes=spec.reason_codes,
         required_controls=spec.required_controls,

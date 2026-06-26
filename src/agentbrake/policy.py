@@ -1,4 +1,4 @@
-"""Policy decision compatibility entrypoint backed by PolicyGraph."""
+"""Policy decision compatibility entrypoint backed by the MSJ Engine."""
 
 from __future__ import annotations
 

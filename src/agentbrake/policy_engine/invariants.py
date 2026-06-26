@@ -1,4 +1,4 @@
-"""Non-downgradable safety invariants for PolicyGraph."""
+"""Non-downgradable safety invariants for the MSJ Engine."""
 
 from __future__ import annotations
 

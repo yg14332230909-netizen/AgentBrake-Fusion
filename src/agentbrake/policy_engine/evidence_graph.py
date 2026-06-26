@@ -1,4 +1,4 @@
-"""Causal evidence trace emitted by PolicyGraph decisions."""
+"""BrakeTrace evidence graph emitted by outer MSJ Engine decisions."""
 
 from __future__ import annotations
 
@@ -23,6 +23,9 @@ class PolicyEvaluationTrace:
     invariant_hits: list[str]
     rule_hits: list[dict[str, Any]]
     decision_lattice_path: list[dict[str, Any]]
+    constraint_product_lattice_path: list[dict[str, Any]] = field(default_factory=list)
+    trace_type: str = "BrakeTrace"
+    decision_model: str = "AgentBrake-Fusion/MSJ Engine"
     fact_nodes: list[dict[str, Any]] = field(default_factory=list)
     predicate_nodes: list[dict[str, Any]] = field(default_factory=list)
     rule_nodes: list[dict[str, Any]] = field(default_factory=list)
@@ -63,6 +66,9 @@ class PolicyEvaluationTrace:
                 final_decision=final_decision,
                 invariant_hits=[h.rule_id for h in hits if h.invariant],
                 rule_hits=[asdict(h) for h in hits],
+                constraint_product_lattice_path=lattice_path,
+                trace_type="BrakeTrace",
+                decision_model="AgentBrake-Fusion/MSJ Engine",
                 fact_nodes=[
                     {
                         "id": fact.fact_id,
@@ -92,6 +98,9 @@ class PolicyEvaluationTrace:
             final_decision=final_decision,
             invariant_hits=[h.rule_id for h in hits if h.invariant],
             rule_hits=[asdict(h) for h in hits],
+            constraint_product_lattice_path=lattice_path,
+            trace_type="BrakeTrace",
+            decision_model="AgentBrake-Fusion/MSJ Engine",
             fact_nodes=graph["fact_nodes"],
             predicate_nodes=graph["predicate_nodes"],
             rule_nodes=graph["rule_nodes"],
@@ -242,7 +251,7 @@ def _causal_graph(
             )
             edges.append({"from": constraint_id, "to": node_id, "relation": "constraint_join"})
         via = str(step.get("via") or "")
-        if via and via != "policygraph_baseline":
+        if via and via not in {"policygraph_baseline", "msj_baseline"}:
             edges.append({"from": via, "to": node_id, "relation": "merged_into"})
         if previous:
             edges.append({"from": previous, "to": node_id, "relation": "next"})
