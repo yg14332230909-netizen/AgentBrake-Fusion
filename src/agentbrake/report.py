@@ -31,9 +31,9 @@ def render_incident_html(audit_path: str | Path, output_path: str | Path) -> Pat
         )
     chain = _chain_summary(events)
     doc = f"""<!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><title>AgentBrake Incident Report</title>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>AgentBrake-Fusion Incident Report</title>
 <style>body{{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;margin:32px;line-height:1.45}}code,pre{{background:#f6f8fa;border-radius:6px;padding:2px 4px}}.card{{border:1px solid #d0d7de;border-radius:10px;padding:16px;margin:16px 0}}.ok{{color:#116329;font-weight:700}}.bad{{color:#cf222e;font-weight:700}}table{{border-collapse:collapse;width:100%;font-size:14px}}th,td{{border:1px solid #d0d7de;padding:8px;vertical-align:top}}th{{background:#f6f8fa}}.node{{display:inline-block;border:1px solid #d0d7de;border-radius:8px;padding:6px 8px;margin:4px;background:#f6f8fa}}</style>
-</head><body><h1>AgentBrake 事件审计报告</h1>
+</head><body><h1>AgentBrake-Fusion 事件审计报告</h1>
 <div class="card"><p>Hash-chain 验证：<span class="{"ok" if ok else "bad"}">{"通过" if ok else "失败"}</span></p><p>事件数：{len(events)}，图节点数：{len(graph.get("nodes", []))}，hash head：<code>{html.escape(audit.head)}</code></p>{("<p>错误：" + html.escape("; ".join(errors)) + "</p>") if errors else ""}</div>
 <div class="card"><h2>攻击链摘要</h2>{chain}</div>
 <div class="card"><h2>Incident Graph 节点</h2>{"".join('<span class="node">' + html.escape(n.get("type", "")) + ": " + html.escape(n.get("label", n.get("id", ""))) + "</span>" for n in graph.get("nodes", [])[:120])}</div>
@@ -64,9 +64,9 @@ def render_suite_html(report_json: str | Path, output_path: str | Path) -> Path:
         "<div class='metric'><strong>" + html.escape(str(key)) + "</strong><span>" + html.escape(str(value)) + "</span></div>"
         for key, value in metrics.items()
     )
-    doc = f"""<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>AgentBrake Bench Suite</title>
+    doc = f"""<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>AgentBrake-Fusion Bench Suite</title>
 <style>body{{font-family:system-ui;margin:32px}}table{{border-collapse:collapse;width:100%}}th,td{{border:1px solid #d0d7de;padding:8px}}th{{background:#f6f8fa}}.card{{border:1px solid #d0d7de;border-radius:10px;padding:16px;margin:16px 0}}.metrics{{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:16px 0}}.metric{{border:1px solid #d0d7de;border-radius:8px;padding:12px;background:#f6f8fa}}.metric strong{{display:block;font-size:13px;color:#57606a}}.metric span{{font-size:20px;font-weight:700}}</style>
-</head><body><h1>AgentBrake CodeAgent-SecBench 报告</h1><div class="card"><pre>{html.escape(json.dumps(metrics, ensure_ascii=False, indent=2))}</pre></div><table><thead><tr><th>sample</th><th>utility</th><th>security</th><th>evidence</th><th>danger requested</th><th>danger executed</th></tr></thead><tbody>{"".join(rows)}</tbody></table></body></html>"""
+</head><body><h1>AgentBrake-Fusion AgentTool-SecBench 报告</h1><div class="card"><pre>{html.escape(json.dumps(metrics, ensure_ascii=False, indent=2))}</pre></div><table><thead><tr><th>sample</th><th>utility</th><th>security</th><th>evidence</th><th>danger requested</th><th>danger executed</th></tr></thead><tbody>{"".join(rows)}</tbody></table></body></html>"""
     doc = doc.replace('<div class="card"><pre>', f'<div class="metrics">{metric_cards}</div><div class="card"><pre>', 1)
     output.write_text(doc, encoding="utf-8")
     return output

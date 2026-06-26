@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_REPORTS = ROOT / "experiments" / "agentdojo" / "reports" / "deepseekv4_flash" / "e2e_phase2"
 DEFAULT_PHASE1 = ROOT / "experiments" / "agentdojo" / "reports" / "deepseekv4_flash"
 LOCAL_PATH_RE = re.compile(
-    r"(?:local:)?[A-Za-z]:\\\\(?:Users|Windows|Program Files|ProgramData|project|agentbrake|Anaconda|Miniconda|Python|Temp|tmp)\\b|/Users/|/home/|file://",
+    r"(?:local:)?[A-Za-z]:\\\\(?:Users|Windows|Program Files|ProgramData|project|AgentBrake-Fusion|Anaconda|Miniconda|Python|Temp|tmp)\\b|/Users/|/home/|file://",
     re.IGNORECASE,
 )
 
@@ -44,13 +44,13 @@ def build_report(reports_dir: Path, phase1_reports_dir: Path) -> dict[str, Any]:
     add(checks, "method_case_counts_consistent", method_case_counts_consistent(methods), "method case_count must match unless documented")
     add(checks, "full_trace_missing_zero", full_trace_missing_count(rows, reports_dir) == 0, f"missing={full_trace_missing_count(rows, reports_dir)}")
     add(checks, "raw_traces_schema_valid", raw_traces_schema_valid(rows, reports_dir), "traces require trace_schema_version")
-    add(checks, "agentbrake_asr_below_no_defense", agentbrake_asr_below_no_defense(methods), "AgentBrake targeted_asr must be below no_defense or WARN if no_defense low")
+    add(checks, "agentbrake_asr_below_no_defense", agentbrake_asr_below_no_defense(methods), "AgentBrake-Fusion targeted_asr must be below no_defense or WARN if no_defense low")
     add(checks, "recovery_metrics_present", any("recovery_success_rate" in metrics for metrics in methods.values()), "recovery metrics required")
     add(checks, "confirmation_metrics_present", any("confirmation_execute_rate" in metrics for metrics in methods.values()), "confirmation metrics required")
     add(checks, "root_level_stale_artifacts_absent", root_stale_absent(phase1_reports_dir), "root-level stale replay artifacts absent")
     add(checks, "no_local_path_in_phase2_run_plan", no_local_path_in_run_plan(reports_dir), "phase2_run_plan.json must not contain local absolute paths")
     warn_if(checks, "summary_only_artifact_mode", not summary_only_mode(phase1_reports_dir), "summary_only artifact mode declared", category="artifact")
-    warn_if(checks, "agentbrake_latency_present", agentbrake_latency_present(methods), "AgentBrake latency missing", category="effectiveness")
+    warn_if(checks, "agentbrake_latency_present", agentbrake_latency_present(methods), "AgentBrake-Fusion latency missing", category="effectiveness")
     add(checks, "phase2_effectiveness_thresholds", effectiveness_thresholds_pass(methods, mode), f"{mode} Phase 2 effectiveness thresholds", category="effectiveness")
     warn_if(
         checks,

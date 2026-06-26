@@ -292,7 +292,7 @@ def test_studio_exposes_coverage_endpoint(tmp_path: Path):
     )
     thread.start()
     time.sleep(0.25)
-    req = Request(f"http://127.0.0.1:{port}/api/coverage", headers={"Authorization": "Bearer agentbrake-local"})
+    req = Request(f"http://127.0.0.1:{port}/api/coverage", headers={"Authorization": "Bearer agentbrake-fusion-local"})
 
     with urlopen(req, timeout=5) as resp:
         payload = json.loads(resp.read().decode("utf-8"))

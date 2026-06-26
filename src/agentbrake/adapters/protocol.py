@@ -1,4 +1,4 @@
-"""Common adapter protocol objects for external coding agents."""
+"""Common adapter protocol objects for external agents."""
 
 from __future__ import annotations
 

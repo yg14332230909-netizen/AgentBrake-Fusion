@@ -6,6 +6,6 @@
 >
 > This directory will be removed after compatibility migration.
 
-# AgentBrake AgentDojo Gateway-Only (Legacy)
+# AgentBrake-Fusion AgentDojo Gateway-Only (Legacy)
 
 This directory contains historical gateway-only baseline scripts.

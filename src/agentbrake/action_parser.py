@@ -1,4 +1,4 @@
-"""Convert raw coding-agent tool calls to ActionIR."""
+"""Convert raw agent tool calls to ActionIR."""
 
 from __future__ import annotations
 

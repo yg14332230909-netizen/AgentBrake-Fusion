@@ -43,7 +43,7 @@ def test_studio_normalizer_builds_runs_and_action_detail(tmp_path: Path):
     simulate_gateway_request(
         repo,
         {
-            "model": "agentbrake/local-heuristic",
+            "model": "AgentBrake-Fusion/local-heuristic",
             "trace_id": "run_test_attack",
             "task": "fix login and test",
             "messages": [{"role": "user", "content": "fix login and test"}],
@@ -129,7 +129,7 @@ def test_studio_builds_action_judgment_view_model(tmp_path: Path):
     simulate_gateway_request(
         repo,
         {
-            "model": "agentbrake/local-heuristic",
+            "model": "AgentBrake-Fusion/local-heuristic",
             "trace_id": "run_test_judgment",
             "task": "fix login and test",
             "messages": [{"role": "user", "content": "fix login and test"}],
@@ -187,7 +187,7 @@ def test_studio_scenario_runner_and_export(tmp_path: Path):
     assert runs and runs[0]["blocked_count"] >= 1
     out = export_evidence(index, runs[0]["run_id"], tmp_path / "evidence")
     assert (out / "events.jsonl").exists()
-    assert "AgentBrake Evidence Bundle" in (out / "summary.md").read_text(encoding="utf-8")
+    assert "AgentBrake-Fusion Evidence Bundle" in (out / "summary.md").read_text(encoding="utf-8")
 
 
 def test_studio_scenarios_include_required_attack_lab_cases():
@@ -204,7 +204,7 @@ def test_studio_static_frontend_is_available():
     assert (source_root / "src" / "app" / "App.tsx").exists()
     assert (root / "index.html").exists() or (root / "react.html").exists()
     html = _studio_html()
-    assert "AgentBrake Studio Pro" in html
+    assert "AgentBrake-Fusion Studio Pro" in html
     assert "/assets/" in html or "/src/main.tsx" in html
 
 
@@ -281,7 +281,7 @@ def test_studio_get_api_requires_authorization(tmp_path: Path):
     else:
         raise AssertionError("Studio GET API should reject missing Authorization")
 
-    req = Request(f"http://127.0.0.1:{port}/api/runs", headers={"Authorization": "Bearer agentbrake-local"})
+    req = Request(f"http://127.0.0.1:{port}/api/runs", headers={"Authorization": "Bearer agentbrake-fusion-local"})
     with urlopen(req, timeout=5) as resp:
         payload = json.loads(resp.read().decode("utf-8"))
     assert payload == {"runs": []}
@@ -303,7 +303,7 @@ def test_studio_event_stream_accepts_query_token(tmp_path: Path):
     thread.start()
     time.sleep(0.25)
 
-    with urlopen(f"http://127.0.0.1:{port}/api/events/stream?token=agentbrake-local", timeout=1) as resp:
+    with urlopen(f"http://127.0.0.1:{port}/api/events/stream?token=agentbrake-fusion-local", timeout=1) as resp:
         assert resp.status == 200
         assert resp.headers.get_content_type() == "text/event-stream"
 

@@ -9,7 +9,7 @@ from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 from agentbrake.audit import AuditLog
-from agentbrake.gateway import OpenAICompatibleUpstream, AgentBrakeGateway, serve_gateway, simulate_gateway_request
+from agentbrake.gateway import AgentBrakeGateway, OpenAICompatibleUpstream, serve_gateway, simulate_gateway_request
 from agentbrake.gateway.openai_compat import chat_completion_stream_events, responses_api_response, responses_api_stream_events
 from agentbrake.gateway_bench import generate_stage3_gateway_samples, run_gateway_suite
 from agentbrake.instruction_ir import InstructionBuilder, InstructionLowerer
@@ -48,7 +48,7 @@ def test_instruction_ir_lowers_openai_tool_call_to_action(tmp_path: Path):
 def test_gateway_blocks_untrusted_context_tool_call(tmp_path: Path):
     repo = make_repo(tmp_path)
     request = {
-        "model": "agentbrake/local-heuristic",
+        "model": "AgentBrake-Fusion/local-heuristic",
         "task": "修复登录按钮点击无响应的问题，并运行测试。",
         "messages": [{"role": "user", "content": "修复登录按钮点击无响应的问题，并运行测试。"}],
         "metadata": {
@@ -66,7 +66,7 @@ def test_gateway_blocks_untrusted_context_tool_call(tmp_path: Path):
     assert guarded
     assert guarded[0]["action"]["semantic_action"] == "install_git_dependency"
     assert guarded[0]["runtime"]["effective_decision"] == "block"
-    assert "AgentBrake blocked" in result["response"]["choices"][0]["message"]["content"]
+    assert "AgentBrake-Fusion blocked" in result["response"]["choices"][0]["message"]["content"]
 
 
 def test_openai_compatible_upstream_normalizes_chat_completion_message():
@@ -185,7 +185,7 @@ def test_chat_completion_stream_events_emit_sse_done(tmp_path: Path):
     result = simulate_gateway_request(
         repo,
         {
-            "model": "agentbrake/local-heuristic",
+            "model": "AgentBrake-Fusion/local-heuristic",
             "stream": True,
             "messages": [{"role": "user", "content": "fix login and test"}],
         },
@@ -202,7 +202,7 @@ def test_chat_completion_stream_events_emit_indexed_tool_call_chunks():
     events = chat_completion_stream_events(
         {
             "id": "chatcmpl_test",
-            "model": "agentbrake/local",
+            "model": "AgentBrake-Fusion/local",
             "choices": [
                 {
                     "message": {
@@ -225,7 +225,7 @@ def test_responses_api_response_has_response_shape(tmp_path: Path):
     repo = make_repo(tmp_path)
     result = simulate_gateway_request(
         repo,
-        {"model": "agentbrake/local-heuristic", "messages": [{"role": "user", "content": "fix login"}]},
+        {"model": "AgentBrake-Fusion/local-heuristic", "messages": [{"role": "user", "content": "fix login"}]},
         audit_path=tmp_path / "audit.jsonl",
     )
     response = responses_api_response(result["response"], result["trace_id"])
@@ -239,7 +239,7 @@ def test_responses_api_stream_events_emit_completed_event(tmp_path: Path):
     repo = make_repo(tmp_path)
     result = simulate_gateway_request(
         repo,
-        {"model": "agentbrake/local-heuristic", "messages": [{"role": "user", "content": "fix login"}]},
+        {"model": "AgentBrake-Fusion/local-heuristic", "messages": [{"role": "user", "content": "fix login"}]},
         audit_path=tmp_path / "audit.jsonl",
     )
     response = responses_api_response(result["response"], result["trace_id"])
@@ -390,7 +390,7 @@ def test_gateway_does_not_release_allow_in_sandbox_tool_calls(tmp_path: Path):
     repo = make_repo(tmp_path)
     result = simulate_gateway_request(
         repo,
-        {"model": "agentbrake/local-heuristic", "messages": [{"role": "user", "content": "fix login and run tests"}]},
+        {"model": "AgentBrake-Fusion/local-heuristic", "messages": [{"role": "user", "content": "fix login and run tests"}]},
         audit_path=tmp_path / "audit.jsonl",
     )
     assert any(g["runtime"]["effective_decision"] == "allow_in_sandbox" for g in result["guarded_results"])
@@ -443,7 +443,7 @@ def test_serve_gateway_rejects_oversized_request_body_before_reading(tmp_path: P
     request = (
         "POST /v1/chat/completions HTTP/1.1\r\n"
         f"Host: 127.0.0.1:{port}\r\n"
-        "Authorization: Bearer agentbrake-local\r\n"
+        "Authorization: Bearer agentbrake-fusion-local\r\n"
         "Content-Type: application/json\r\n"
         "Content-Length: 3145728\r\n"
         "Connection: close\r\n"
@@ -476,14 +476,14 @@ def test_serve_gateway_returns_run_id_header(tmp_path: Path):
                 "metadata": {"agentbrake_run_id": "run_http_header_test", "conversation_id": "conv_http_header_test"},
             }
         ).encode("utf-8"),
-        headers={"Content-Type": "application/json", "Authorization": "Bearer agentbrake-local"},
+        headers={"Content-Type": "application/json", "Authorization": "Bearer agentbrake-fusion-local"},
         method="POST",
     )
     with urlopen(req, timeout=5) as resp:
         body = json.loads(resp.read().decode("utf-8"))
-        assert resp.headers["X-AgentBrake-Run-Id"] == "run_http_header_test"
-        assert resp.headers["X-AgentBrake-Trace-Id"] == "run_http_header_test"
-    assert body["agentbrake"]["trace_id"] == "run_http_header_test"
+        assert resp.headers["X-AgentBrake-Fusion-Run-Id"] == "run_http_header_test"
+        assert resp.headers["X-AgentBrake-Fusion-Trace-Id"] == "run_http_header_test"
+    assert body["AgentBrake-Fusion"]["trace_id"] == "run_http_header_test"
 
 
 def test_gateway_non_loopback_requires_explicit_token(tmp_path: Path, monkeypatch):
@@ -525,19 +525,19 @@ def test_serve_gateway_streaming_sends_prelude_before_slow_upstream(tmp_path: Pa
     req = Request(
         f"http://127.0.0.1:{port}/v1/chat/completions",
         data=json.dumps({"model": "slow-test", "stream": True, "messages": [{"role": "user", "content": "hello"}]}).encode("utf-8"),
-        headers={"Content-Type": "application/json", "Authorization": "Bearer agentbrake-local"},
+        headers={"Content-Type": "application/json", "Authorization": "Bearer agentbrake-fusion-local"},
         method="POST",
     )
     start = time.monotonic()
     with urlopen(req, timeout=5) as resp:
-        assert resp.headers["X-AgentBrake-Run-Id"]
+        assert resp.headers["X-AgentBrake-Fusion-Run-Id"]
         first_line = resp.readline()
         elapsed = time.monotonic() - start
         rest = resp.read().decode("utf-8")
     assert elapsed < 0.4
     assert first_line.startswith(b"data: ")
     assert '"role": "assistant"' in first_line.decode("utf-8")
-    assert "agentbrake heartbeat" in rest
+    assert "AgentBrake-Fusion heartbeat" in rest
     assert "slow ok" in rest
     assert "data: [DONE]" in rest
 
@@ -546,7 +546,7 @@ def test_gateway_plus_guarded_tools_can_release_allow_in_sandbox_tool_calls(tmp_
     repo = make_repo(tmp_path)
     gw = AgentBrakeGateway(repo, audit_path=tmp_path / "audit.jsonl", release_mode="gateway_plus_guarded_tools")
     result = gw.handle_chat_completion(
-        {"model": "agentbrake/local-heuristic", "messages": [{"role": "user", "content": "fix login and run tests"}]}
+        {"model": "AgentBrake-Fusion/local-heuristic", "messages": [{"role": "user", "content": "fix login and run tests"}]}
     )
     assert any(g["runtime"]["effective_decision"] == "allow_in_sandbox" for g in result["guarded_results"])
     message = result["response"]["choices"][0]["message"]

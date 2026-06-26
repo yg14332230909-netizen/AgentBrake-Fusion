@@ -1,4 +1,4 @@
-# AgentBrake Agent Integration Demo
+# AgentBrake-Fusion Agent Integration Demo
 
 This demo shows the simplified formal-agent integration flow:
 
@@ -13,7 +13,7 @@ The generated Full-mode setup includes Gateway, shims, Studio, Approval API, aud
 ## Files
 
 - `demo_repo/`: small repository used as the protected target.
-- `start_agentbrake.sh`: generates Full-mode AgentBrake integration files.
+- `start_agentbrake.sh`: generates Full-mode AgentBrake-Fusion integration files.
 - `run_normal_task.sh`: sends a normal task through the Gateway.
 - `run_attack_task.sh`: sends an attack-like task through the Gateway.
 - `open_studio.md`: Studio URL and expected event flow.

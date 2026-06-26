@@ -1,4 +1,4 @@
-﻿{
+{
     "comparison_scope":  "formal_105_cross_model_after_qwen_recovery_fix",
     "baseline_model":  "deepseek-v4-flash",
     "compared_model":  "qwen-plus",

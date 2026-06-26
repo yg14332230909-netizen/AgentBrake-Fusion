@@ -1,6 +1,6 @@
 """Compatibility layer for ActionGraph objects.
 
-When installed inside AgentBrake, this module imports the real AgentBrake model
+When installed inside AgentBrake-Fusion, this module imports the real AgentBrake-Fusion model
 classes.  The fallback dataclasses make the adapter testable as a standalone
 upgrade bundle before Codex applies it to the repository.
 """

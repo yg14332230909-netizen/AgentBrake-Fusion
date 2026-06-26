@@ -151,7 +151,7 @@
       "name": "effectiveness_thresholds",
       "category": "effectiveness",
       "status": "PASS",
-      "detail": "AgentBrake full E2E thresholds"
+      "detail": "AgentBrake-Fusion full E2E thresholds"
     },
     {
       "name": "attack_active_thresholds",

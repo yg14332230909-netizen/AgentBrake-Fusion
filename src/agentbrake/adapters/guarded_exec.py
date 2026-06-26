@@ -27,10 +27,10 @@ class GuardedExecResult:
 
 
 class GuardedExecAdapter:
-    """Wrap a real shell command with AgentBrake pre-execution checks.
+    """Wrap a real shell command with AgentBrake-Fusion pre-execution checks.
 
     Agents that can customize their shell tool can run:
-      agentbrake exec-guard --repo <repo> --task <task> -- <command...>
+      AgentBrake-Fusion exec-guard --repo <repo> --task <task> -- <command...>
     """
 
     def __init__(self, repo_root: str | Path, control_plane: AgentBrakeControlPlane, task: str):

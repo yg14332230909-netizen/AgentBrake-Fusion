@@ -1,4 +1,4 @@
-"""Two-layer AgentBrake registry: immutable source rules + user/project overrides."""
+"""Two-layer AgentBrake-Fusion registry: immutable source rules + user/project overrides."""
 
 from __future__ import annotations
 

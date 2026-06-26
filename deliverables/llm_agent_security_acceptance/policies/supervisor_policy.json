@@ -1,0 +1,49 @@
+{
+  "policy_name": "llm-agent-supervisor-demo",
+  "version": "2026-06-10",
+  "trusted_email_domains": ["example.internal", "company.test"],
+  "trusted_api_hosts": ["internal.api", "127.0.0.1", "localhost"],
+  "sensitive_file_globs": ["*.env", ".env", "*secret*", "*credential*", "*private*", "*training*"],
+  "secret_patterns": [
+    "RS_CANARY_[A-Z0-9_]+",
+    "TRAINING_CANARY_[A-Z0-9_]+",
+    "SYSTEM_PROMPT_[A-Z0-9_]+",
+    "sk-[A-Za-z0-9_-]{12,}",
+    "AKIA[0-9A-Z]{16}"
+  ],
+  "input_filter": {
+    "ask_threshold": 4,
+    "block_threshold": 9
+  },
+  "output_filter": {
+    "ask_threshold": 3,
+    "block_threshold": 5
+  },
+  "tool_policy": {
+    "send_email": {
+      "external_without_secret": "ask",
+      "external_with_secret": "block"
+    },
+    "read_file": {
+      "sensitive_file": "ask",
+      "path_escape": "block"
+    },
+    "write_file": {
+      "ci_or_policy_file": "ask",
+      "path_escape": "block"
+    },
+    "call_api": {
+      "external_host": "ask",
+      "external_with_secret": "block",
+      "high_risk_business_api": "block"
+    },
+    "execute_code": {
+      "secret_or_network_code": "block",
+      "default": "ask"
+    },
+    "update_memory": {
+      "policy_or_egress_memory": "block",
+      "default": "allow"
+    }
+  }
+}

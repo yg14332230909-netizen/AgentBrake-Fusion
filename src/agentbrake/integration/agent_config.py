@@ -121,17 +121,17 @@ def _render_codex_config(config: dict[str, Any], original: str) -> str:
     session = config["session"]
     block = "\n".join(
         [
-            "# BEGIN AgentBrake managed block",
-            'model = "agentbrake/local-heuristic"',
-            'model_provider = "agentbrake"',
+            "# BEGIN AgentBrake-Fusion managed block",
+            'model = "AgentBrake-Fusion/local-heuristic"',
+            'model_provider = "AgentBrake-Fusion"',
             "",
             "[model_providers.agentbrake]",
-            'name = "AgentBrake Gateway"',
+            'name = "AgentBrake-Fusion Gateway"',
             f'base_url = "{gateway["base_url"]}"',
             'wire_api = "responses"',
             'env_key = "AGENTBRAKE_GATEWAY_API_KEY"',
-            f'http_headers = {{ X-AgentBrake-Run-Id = "{session["run_id"]}" }}',
-            "# END AgentBrake managed block",
+            f'http_headers = {{ X-AgentBrake-Fusion-Run-Id = "{session["run_id"]}" }}',
+            "# END AgentBrake-Fusion managed block",
             "",
         ]
     )
@@ -144,7 +144,7 @@ def _render_openai_env(config: dict[str, Any], profile: AgentProfile) -> str:
     session = config["session"]
     return "\n".join(
         [
-            "# AgentBrake generated agent config snippet.",
+            "# AgentBrake-Fusion generated agent config snippet.",
             f"OPENAI_BASE_URL={gateway['base_url']}",
             f"{profile.api_key_env}={profile.api_key_value}",
             f"AGENTBRAKE_RUN_ID={session['run_id']}",
@@ -155,8 +155,8 @@ def _render_openai_env(config: dict[str, Any], profile: AgentProfile) -> str:
 
 
 def _remove_managed_block(text: str) -> str:
-    start = "# BEGIN AgentBrake managed block"
-    end = "# END AgentBrake managed block"
+    start = "# BEGIN AgentBrake-Fusion managed block"
+    end = "# END AgentBrake-Fusion managed block"
     if start not in text or end not in text:
         return text
     before, rest = text.split(start, 1)

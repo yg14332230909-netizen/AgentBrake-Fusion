@@ -243,7 +243,7 @@ class PolicyGraphEngine:
     @staticmethod
     def _load_domain_rules() -> list[dict[str, Any]]:
         pack = os.environ.get("AGENTBRAKE_POLICY_PACK")
-        path = Path(pack) if pack else Path(__file__).with_name("policies") / "core_coding_agent.yaml"
+        path = Path(pack) if pack else Path(__file__).with_name("policies") / "core_general_agent.yaml"
         data = _load_policy_yaml(path)
         rules = data.get("rules", []) if isinstance(data, dict) else []
         if not isinstance(rules, list):

@@ -18,7 +18,7 @@ export function AlgorithmTracePanel({ judgment }: { judgment: JudgmentTraceViewM
   return (
     <section className="judgment-panel algorithm-trace-panel">
       <div className="judgment-panel-head">
-        <span className="policy-eyebrow">R-MPF</span>
+        <span className="policy-eyebrow">MSJ Engine</span>
         <h3>多源证据综合判断算法</h3>
       </div>
       <div className="pruner-steps">

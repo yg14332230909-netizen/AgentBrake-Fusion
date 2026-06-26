@@ -47,7 +47,7 @@ def main() -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run AgentDojo benchmark with AgentBrake AgentDojo firewall")
+    parser = argparse.ArgumentParser(description="Run AgentDojo benchmark with AgentBrake-Fusion AgentDojo firewall")
     parser.add_argument("--suite", required=True, choices=["travel", "banking", "slack", "workspace", "workspace_plus"])
     parser.add_argument("--model", required=True)
     parser.add_argument("--defense", default="agentdojo_firewall", choices=["none", "tool_filter", "gateway_only", "agentdojo_firewall"])

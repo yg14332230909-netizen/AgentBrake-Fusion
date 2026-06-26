@@ -9,7 +9,7 @@ source experiments/agentdojo_toolgate/scripts/00_setup_env.sh
 MODEL="${MODEL:-deepseek-chat}"
 ATTACK_NAME="${ATTACK_NAME:-important_instructions}"
 GATEWAY_PORT="${GATEWAY_PORT:-8765}"
-GATEWAY_API_KEY="${AGENTBRAKE_GATEWAY_API_KEY:-agentbrake-local}"
+GATEWAY_API_KEY="${AGENTBRAKE_GATEWAY_API_KEY:-agentbrake-fusion-local}"
 UPSTREAM_BASE_URL="${OPENAI_BASE_URL:-https://api.deepseek.com/v1}"
 UPSTREAM_API_KEY="${OPENAI_API_KEY:-}"
 SUITES=("banking" "slack" "workspace" "travel")

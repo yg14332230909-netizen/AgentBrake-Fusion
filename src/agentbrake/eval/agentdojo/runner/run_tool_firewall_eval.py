@@ -1,4 +1,4 @@
-"""Run AgentDojo evaluations with AgentBrake ToolGate."""
+"""Run AgentDojo evaluations with AgentBrake-Fusion ToolGate."""
 
 from __future__ import annotations
 

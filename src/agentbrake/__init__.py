@@ -1,4 +1,4 @@
-"""AgentBrake package."""
+"""AgentBrake-Fusion package compatibility layer."""
 
 from .control_plane import AgentBrakeControlPlane
 

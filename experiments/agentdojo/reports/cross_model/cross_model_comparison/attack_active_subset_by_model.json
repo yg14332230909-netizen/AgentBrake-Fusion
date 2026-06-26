@@ -1,4 +1,4 @@
-﻿{
+{
     "qwen_plus":  {
                       "definition":  "cases where qwen-plus no_defense raw_agentdojo_injection_task_success is true",
                       "case_count":  58,

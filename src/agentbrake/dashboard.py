@@ -57,10 +57,10 @@ def render_dashboard(audit_path: str | Path, output_path: str | Path, approvals_
         )
     out = Path(output_path)
     out.parent.mkdir(parents=True, exist_ok=True)
-    doc = f"""<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>AgentBrake Dashboard</title>
+    doc = f"""<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>AgentBrake-Fusion Dashboard</title>
 <style>body{{font-family:system-ui;margin:32px;line-height:1.45}}.card{{border:1px solid #d0d7de;border-radius:8px;padding:16px;margin:16px 0}}table{{border-collapse:collapse;width:100%;font-size:14px}}th,td{{border:1px solid #d0d7de;padding:8px;vertical-align:top}}th{{background:#f6f8fa}}code{{background:#f6f8fa;padding:2px 4px;border-radius:4px}}</style>
 </head><body>
-<h1>AgentBrake Dashboard</h1>
+<h1>AgentBrake-Fusion Dashboard</h1>
 <div class="card"><strong>Audit:</strong> {html.escape(str(audit_path))}<br><strong>Events:</strong> {len(events)}<br><strong>Blocked / approval-required:</strong> {len(blocked)}</div>
 <h2>Recent Policy Blocks</h2>
 <table><thead><tr><th>time</th><th>decision</th><th>risk</th><th>reasons</th><th>rules</th><th>evidence</th><th>action</th></tr></thead><tbody>{"".join(rows)}</tbody></table>

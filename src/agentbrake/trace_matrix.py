@@ -132,9 +132,9 @@ def render_trace_matrix_html(report: dict[str, Any], output_path: str | Path) ->
             f"<td>{html.escape('; '.join(row.get('errors') or []))}</td>"
             "</tr>"
         )
-    body = f"""<!doctype html><html><head><meta charset="utf-8"><title>AgentBrake Trace Matrix</title>
+    body = f"""<!doctype html><html><head><meta charset="utf-8"><title>AgentBrake-Fusion Trace Matrix</title>
 <style>body{{font-family:system-ui;margin:32px;color:#24292f}}table{{border-collapse:collapse;width:100%}}td,th{{border:1px solid #d0d7de;padding:8px;vertical-align:top}}th{{background:#f6f8fa}}.metric{{display:inline-block;border:1px solid #d0d7de;padding:12px;margin:6px;border-radius:8px}}</style></head><body>
-<h1>AgentBrake Agent Trace Compatibility Matrix</h1>
+<h1>AgentBrake-Fusion Agent Trace Compatibility Matrix</h1>
 <div class="metric">traces: <b>{report.get("metrics", {}).get("trace_count", 0)}</b></div>
 <div class="metric">agents: <b>{report.get("metrics", {}).get("agent_count", 0)}</b></div>
 <div class="metric">pass rate: <b>{report.get("metrics", {}).get("pass_rate", 0)}</b></div>

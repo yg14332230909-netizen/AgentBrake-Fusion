@@ -1,8 +1,8 @@
-﻿#!/usr/bin/env python3
-"""Safe failure-sample iterator for AgentBrake-AgentDojo firewall.
+#!/usr/bin/env python3
+"""Safe failure-sample iterator for AgentBrake-Fusion-AgentDojo firewall.
 
 This script replaces the previous ad-hoc iteration script with a conservative
-failure-analysis workflow.  It deliberately does **not** edit AgentBrake rules or
+failure-analysis workflow.  It deliberately does **not** edit AgentBrake-Fusion rules or
 source code.  Instead, it produces candidate YAML patches and a markdown report
 that can be reviewed, validated on a holdout set, and then manually merged.
 
@@ -29,7 +29,7 @@ Run a very small live train/validation split, then analyze it:
 
 Important fairness note
 -----------------------
-Fair mode does not pass injection task GOAL / PROMPT to AgentBrake.  Oracle modes
+Fair mode does not pass injection task GOAL / PROMPT to agentbrake.  Oracle modes
 are allowed only for upper-bound analysis and are clearly marked in the output.
 """
 
@@ -310,7 +310,7 @@ def run_live_samples(args: argparse.Namespace, *, out_dir: Path) -> list[SampleR
     """Run a tiny live split.
 
     In fair mode, this function deliberately does not pass injection GOAL/PROMPT
-    to AgentBrake.  Oracle modes are clearly marked and should not be used for
+    to agentbrake.  Oracle modes are clearly marked and should not be used for
     final results.
     """
     try:
@@ -461,7 +461,7 @@ def load_samples_from_log_roots(log_roots: list[Path], *, max_files: int) -> lis
 
 
 def samples_from_any_json(data: dict[str, Any], path: Path) -> list[SampleRecord]:
-    """Best-effort parser for AgentDojo / AgentBrake JSON logs.
+    """Best-effort parser for AgentDojo / AgentBrake-Fusion JSON logs.
 
     This parser is deliberately tolerant: AgentDojo and Inspect log formats vary.
     It extracts sample-level records only when utility/security or equivalent
@@ -933,7 +933,7 @@ def write_candidate_files(out_dir: Path, patches: list[CandidatePatch]) -> None:
 
 def render_iteration_report(summary: dict[str, Any]) -> str:
     lines: list[str] = []
-    lines.append("# AgentBrake-AgentDojo Firewall Safe Iteration Report")
+    lines.append("# AgentBrake-Fusion-AgentDojo Firewall Safe Iteration Report")
     lines.append("")
     lines.append(f"- generated_at: `{summary['generated_at']}`")
     lines.append(f"- mode: `{summary['mode']}`")

@@ -1,4 +1,4 @@
-"""AgentBrake Studio: lightweight HTML observability dashboard."""
+"""AgentBrake-Fusion Studio: lightweight HTML observability dashboard."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ def render_studio_html(
     bench_report: str | Path | None = None,
     trace_matrix_report: str | Path | None = None,
     approvals_path: str | Path | None = None,
-    title: str = "AgentBrake Studio",
+    title: str = "AgentBrake-Fusion Studio Pro",
 ) -> Path:
     audit = AuditLog(audit_path)
     events = audit.read_events()

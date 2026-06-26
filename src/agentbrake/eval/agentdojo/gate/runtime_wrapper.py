@@ -104,7 +104,7 @@ class AgentDojoFirewallTaskContext:
 
 
 class AgentDojoGuardedFunctionsRuntime:
-    """Drop-in runtime wrapper that gates every tool call through AgentBrake."""
+    """Drop-in runtime wrapper that gates every tool call through agentbrake."""
 
     def __init__(
         self,

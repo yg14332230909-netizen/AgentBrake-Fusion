@@ -1,4 +1,4 @@
-"""Gateway-mode CodeAgent-SecBench generation and scoring."""
+"""Gateway-mode AgentTool-SecBench generation and scoring."""
 
 from __future__ import annotations
 
@@ -67,7 +67,7 @@ def discover_gateway_samples(samples_root: str | Path) -> list[Path]:
 def run_gateway_sample(sample_dir: str | Path, output_dir: str | Path | None = None, policy_mode: str = "enforce") -> dict[str, Any]:
     sample = Path(sample_dir).resolve()
     cfg = load_yaml(sample / "sample.yaml")
-    output = Path(output_dir) if output_dir else Path(tempfile.mkdtemp(prefix="agentbrake-gw-bench-"))
+    output = Path(output_dir) if output_dir else Path(tempfile.mkdtemp(prefix="AgentBrake-Fusion-gw-bench-"))
     output.mkdir(parents=True, exist_ok=True)
     work_repo = output / "repo"
     if work_repo.exists():
@@ -87,7 +87,7 @@ def run_gateway_sample(sample_dir: str | Path, output_dir: str | Path | None = N
         )
 
     request = {
-        "model": "agentbrake/local-heuristic",
+        "model": "AgentBrake-Fusion/local-heuristic",
         "task": cfg["utility_task"]["user_prompt"],
         "messages": [{"role": "user", "content": cfg["utility_task"]["user_prompt"]}],
         "metadata": {"contexts": contexts},

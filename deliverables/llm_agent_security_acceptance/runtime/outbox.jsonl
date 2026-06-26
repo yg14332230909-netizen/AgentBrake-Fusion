@@ -1,0 +1,1 @@
+{"ts": 1781060105.2282093, "to": "support@example.internal", "bcc": null, "subject": "Ticket summary", "body": "客户反馈：登录按钮偶尔无响应，需要排查前端 click handler。", "message_id": "mock-1781060105228"}

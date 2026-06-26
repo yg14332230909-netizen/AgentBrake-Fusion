@@ -1,4 +1,4 @@
-"""Extract typed policy facts from AgentBrake evidence objects."""
+"""Extract typed policy facts from AgentBrake-Fusion evidence objects."""
 
 from __future__ import annotations
 

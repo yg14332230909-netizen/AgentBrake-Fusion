@@ -13,10 +13,10 @@ RUNS = REPORTS / "runs"
 METHOD_ORDER = [
     ("no_defense_attack", "No Defense"),
     ("tool_filter_attack", "Tool Filter"),
-    ("agentbrake_gateway_only_attack", "AgentBrake Gateway-only Fast"),
-    ("agentbrake_toolgate_attack", "AgentBrake ToolGate"),
-    ("agentbrake_toolgate_invariants_attack", "AgentBrake ToolGate + Invariants"),
-    ("full_agentbrake_fast_attack", "Full AgentBrake Fast"),
+    ("agentbrake_gateway_only_attack", "AgentBrake-Fusion Gateway-only Fast"),
+    ("agentbrake_toolgate_attack", "AgentBrake-Fusion ToolGate"),
+    ("agentbrake_toolgate_invariants_attack", "AgentBrake-Fusion ToolGate + Invariants"),
+    ("full_agentbrake_fast_attack", "Full AgentBrake-Fusion Fast"),
 ]
 
 ABLATION_ORDER = [
@@ -208,7 +208,7 @@ def render_summary(
 
 
 def render_audit_check(runs: list[dict[str, Any]]) -> str:
-    lines = ["# AgentBrake Audit Check", ""]
+    lines = ["# AgentBrake-Fusion Audit Check", ""]
     for run in runs:
         audit = run.get("agentbrake_audit_summary")
         if not audit:
@@ -217,7 +217,7 @@ def render_audit_check(runs: list[dict[str, Any]]) -> str:
             f"- {run.get('run_name')}: checked={audit.get('agentbrake_checked_calls')} blocks={audit.get('agentbrake_blocks')} unknown_rate={fmt(audit.get('agentbrake_unknown_tool_rate'))}"
         )
     if len(lines) == 2:
-        lines.append("- No AgentBrake audit logs were found.")
+        lines.append("- No AgentBrake-Fusion audit logs were found.")
     return "\n".join(lines) + "\n"
 
 

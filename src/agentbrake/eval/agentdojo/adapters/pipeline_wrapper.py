@@ -1,4 +1,4 @@
-"""AgentDojo pipeline wrapper that inserts AgentBrake before tool execution."""
+"""AgentDojo pipeline wrapper that inserts AgentBrake-Fusion before tool execution."""
 
 from __future__ import annotations
 

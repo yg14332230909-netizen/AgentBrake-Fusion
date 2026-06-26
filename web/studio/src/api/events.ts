@@ -1,7 +1,7 @@
 import type { StudioEvent } from "../types";
 
 function eventStreamUrl(path: string): string {
-  const token = localStorage.getItem("agentbrakeToken") || "agentbrake-local";
+  const token = localStorage.getItem("agentbrakeFusionToken") || "agentbrake-fusion-local";
   const separator = path.includes("?") ? "&" : "?";
   return `${path}${separator}token=${encodeURIComponent(token)}`;
 }

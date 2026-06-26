@@ -1,0 +1,22 @@
+{
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "AgentBrake-Fusion": {
+        "baseUrl": "http://127.0.0.1:8765/v1",
+        "apiKey": "agentbrake-fusion-local",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "gpt-4.1",
+            "name": "gpt-4.1 via AgentBrake-Fusion",
+            "reasoning": false,
+            "input": ["text"],
+            "contextWindow": 128000,
+            "maxTokens": 32000
+          }
+        ]
+      }
+    }
+  }
+}

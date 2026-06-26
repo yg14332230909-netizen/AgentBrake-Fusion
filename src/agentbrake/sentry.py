@@ -32,7 +32,7 @@ class SecretSentry:
                 asset=asset,
                 actor=action.action_id,
                 decision="blocked",
-                explanation="Sensitive file access is hard-denied by AgentBrake.",
+                explanation="Sensitive file access is hard-denied by agentbrake.",
                 secret_hash=None,
             )
         if action.semantic_action == "send_network_request" and self.session_secret_tainted:

@@ -1,6 +1,6 @@
 {
   "artifact_schema_version": "agentbrake_agentdojo_artifact_v1",
-  "repo_url": "https://github.com/yg14332230909-netizen/AgentBrake",
+  "repo_url": "https://github.com/yg14332230909-netizen/AgentBrake-Fusion",
   "commit_hash": "de6b73b56209165ed2873e78e6c45f49a209a045",
   "branch": "main",
   "model": "deepseek-v4-flash",

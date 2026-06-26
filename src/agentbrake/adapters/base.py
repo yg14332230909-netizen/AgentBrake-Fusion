@@ -1,7 +1,7 @@
-"""Adapter protocol for external coding agents.
+"""Adapter protocol for external agents.
 
 A real Codex/Cline/OpenHands/aider adapter only needs to convert each planned
-agent tool call into guard_action(...), then honour AgentBrake's decision.
+agent tool call into guard_action(...), then honour AgentBrake-Fusion's decision.
 """
 
 from __future__ import annotations

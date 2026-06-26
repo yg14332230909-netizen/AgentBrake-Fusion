@@ -10,7 +10,7 @@ from ..state_tracker import AgentDojoStateTracker
 
 
 @dataclass
-class ReposhieldAgentDojoTask:
+class AgentBrakeFusionAgentDojoTask:
     suite: str
     repo_root: str
     task_id: str | None = None
@@ -32,7 +32,7 @@ def agentbrake_agentdojo(
     gate = AgentBrakeToolGate(cp)
     tracker = AgentDojoStateTracker()
     return {
-        "task": ReposhieldAgentDojoTask(suite=suite, repo_root=str(repo_root), task_id=task_id, injection_task_id=injection_task_id),
+        "task": AgentBrakeFusionAgentDojoTask(suite=suite, repo_root=str(repo_root), task_id=task_id, injection_task_id=injection_task_id),
         "control_plane": cp,
         "tool_gate": gate,
         "state_tracker": tracker,

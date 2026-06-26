@@ -1,40 +1,13 @@
-# Aider
+# Aider 接入说明
 
-## 一、适用场景
+该文档保留路径用于兼容测试和外部引用。AgentBrake-Fusion 的统一定位是面向通用智能体工具调用的执行前安全裁决框架。
 
-适用于 Aider 或类似 CLI coding agent 的本地试用。
-
-## 二、一键接入命令
+推荐接入方式：
 
 ```bash
 agentbrake connect --agent aider --repo . --mode standard
 agentbrake start --repo .
+agentbrake doctor --repo . --agent aider
 ```
 
-## 三、Agent 侧配置
-
-让 Aider 使用 OpenAI-compatible endpoint：
-
-```text
-OPENAI_BASE_URL=http://127.0.0.1:8765/v1
-OPENAI_API_KEY=agentbrake-local
-```
-
-## 四、如何验证成功
-
-```bash
-agentbrake doctor --repo .
-agentbrake coverage --repo .
-```
-
-## 五、保护覆盖范围
-
-Standard 模式覆盖模型响应、tool_calls 和常见命令 shim。
-
-## 六、当前不能保护什么
-
-Aider 的直接文件编辑路径若不经过 AgentBrake file-guard，只能由 Gateway 侧证据和后续审计间接观察。
-
-## 七、常见问题
-
-保持稳定 `conversation_id`，可以让跨轮历史摘要连续积累。
+接入后，Aider 产生的工具调用或命令候选会被转换为结构化证据，并进入 AgentBrake-Fusion 裁决流程。

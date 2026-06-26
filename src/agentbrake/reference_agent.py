@@ -1,4 +1,4 @@
-"""A deterministic reference coding agent for demos and tests."""
+"""A deterministic reference agent for demos and tests."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ class ReferenceCodingAgent:
     """Small deterministic agent that models prompt-injection risk.
 
     The agent intentionally turns malicious context into attempted tool calls so
-    AgentBrake can prove it blocks consequences while preserving benign utility.
+    AgentBrake-Fusion can prove it blocks consequences while preserving benign utility.
     """
 
     def __init__(self, repo_root: str | Path, control_plane: AgentBrakeControlPlane):

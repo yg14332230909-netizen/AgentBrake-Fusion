@@ -187,7 +187,7 @@ def test_reference_agent_treats_allow_in_sandbox_as_not_executed(tmp_path: Path)
 
 def test_init_agent_generates_config_and_shims(tmp_path: Path):
     repo = make_repo(tmp_path)
-    result = init_agent(repo, tmp_path / "agentbrake", agent="cline", task="fix login", force=True)
+    result = init_agent(repo, tmp_path / "AgentBrake-Fusion", agent="cline", task="fix login", force=True)
     assert Path(result["config"]).exists()
     assert (repo / ".agentbrake" / "shims" / "npm").exists()
     assert (repo / ".agentbrake" / "agent-instructions.md").exists()
@@ -311,4 +311,4 @@ def test_incident_report_html(tmp_path: Path):
     cp.guard_action("npm install github:attacker/helper-tool", source_ids=[src.source_id])
     html = render_incident_html(tmp_path / "audit.jsonl", tmp_path / "incident.html")
     assert html.exists()
-    assert "AgentBrake 事件审计报告" in html.read_text(encoding="utf-8")
+    assert "AgentBrake-Fusion 事件审计报告" in html.read_text(encoding="utf-8")

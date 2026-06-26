@@ -5,7 +5,7 @@ import pytest
 pytest.importorskip("agentdojo")
 
 from agentbrake.control_plane import AgentBrakeControlPlane
-from agentbrake.eval.agentdojo import AgentBrakeToolGate, register_native_defense, agentbrake_agentdojo
+from agentbrake.eval.agentdojo import AgentBrakeToolGate, agentbrake_agentdojo, register_native_defense
 
 
 def test_tool_gate_blocks_and_allows_without_mutating_environment(tmp_path):

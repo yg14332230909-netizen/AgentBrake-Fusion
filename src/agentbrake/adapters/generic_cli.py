@@ -1,7 +1,7 @@
-"""Generic CLI coding-agent adapter.
+"""Generic CLI agent adapter.
 
-The adapter can read a transcript emitted by any coding agent. Only actions
-allowed by AgentBrake are applied; dangerous actions are never passed through.
+The adapter can read a transcript emitted by any external agent. Only actions
+allowed by AgentBrake-Fusion are applied; dangerous actions are never passed through.
 """
 
 from __future__ import annotations
@@ -48,7 +48,7 @@ class GenericCLIAdapter:
         elif self.command:
             if not self.allow_command_collection or self.command_collection_mode != "sandboxed_plan":
                 raise RuntimeError(
-                    "Refusing to execute external agent command before AgentBrake governance. "
+                    "Refusing to execute external agent command before AgentBrake-Fusion governance. "
                     "Use transcript mode, gateway mode, exec-guard/file-guard, a PATH shim, "
                     "or explicit sandboxed_plan command collection."
                 )
@@ -63,7 +63,7 @@ class GenericCLIAdapter:
                 task_id=self.cp.contract.task_id if self.cp.contract else None,
                 actor="generic_cli_adapter",
             )
-            with tempfile.TemporaryDirectory(prefix="agentbrake-plan-") as tmp:
+            with tempfile.TemporaryDirectory(prefix="AgentBrake-Fusion-plan-") as tmp:
                 sandbox_repo = Path(tmp) / "repo"
                 import shutil
 

@@ -2,10 +2,10 @@ import { useState } from "react";
 
 export function TokenControl() {
   const [open, setOpen] = useState(false);
-  const [token, setToken] = useState(localStorage.getItem("agentbrakeToken") || "agentbrake-local");
+  const [token, setToken] = useState(localStorage.getItem("agentbrakeFusionToken") || "agentbrake-fusion-local");
 
   function save() {
-    localStorage.setItem("agentbrakeToken", token);
+    localStorage.setItem("agentbrakeFusionToken", token);
     window.location.reload();
   }
 

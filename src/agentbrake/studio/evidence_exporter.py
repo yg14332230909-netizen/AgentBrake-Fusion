@@ -33,7 +33,7 @@ def export_evidence(index: StudioEventIndex, run_id: str, output_dir: str | Path
 def _summary(run_id: str, events: list[dict[str, Any]], decisions: list[dict[str, Any]], policy_traces: list[dict[str, Any]]) -> str:
     blocked = [d for d in decisions if d.get("payload", {}).get("decision") in {"block", "quarantine", "sandbox_then_approval"}]
     lines = [
-        f"# AgentBrake Evidence Bundle: {run_id}",
+        f"# AgentBrake-Fusion Evidence Bundle: {run_id}",
         "",
         f"- Events: {len(events)}",
         f"- Policy decisions: {len(decisions)}",

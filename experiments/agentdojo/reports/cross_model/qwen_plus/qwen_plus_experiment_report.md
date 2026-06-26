@@ -1,4 +1,4 @@
-﻿# Qwen-Plus Cross-Model Experiment Report
+# Qwen-Plus Cross-Model Experiment Report
 
 ## Canonical Status
 

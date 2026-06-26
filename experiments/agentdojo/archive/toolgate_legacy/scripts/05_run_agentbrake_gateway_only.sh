@@ -9,7 +9,7 @@ MODEL="${MODEL:-openai-api/deepseek/deepseek-chat}"
 LIMIT="${LIMIT:-}"
 PORT="${GATEWAY_PORT:-8765}"
 export OPENAI_BASE_URL="${OPENAI_BASE_URL:-http://127.0.0.1:${PORT}/v1}"
-export OPENAI_API_KEY="${OPENAI_API_KEY:-agentbrake-local}"
+export OPENAI_API_KEY="${OPENAI_API_KEY:-agentbrake-fusion-local}"
 mkdir -p experiments/agentdojo_toolgate/logs/agentbrake_gateway_only experiments/agentdojo_toolgate/reports/runs
 
 ARGS=(python -m agentbrake.eval.agentdojo.run_toolgate_eval

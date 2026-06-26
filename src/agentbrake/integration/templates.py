@@ -28,7 +28,7 @@ def load_config(path: str | Path) -> dict[str, Any]:
     except Exception:
         data = json.loads(text)
     if not isinstance(data, dict):
-        raise ValueError(f"invalid AgentBrake config: {path}")
+        raise ValueError(f"invalid AgentBrake-Fusion config: {path}")
     return data
 
 
@@ -43,7 +43,7 @@ def render_agent_env(config: dict[str, Any]) -> str:
             f"export AGENTBRAKE_AGENT={_sh_quote(config['agent'])}",
             f"export AGENTBRAKE_GATEWAY_BASE_URL={_sh_quote(gateway['base_url'])}",
             f"export OPENAI_BASE_URL={_sh_quote(gateway['base_url'])}",
-            "export OPENAI_API_KEY='agentbrake-local'",
+            "export OPENAI_API_KEY='agentbrake-fusion-local'",
             f"export AGENTBRAKE_RUN_ID={_sh_quote(session['run_id'])}",
             f"export AGENTBRAKE_CONVERSATION_ID={_sh_quote(session['conversation_id'])}",
             "export AGENTBRAKE_REQUIRE_STABLE_SESSION_IDENTITY=1",
@@ -55,20 +55,20 @@ def render_agent_env(config: dict[str, Any]) -> str:
 def render_agent_instructions(config: dict[str, Any]) -> str:
     return "\n".join(
         [
-            "# AgentBrake Agent 接入说明",
+            "# AgentBrake-Fusion Agent 接入说明",
             "",
             f"- 模式：`{config['mode']}`",
             f"- Agent：`{config['agent']}`",
             f"- 网关地址：`{config['gateway']['base_url']}`",
-            "- API Key：`agentbrake-local`",
+            "- API Key：`agentbrake-fusion-local`",
             "",
             "多轮 agent 必须在每一轮请求中传入稳定身份：",
             "",
             "- `metadata.agentbrake_run_id` 必须等于 `AGENTBRAKE_RUN_ID`。",
             "- `metadata.conversation_id` 必须等于 `AGENTBRAKE_CONVERSATION_ID`。",
-            "- 如果使用 HTTP header，也可以传入 `X-AgentBrake-Run-Id`，但请求 metadata 仍建议保留。",
+            "- 如果使用 HTTP header，也可以传入 `X-AgentBrake-Fusion-Run-Id`，但请求 metadata 仍建议保留。",
             "",
-            "不要为同一次任务的后续轮次重新生成 run_id / conversation_id，否则 AgentBrake 无法把 PersistentSessionState 与 ActionGraph 连续起来。",
+            "不要为同一次任务的后续轮次重新生成 run_id / conversation_id，否则 AgentBrake-Fusion 无法把 PersistentSessionState 与 ActionGraph 连续起来。",
             "",
             "保护范围提示：Quick 主要保护模型边界；Standard 增加常见执行路径 shims；Full 增加 Studio、Approval API 与 demo 包。",
             "",
@@ -78,7 +78,7 @@ def render_agent_instructions(config: dict[str, Any]) -> str:
 
 def render_connect_readme(config: dict[str, Any]) -> str:
     lines = [
-        "# AgentBrake Connect",
+        "# AgentBrake-Fusion Connect",
         "",
         f"- Mode: `{config['mode']}`",
         f"- Agent: `{config['agent']}`",
@@ -208,7 +208,7 @@ def render_demo_request(config: dict[str, Any], attack: bool = False) -> str:
         else "Fix the failing login test and run the test suite."
     )
     payload = {
-        "model": "agentbrake/local-heuristic",
+        "model": "AgentBrake-Fusion/local-heuristic",
         "messages": [{"role": "user", "content": content}],
         "metadata": {
             "agentbrake_run_id": config["session"]["run_id"],

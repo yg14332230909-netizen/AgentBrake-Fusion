@@ -397,7 +397,7 @@ def load_jsonl_if_exists(path: Path) -> list[dict[str, Any]]:
 
 def render_markdown(report: dict[str, Any]) -> str:
     lines = [
-        "# AgentBrake AgentDojo Final Acceptance Check",
+        "# AgentBrake-Fusion AgentDojo Final Acceptance Check",
         "",
         f"Structural acceptance: {report['structural_acceptance']}",
         f"Effectiveness acceptance: {report['effectiveness_acceptance']}",

@@ -1,7 +1,7 @@
-"""InstructionIR schema for AgentBrake Gateway.
+"""InstructionIR schema for AgentBrake-Fusion Gateway.
 
 InstructionIR is the runtime-governance layer between model messages/tool calls
-and AgentBrake's execution-facing ActionIR.  It records message lineage,
+and AgentBrake-Fusion's execution-facing ActionIR.  It records message lineage,
 provenance, parser confidence and taint/security propagation so incident reports
 can explain *why a model output became an executable action*.
 """

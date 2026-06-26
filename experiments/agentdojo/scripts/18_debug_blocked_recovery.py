@@ -26,7 +26,7 @@ DEFAULT_CASES = [
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Debug AgentBrake blocked recovery cases from AgentDojo paired raw reports")
+    parser = argparse.ArgumentParser(description="Debug AgentBrake-Fusion blocked recovery cases from AgentDojo paired raw reports")
     parser.add_argument("--reports-dir", type=Path, required=True)
     parser.add_argument("--trace-dir", type=Path, default=None)
     parser.add_argument("--out-dir", type=Path, required=True)
@@ -214,7 +214,7 @@ def next_assistant_message_after(messages: list[Any], blocked: dict[str, Any] | 
     for message in messages:
         if not isinstance(message, dict):
             continue
-        if message.get("role") == "tool" and "AgentBrake" in json.dumps(message.get("content"), ensure_ascii=False, default=str):
+        if message.get("role") == "tool" and "AgentBrake-Fusion" in json.dumps(message.get("content"), ensure_ascii=False, default=str):
             saw_blocked_tool_result = True
             continue
         if saw_blocked_tool_result and message.get("role") == "assistant":

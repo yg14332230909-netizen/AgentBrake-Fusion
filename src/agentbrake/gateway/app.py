@@ -1,4 +1,4 @@
-"""AgentBrake OpenAI-compatible Governance Gateway."""
+"""AgentBrake-Fusion OpenAI-compatible Governance Gateway."""
 
 from __future__ import annotations
 
@@ -236,7 +236,7 @@ class AgentBrakeGateway:
             guarded.append(item)
 
         response = transform_response(
-            assistant_msg, guarded, trace.trace_id, model=str(request.get("model") or "agentbrake/local"), release_mode=self.release_mode
+            assistant_msg, guarded, trace.trace_id, model=str(request.get("model") or "AgentBrake-Fusion/local"), release_mode=self.release_mode
         )
         result = {
             "trace_id": trace.trace_id,
@@ -366,10 +366,10 @@ def serve_gateway(
     env_gateway_key = os.getenv("AGENTBRAKE_GATEWAY_API_KEY")
     if host not in {"127.0.0.1", "localhost", "::1"} and gateway_api_key is None and not env_gateway_key:
         raise RuntimeError("Refusing to expose gateway on a non-loopback host without an explicit bearer token.")
-    required_gateway_key = gateway_api_key if gateway_api_key is not None else env_gateway_key or "agentbrake-local"
+    required_gateway_key = gateway_api_key if gateway_api_key is not None else env_gateway_key or "agentbrake-fusion-local"
     if host not in {"127.0.0.1", "localhost", "::1"}:
         gateway.cp.audit.append("gateway_network_exposure_warning", {"host": host, "requires_authorization": True}, actor="gateway")
-        print("AgentBrake warning: gateway is listening on a non-loopback host; Authorization is required.", flush=True)
+        print("AgentBrake-Fusion warning: gateway is listening on a non-loopback host; Authorization is required.", flush=True)
 
     class Handler(BaseHTTPRequestHandler):
         def _write_sse_data(self, payload: dict[str, Any]) -> None:
@@ -395,8 +395,8 @@ def serve_gateway(
             self.send_header("Content-Type", "text/event-stream; charset=utf-8")
             self.send_header("Cache-Control", "no-cache")
             self.send_header("Connection", "close")
-            self.send_header("X-AgentBrake-Trace-Id", trace_id)
-            self.send_header("X-AgentBrake-Run-Id", trace_id)
+            self.send_header("X-AgentBrake-Fusion-Trace-Id", trace_id)
+            self.send_header("X-AgentBrake-Fusion-Run-Id", trace_id)
             self.end_headers()
             if self.path == "/v1/chat/completions":
                 self._write_sse_data(
@@ -404,7 +404,7 @@ def serve_gateway(
                         "id": stream_id,
                         "object": "chat.completion.chunk",
                         "created": created,
-                        "model": str(request.get("model") or "agentbrake/local"),
+                        "model": str(request.get("model") or "AgentBrake-Fusion/local"),
                         "choices": [{"index": 0, "delta": {"role": "assistant"}, "finish_reason": None}],
                     }
                 )
@@ -425,7 +425,7 @@ def serve_gateway(
                     status, value = results.get(timeout=interval)
                     break
                 except queue.Empty:
-                    self._write_sse_comment("agentbrake heartbeat")
+                    self._write_sse_comment("AgentBrake-Fusion heartbeat")
 
             if status == "error":
                 exc = value
@@ -439,8 +439,8 @@ def serve_gateway(
                         "id": stream_id,
                         "object": "chat.completion.chunk",
                         "created": created,
-                        "model": str(request.get("model") or "agentbrake/local"),
-                        "choices": [{"index": 0, "delta": {"content": "AgentBrake upstream request failed."}, "finish_reason": None}],
+                        "model": str(request.get("model") or "AgentBrake-Fusion/local"),
+                        "choices": [{"index": 0, "delta": {"content": "AgentBrake-Fusion upstream request failed."}, "finish_reason": None}],
                     }
                 )
                 self._write_sse_data(
@@ -448,7 +448,7 @@ def serve_gateway(
                         "id": stream_id,
                         "object": "chat.completion.chunk",
                         "created": created,
-                        "model": str(request.get("model") or "agentbrake/local"),
+                        "model": str(request.get("model") or "AgentBrake-Fusion/local"),
                         "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}],
                     }
                 )
@@ -466,7 +466,7 @@ def serve_gateway(
                     self.wfile.flush()
                 self.close_connection = True
                 return
-            payload["agentbrake"] = {
+            payload["AgentBrake-Fusion"] = {
                 "trace_id": result["trace_id"],
                 "audit_log": result["audit_log"],
                 "guarded_results": result["guarded_results"],
@@ -509,7 +509,7 @@ def serve_gateway(
                 payload = result["response"]
                 if self.path == "/v1/responses":
                     payload = responses_api_response(payload, str(result["trace_id"]))
-                payload["agentbrake"] = {
+                payload["AgentBrake-Fusion"] = {
                     "trace_id": result["trace_id"],
                     "audit_log": result["audit_log"],
                     "guarded_results": result["guarded_results"],
@@ -518,8 +518,8 @@ def serve_gateway(
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json; charset=utf-8")
                 self.send_header("Content-Length", str(len(data)))
-                self.send_header("X-AgentBrake-Trace-Id", str(result["trace_id"]))
-                self.send_header("X-AgentBrake-Run-Id", str(result["trace_id"]))
+                self.send_header("X-AgentBrake-Fusion-Trace-Id", str(result["trace_id"]))
+                self.send_header("X-AgentBrake-Fusion-Run-Id", str(result["trace_id"]))
                 self.end_headers()
                 self.wfile.write(data)
             except Exception as exc:  # pragma: no cover - demo server only
@@ -529,7 +529,7 @@ def serve_gateway(
                     actor="gateway",
                 )
                 gateway.cp.audit.flush()
-                print(f"AgentBrake gateway error: {type(exc).__name__}: {exc}", flush=True)
+                print(f"AgentBrake-Fusion gateway error: {type(exc).__name__}: {exc}", flush=True)
                 data = json.dumps(
                     {
                         "error": {

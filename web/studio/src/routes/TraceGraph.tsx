@@ -84,7 +84,7 @@ export function TraceGraph({ nodes, edges, activeActionId, onInspectAction }: { 
     <>
       <div className="graph-explainer">
         <b>安全决策追踪图</b>
-        <span>从“信息来源”一路追到“工具动作”和“策略结论”，用来说明 AgentBrake 为什么放行、沙箱、审批或阻断。</span>
+        <span>从“信息来源”一路追到“工具动作”和“策略结论”，用来说明 AgentBrake-Fusion 为什么放行、沙箱、审批或阻断。</span>
       </div>
       <div className="graph-legend">
         <span><b className="legend-line flow" />流程箭头：代理请求如何一步步被解析和处理</span>

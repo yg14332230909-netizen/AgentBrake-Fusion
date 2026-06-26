@@ -1,4 +1,4 @@
-"""Startup summary for generated AgentBrake integrations."""
+"""Startup summary for generated AgentBrake-Fusion integrations."""
 
 from __future__ import annotations
 

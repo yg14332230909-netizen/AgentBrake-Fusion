@@ -28,7 +28,7 @@ def latest_user_text(messages: list[dict[str, Any]]) -> str:
     return "general code maintenance task"
 
 
-def assistant_message_response(message: dict[str, Any], model: str = "agentbrake/local") -> dict[str, Any]:
+def assistant_message_response(message: dict[str, Any], model: str = "AgentBrake-Fusion/local") -> dict[str, Any]:
     return {
         "id": new_id("chatcmpl"),
         "object": "chat.completion",
@@ -72,7 +72,7 @@ def responses_api_response(chat_response: dict[str, Any], trace_id: str) -> dict
         "id": str(chat_response.get("id") or new_id("resp")),
         "object": "response",
         "created_at": chat_response.get("created") or utc_now(),
-        "model": chat_response.get("model", "agentbrake/local"),
+        "model": chat_response.get("model", "AgentBrake-Fusion/local"),
         "output": output,
         "metadata": {"agentbrake_trace_id": trace_id},
         "usage": {"input_tokens": input_tokens, "output_tokens": output_tokens, "total_tokens": input_tokens + output_tokens},
@@ -83,7 +83,7 @@ def responses_api_stream_events(response: dict[str, Any]) -> list[bytes]:
     """Encode a minimal Responses API response as SSE events."""
     response_id = str(response.get("id") or new_id("resp"))
     created_at = response.get("created_at") or utc_now()
-    model = str(response.get("model") or "agentbrake/local")
+    model = str(response.get("model") or "AgentBrake-Fusion/local")
     completed_response = {
         **response,
         "id": response_id,
@@ -186,7 +186,7 @@ def chat_completion_stream_events(response: dict[str, Any], *, include_role: boo
     The gateway still performs policy checks on a complete assistant message, then
     emits a standards-shaped stream for agents that require `stream=true`.
     """
-    model = str(response.get("model") or "agentbrake/local")
+    model = str(response.get("model") or "AgentBrake-Fusion/local")
     message = ((response.get("choices") or [{}])[0].get("message") or {}) if isinstance(response.get("choices"), list) else {}
     finish_reason = (
         ((response.get("choices") or [{}])[0].get("finish_reason") or "stop") if isinstance(response.get("choices"), list) else "stop"
@@ -267,7 +267,7 @@ def _content_chunks(content: str, size: int = 256) -> list[str]:
 
 
 def safe_block_message(reason: str, decisions: list[dict[str, Any]], trace_id: str) -> dict[str, Any]:
-    lines = ["AgentBrake blocked or constrained a high-risk tool call before execution.", f"trace_id={trace_id}", ""]
+    lines = ["AgentBrake-Fusion blocked or constrained a high-risk tool call before execution.", f"trace_id={trace_id}", ""]
     for d in decisions:
         action = d.get("action", {})
         dec = d.get("decision", {})
@@ -281,7 +281,7 @@ def safe_block_message(reason: str, decisions: list[dict[str, Any]], trace_id: s
 
 
 def safe_sandbox_only_message(reason: str, decisions: list[dict[str, Any]], trace_id: str) -> dict[str, Any]:
-    lines = ["AgentBrake constrained a tool call to sandbox-only handling.", f"trace_id={trace_id}", ""]
+    lines = ["AgentBrake-Fusion constrained a tool call to sandbox-only handling.", f"trace_id={trace_id}", ""]
     for d in decisions:
         action = d.get("action", {})
         dec = d.get("decision", {})
@@ -289,7 +289,7 @@ def safe_sandbox_only_message(reason: str, decisions: list[dict[str, Any]], trac
         lines.append(f"  semantic: {action.get('semantic_action')}")
         lines.append(f"  decision: {dec.get('decision')} risk={dec.get('risk_score')}")
         lines.append("  host_execution: denied")
-        lines.append("  next_step: run only through AgentBrake sandbox, overlay, or preflight tooling")
+        lines.append("  next_step: run only through AgentBrake-Fusion sandbox, overlay, or preflight tooling")
     return {"role": "assistant", "content": reason + "\n" + "\n".join(lines), "tool_calls": []}
 
 

@@ -1,4 +1,4 @@
-"""AgentDojo tool taxonomy mapped to AgentBrake semantic actions."""
+"""AgentDojo tool taxonomy mapped to AgentBrake-Fusion semantic actions."""
 
 from __future__ import annotations
 

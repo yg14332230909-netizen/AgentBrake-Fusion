@@ -2,7 +2,7 @@ param(
   [string]$Model = $(if ($env:MODEL) { $env:MODEL } else { "deepseek-chat" }),
   [string]$Attack = $(if ($env:ATTACK_NAME) { $env:ATTACK_NAME } else { "important_instructions" }),
   [string]$GatewayPort = $(if ($env:GATEWAY_PORT) { $env:GATEWAY_PORT } else { "8765" }),
-  [string]$GatewayApiKey = $(if ($env:AGENTBRAKE_GATEWAY_API_KEY) { $env:AGENTBRAKE_GATEWAY_API_KEY } else { "agentbrake-local" }),
+  [string]$GatewayApiKey = $(if ($env:AGENTBRAKE_GATEWAY_API_KEY) { $env:AGENTBRAKE_GATEWAY_API_KEY } else { "agentbrake-fusion-local" }),
   [string]$UpstreamBaseUrl = $(if ($env:OPENAI_BASE_URL) { $env:OPENAI_BASE_URL } else { "https://api.deepseek.com/v1" }),
   [string]$UpstreamApiKey = $(if ($env:OPENAI_API_KEY) { $env:OPENAI_API_KEY } else { "" })
 )

@@ -1,4 +1,4 @@
-"""Formal agent integration helpers for AgentBrake."""
+"""Formal agent integration helpers for agentbrake."""
 
 from .connect import ConnectResult, connect_repo
 from .coverage import build_coverage_report

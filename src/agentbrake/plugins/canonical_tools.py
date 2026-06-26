@@ -1,4 +1,4 @@
-"""Canonical coding-agent tool names understood by AgentBrake."""
+"""Canonical agent tool names understood by agentbrake."""
 
 from __future__ import annotations
 

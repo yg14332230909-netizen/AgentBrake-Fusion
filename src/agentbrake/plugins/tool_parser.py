@@ -1,7 +1,7 @@
 """Tool-call parser registry.
 
-The registry lets a new coding agent adapter register only a parser/mapping for
-its tool-call shape.  The rest of AgentBrake consumes the returned canonical
+The registry lets a new agent adapter register only a parser/mapping for
+its tool-call shape.  The rest of AgentBrake-Fusion consumes the returned canonical
 ToolParseResult and then lowers it to ActionIR.
 """
 
@@ -226,7 +226,7 @@ class OpenClawToolParser(GenericJSONToolParser):
 
     OpenClaw integrations are expected to work best through the
     OpenAI-compatible gateway, but this parser also accepts common direct
-    adapter shapes so AgentBrake can sit at the tool boundary when needed.
+    adapter shapes so AgentBrake-Fusion can sit at the tool boundary when needed.
     """
 
     def parse(self, tool_call: dict[str, Any]) -> ToolParseResult:

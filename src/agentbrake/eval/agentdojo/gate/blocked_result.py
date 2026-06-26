@@ -60,7 +60,7 @@ def build_blocked_tool_result(
         disallowed = []
         unsafe = []
         trusted = []
-        reason = "AgentBrake blocked this tool call."
+        reason = "AgentBrake-Fusion blocked this tool call."
     if repeated_unsafe_action:
         disallowed = ["Do not call this tool again with the same parameters.", *disallowed]
         reason = f"Repeated unsafe action detected. {reason}"
@@ -77,7 +77,7 @@ def build_blocked_tool_result(
         requires_user_confirmation=requires_confirmation,
         same_action_retry_key=retry_key,
         repeated_unsafe_action=repeated_unsafe_action,
-        message=_llm_message(reason, allowed, disallowed) if recovery_guidance_enabled else "AgentBrake blocked this tool call.",
+        message=_llm_message(reason, allowed, disallowed) if recovery_guidance_enabled else "AgentBrake-Fusion blocked this tool call.",
     )
     return result.as_dict()
 
@@ -214,7 +214,7 @@ def _guidance_for_group(
 
 
 def _llm_message(reason: str, allowed: list[str], disallowed: list[str]) -> str:
-    parts = [f"AgentBrake blocked this tool call. {reason}"]
+    parts = [f"AgentBrake-Fusion blocked this tool call. {reason}"]
     if disallowed:
         parts.append(disallowed[0])
     if allowed:

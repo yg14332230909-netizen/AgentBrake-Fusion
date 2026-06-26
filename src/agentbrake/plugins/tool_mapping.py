@@ -69,7 +69,7 @@ class ToolMappingRegistry:
 
 
 class ToolIntrospector:
-    """Infer AgentBrake tool mappings from common tool definition formats."""
+    """Infer AgentBrake-Fusion tool mappings from common tool definition formats."""
 
     def from_openai_tools(self, tools: list[dict[str, Any]], *, source: str = "openai_tools") -> list[ToolMapping]:
         mappings: list[ToolMapping] = []

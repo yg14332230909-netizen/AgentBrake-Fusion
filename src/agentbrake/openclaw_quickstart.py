@@ -1,4 +1,4 @@
-"""Generate a portable OpenClaw -> AgentBrake setup."""
+"""Generate a portable OpenClaw -> AgentBrake-Fusion setup."""
 
 from __future__ import annotations
 
@@ -21,9 +21,9 @@ def generate_openclaw_quickstart(
     root = repo_path / ".agentbrake" / "openclaw"
     root.mkdir(parents=True, exist_ok=True)
 
-    ps1 = root / "start-agentbrake-openclaw.ps1"
-    cmd = root / "start-agentbrake-openclaw.cmd"
-    sh = root / "start-agentbrake-openclaw.sh"
+    ps1 = root / "start-AgentBrake-Fusion-openclaw.ps1"
+    cmd = root / "start-AgentBrake-Fusion-openclaw.cmd"
+    sh = root / "start-AgentBrake-Fusion-openclaw.sh"
     env_example = root / ".env.example"
     provider = root / "openclaw-provider.json"
     readme = root / "README.md"
@@ -64,7 +64,7 @@ def generate_openclaw_quickstart(
         "provider_config": str(provider),
         "readme": str(readme),
         "base_url": f"http://{host}:{port}/v1",
-        "api_key": "agentbrake-local",
+        "api_key": "agentbrake-fusion-local",
         "model": model,
     }
 
@@ -93,9 +93,9 @@ if (Test-Path (Join-Path $agentbrakeHome "src")) {{
   $env:PYTHONPATH = Join-Path $agentbrakeHome "src"
 }}
 
-Write-Host "Starting AgentBrake for OpenClaw..."
+Write-Host "Starting AgentBrake-Fusion for OpenClaw..."
 Write-Host "OpenClaw Base URL: http://$hostName`:$portNumber/v1"
-Write-Host "OpenClaw API Key:  agentbrake-local"
+Write-Host "OpenClaw API Key:  agentbrake-fusion-local"
 Write-Host "OpenClaw Model:    $modelName"
 
 python -m agentbrake gateway-start `
@@ -136,9 +136,9 @@ if [ -d "$AGENTBRAKE_HOME/src" ]; then
   export PYTHONPATH="$AGENTBRAKE_HOME/src${{PYTHONPATH:+:$PYTHONPATH}}"
 fi
 
-printf "Starting AgentBrake for OpenClaw...\\n"
+printf "Starting AgentBrake-Fusion for OpenClaw...\\n"
 printf "OpenClaw Base URL: http://%s:%s/v1\\n" "$AGENTBRAKE_HOST" "$AGENTBRAKE_PORT"
-printf "OpenClaw API Key:  agentbrake-local\\n"
+printf "OpenClaw API Key:  agentbrake-fusion-local\\n"
 printf "OpenClaw Model:    %s\\n" "$AGENTBRAKE_MODEL"
 
 python -m agentbrake gateway-start \\
@@ -171,14 +171,14 @@ def _provider_config(*, model: str, host: str, port: int) -> dict:
         "models": {
             "mode": "merge",
             "providers": {
-                "agentbrake": {
+                "AgentBrake-Fusion": {
                     "baseUrl": f"http://{host}:{port}/v1",
-                    "apiKey": "agentbrake-local",
+                    "apiKey": "agentbrake-fusion-local",
                     "api": "openai-completions",
                     "models": [
                         {
                             "id": model,
-                            "name": f"{model} via AgentBrake",
+                            "name": f"{model} via AgentBrake-Fusion",
                             "reasoning": False,
                             "input": ["text"],
                             "contextWindow": 128000,
@@ -192,14 +192,14 @@ def _provider_config(*, model: str, host: str, port: int) -> dict:
 
 
 def _quickstart_readme(*, model: str, host: str, port: int, upstream_base_url: str) -> str:
-    return f"""# OpenClaw + AgentBrake Quickstart
+    return f"""# OpenClaw + AgentBrake-Fusion Quickstart
 
 Run one of these scripts from this directory:
 
 ```text
-Windows PowerShell: ./start-agentbrake-openclaw.ps1
-Windows CMD:        ./start-agentbrake-openclaw.cmd
-macOS/Linux:        sh ./start-agentbrake-openclaw.sh
+Windows PowerShell: ./start-AgentBrake-Fusion-openclaw.ps1
+Windows CMD:        ./start-AgentBrake-Fusion-openclaw.cmd
+macOS/Linux:        sh ./start-AgentBrake-Fusion-openclaw.sh
 ```
 
 Paste your real upstream API key when prompted, or set `OPENAI_API_KEY` before
@@ -209,12 +209,12 @@ Then add a custom OpenAI-compatible provider in OpenClaw:
 
 ```text
 Base URL: http://{host}:{port}/v1
-API Key:  agentbrake-local
+API Key:  agentbrake-fusion-local
 Model:    {model}
 ```
 
-The local OpenClaw provider should always point to AgentBrake. The real upstream
-is configured on the AgentBrake Gateway side:
+The local OpenClaw provider should always point to agentbrake. The real upstream
+is configured on the AgentBrake-Fusion Gateway side:
 
 ```text
 AGENTBRAKE_UPSTREAM_BASE_URL={upstream_base_url}
@@ -227,7 +227,7 @@ AGENTBRAKE_UPSTREAM_BASE_URL=https://api.longcat.chat/openai
 AGENTBRAKE_MODEL=LongCat-Flash-Chat
 ```
 
-OpenClaw should only see the local AgentBrake key. Keep the terminal running
+OpenClaw should only see the local AgentBrake-Fusion key. Keep the terminal running
 while using OpenClaw.
 
 All generated paths can be overridden with environment variables. See

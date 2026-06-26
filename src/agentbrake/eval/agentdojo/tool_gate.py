@@ -1,4 +1,4 @@
-"""AgentBrake guard for AgentDojo tool calls."""
+"""AgentBrake-Fusion guard for AgentDojo tool calls."""
 
 from __future__ import annotations
 

@@ -30,5 +30,5 @@ Overall status: PASS
 | failure_clusters_exist | PASS | failure_clusters json/md |
 | confirmation_summary_exists | PASS | confirmation_summary json/md |
 | blocked_recovery_summary_exists | PASS | blocked_recovery_summary json/md |
-| effectiveness_thresholds | PASS | AgentBrake full E2E thresholds |
+| effectiveness_thresholds | PASS | AgentBrake-Fusion full E2E thresholds |
 | attack_active_thresholds | PASS | attack-active subset thresholds |

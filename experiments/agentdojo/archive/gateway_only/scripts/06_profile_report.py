@@ -1,4 +1,4 @@
-"""Generate a compact profile report from AgentBrake audit JSONL."""
+"""Generate a compact profile report from AgentBrake-Fusion audit JSONL."""
 
 from __future__ import annotations
 

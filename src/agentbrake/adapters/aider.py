@@ -1,4 +1,4 @@
-"""Aider adapter shape for AgentBrake v0.2.
+"""Aider adapter shape for agentbrake.
 
 No hard dependency on aider is required. When an external aider command or
 transcript is supplied the adapter parses emitted plan lines; otherwise it uses a

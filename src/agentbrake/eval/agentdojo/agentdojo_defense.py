@@ -12,7 +12,7 @@ def register_native_defense() -> dict[str, Any]:
         "defense_name": "agentbrake_toolgate",
         "load": agentbrake_agentdojo,
         "supported": False,
-        "note": "AgentDojo 0.1.35 does not expose a custom defense registry, so AgentBrake uses a pipeline wrapper.",
+        "note": "AgentDojo 0.1.35 does not expose a custom defense registry, so AgentBrake-Fusion uses a pipeline wrapper.",
     }
 
 

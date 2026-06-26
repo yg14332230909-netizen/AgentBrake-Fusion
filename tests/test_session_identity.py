@@ -37,8 +37,8 @@ def test_session_identity_reads_http_header(tmp_path):
     identity = resolve_session_identity(
         request={"metadata": {"conversation_id": "conv_1"}},
         repo_root=tmp_path,
-        headers={"X-AgentBrake-Run-Id": "run_header"},
+        headers={"X-AgentBrake-Fusion-Run-Id": "run_header"},
     )
 
     assert identity.run_id == "run_header"
-    assert identity.source == "header.x-agentbrake-run-id"
+    assert identity.source == "header.x-AgentBrake-Fusion-run-id"

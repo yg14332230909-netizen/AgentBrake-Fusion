@@ -124,13 +124,13 @@ function kindLabel(kind: string): string {
 function nodeExplanation(node: Record<string, unknown>): string {
   if (node.kind === "history") return "说明之前动作留下的风险状态会影响当前判断。";
   if (node.kind === "graph") return "说明命令内部是否有管道、顺序或数据流关系。";
-  if (node.kind === "fact") return "这是 R-MPF 判断引擎消费的标准化证据。";
+  if (node.kind === "fact") return "这是 MSJ Engine 消费的标准化证据。";
   if (node.kind === "retrieval") return "RuleIndex 用这个证据键找到需要评估的规则。";
   if (node.kind === "predicate") return "检查规则条件是否被当前证据满足。";
   if (node.kind === "rule") return "命中的安全规则会给出最低治理要求。";
   if (node.kind === "constraint") return "把执行、网络、数据、审批等要求合并成约束。";
   if (node.kind === "lattice") return "把多个规则结论按风险等级合成更严格的判断。";
-  if (node.kind === "final") return "这是 AgentBrake 返回给网关和前端的最终安全结论。";
+  if (node.kind === "final") return "这是 AgentBrake-Fusion 返回给网关和前端的最终安全结论。";
   return "该节点参与了这次动作的可追溯判断链。";
 }
 

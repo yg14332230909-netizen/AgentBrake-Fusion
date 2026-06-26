@@ -411,7 +411,7 @@ def _why_text(detail: ActionDetail, final_decision: str, invariant_hits: list[di
         prefix = "低可信来源诱导" if source_untrusted else "该动作"
         return f"{prefix}{action}，并触发不可降级安全不变量 {', '.join(invariant_ids)}，因此执行前阻断。"
     if final_decision == "block":
-        return f"{action} 命中高风险策略条件，AgentBrake 将多个证据合并后选择阻断。"
+        return f"{action} 命中高风险策略条件，AgentBrake-Fusion 将多个证据合并后选择阻断。"
     if "sandbox" in final_decision:
         return f"{action} 仍有不确定风险，因此只能在沙箱或审批约束下继续。"
     if final_decision == "allow":

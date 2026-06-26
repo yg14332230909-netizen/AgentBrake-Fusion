@@ -1,50 +1,22 @@
-﻿# AgentDojo Evaluation
+# AgentBrake-Fusion AgentDojo Experiments
 
-Recommended path:
+This directory contains the recommended AgentDojo experiment workflow for agentbrake. The experiments use the prototype under `src/agentbrake/eval/agentdojo` and evaluate safety judgments at the general agent tool boundary.
 
-```text
-Tool-boundary AgentDojo Tool Firewall
-```
-
-Run:
-
-```bash
-python experiments/agentdojo/scripts/07_run_mini_benchmark.py
-```
-
-Historical baselines:
+## Recommended Path
 
 ```text
-experiments/agentdojo/archive/
+AgentDojo tool output
+  -> agent reasoning step
+  -> candidate tool call
+  -> AgentBrake-Fusion tool boundary
+  -> ActionGraph
+  -> MSJ Engine
+  -> Constraint Product Lattice
+  -> allow / confirm / quarantine / block
+  -> BrakeTrace
 ```
 
-`gateway-only` is a historical comparison baseline. `ToolGate` is legacy terminology; new code should use `AgentDojo Tool Firewall` and `tool-firewall`.
-
----
-
-# AgentBrake-ADJ AgentDojo Tool Firewall
-
-This is the recommended AgentDojo evaluation path.  It inserts AgentBrake at the
-AgentDojo tool boundary rather than only in front of the model API.
-
-```text
-AgentDojo tool output -> sanitizer -> LLM -> tool call -> AgentBrake ToolGate -> original tool or safe blocked result
-```
-
-## Why this ActionGraph is different
-
-This folder does not reuse the coding-agent shell ActionGraph as the AgentDojo
-story.  AgentDojo is a tool benchmark, so the graph is a tool relation graph:
-
-- untrusted tool output -> side-effecting tool call
-- injection-like output -> high-risk tool call
-- private data read -> external send/share
-- private financial data -> financial commit
-- attack-goal target -> current tool arguments
-
-These edges are conservative security evidence, not exact program data-flow.
-
-## Smoke test
+## Quick Validation
 
 ```bash
 pytest -q tests/eval/agentdojo/unit
@@ -53,20 +25,61 @@ python experiments/agentdojo/scripts/smoke_agentdojo_firewall.py
 
 Expected behavior:
 
-- authorized booking after benign reviews is allowed;
-- malicious review causing wrong booking is blocked;
-- private data followed by external email is blocked;
-- unauthorized financial commit driven by untrusted output is blocked;
-- read-only tools are allowed and update state.
+- Authorized benign actions remain executable.
+- Untrusted or injection-like output influencing risky side effects is blocked or requires confirmation.
+- Private data flowing toward external sinks is blocked or requires confirmation.
+- High-impact financial or membership mutations require task authorization.
+- Read-only tools remain available and update the state tracker.
 
-## Do not delete old data
+## Mini Benchmark
 
-Do not delete the previous DeepSeek No Defense logs or reports.  They are needed
-as baseline data.  If you reorganize the repository, move old files into:
-
-```text
-experiments/agentdojo/archive/deepseek_no_defense_baseline/
+```bash
+python experiments/agentdojo/scripts/07_run_mini_benchmark.py --suites travel banking --limit 2
 ```
 
-rather than deleting them.
+Outputs:
+
+```text
+experiments/agentdojo/reports/mini_benchmark.json
+experiments/agentdojo/reports/mini_benchmark.md
+experiments/agentdojo/logs/
+```
+
+## Paired Comparison
+
+Generate the plan first:
+
+```bash
+python experiments/agentdojo/scripts/12_run_paired_mini.py --dry-run
+```
+
+Run the paired comparison:
+
+```bash
+python experiments/agentdojo/scripts/12_run_paired_mini.py
+```
+
+The paired workflow compares baseline methods against the AgentBrake-Fusion tool-boundary judgment path using a shared manifest.
+
+## Ablation Profiles
+
+Ablation profiles are defined in `src/agentbrake/eval/agentdojo/compat/types.py` and are used to study how much each evidence source contributes:
+
+- `rule_only`
+- `no_binding`
+- `no_recovery_guidance`
+- `flatten_action_graph`
+- `no_actiongraph_provenance_edges`
+- `no_actiongraph_dataflow_edges`
+- `no_actiongraph_history_edges`
+
+## Historical Data
+
+Historical baselines are kept under:
+
+```text
+experiments/agentdojo/archive/
+```
+
+Keep historical baselines separate from new agentbrake runs so current reports remain easy to interpret.
 

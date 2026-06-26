@@ -1,4 +1,4 @@
-"""Generate AgentBrake agent integration scaffolding."""
+"""Generate AgentBrake-Fusion agent integration scaffolding."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ SHIM_NAMES = ["npm", "git", "curl", "python"]
 
 
 def init_agent(
-    repo: str | Path, agentbrake_home: str | Path, agent: str = "generic", task: str = "general coding task", force: bool = False
+    repo: str | Path, agentbrake_home: str | Path, agent: str = "generic", task: str = "general agent task", force: bool = False
 ) -> dict:
     repo_path = Path(repo).resolve()
     root = repo_path / ".agentbrake"
@@ -23,7 +23,7 @@ def init_agent(
         "agentbrake_home": str(Path(agentbrake_home).resolve()),
         "task": task,
         "gateway_base_url": "http://127.0.0.1:8765/v1",
-        "api_key": "agentbrake-local",
+        "api_key": "agentbrake-fusion-local",
     }
     _write(root / "config.json", json.dumps(config, ensure_ascii=False, indent=2) + "\n", force)
     _write(root / "agent-instructions.md", _instructions(config), force)
@@ -40,9 +40,9 @@ def _write(path: Path, text: str, force: bool) -> None:
 
 
 def _instructions(config: dict) -> str:
-    return f"""# AgentBrake agent instructions
+    return f"""# AgentBrake-Fusion agent instructions
 
-Use AgentBrake for model and shell execution.
+Use AgentBrake-Fusion for model and shell execution.
 
 Model API:
 
@@ -70,14 +70,14 @@ if [ -z "$REAL_CMD" ]; then
 fi
 PYTHONPATH="${{AGENTBRAKE_HOME}}/src" python -m agentbrake exec-guard \\
   --repo "${{AGENTBRAKE_REPO:-$PWD}}" \\
-  --task "${{AGENTBRAKE_TASK:-general coding task}}" \\
+  --task "${{AGENTBRAKE_TASK:-general agent task}}" \\
   -- "$REAL_CMD" "$@"
 """
 
 
 def _powershell_shim(name: str) -> str:
     return f"""$repo = if ($env:AGENTBRAKE_REPO) {{ $env:AGENTBRAKE_REPO }} else {{ (Get-Location).Path }}
-$task = if ($env:AGENTBRAKE_TASK) {{ $env:AGENTBRAKE_TASK }} else {{ "general coding task" }}
+$task = if ($env:AGENTBRAKE_TASK) {{ $env:AGENTBRAKE_TASK }} else {{ "general agent task" }}
 $rs = if ($env:AGENTBRAKE_HOME) {{ $env:AGENTBRAKE_HOME }} else {{ (Resolve-Path ".").Path }}
 $env:PYTHONPATH = Join-Path $rs "src"
 python -m agentbrake exec-guard --repo $repo --task $task -- {name} @args

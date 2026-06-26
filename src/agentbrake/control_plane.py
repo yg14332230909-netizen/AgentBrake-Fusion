@@ -1,4 +1,4 @@
-"""AgentBrake control plane orchestration."""
+"""AgentBrake-Fusion control plane orchestration."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ from .telemetry.profiler import EvalProfiler
 
 
 class AgentBrakeControlPlane:
-    """Single façade used by CLIs, adapters and the reference coding agent."""
+    """Single façade used by CLIs, adapters and reference agent flows."""
 
     def __init__(
         self,

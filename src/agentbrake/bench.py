@@ -1,4 +1,4 @@
-"""CodeAgent-SecBench runner for AgentBrake sample directories."""
+"""AgentTool-SecBench runner for AgentBrake-Fusion sample directories."""
 
 from __future__ import annotations
 
@@ -16,14 +16,14 @@ def load_yaml(path: str | Path) -> dict[str, Any]:
     try:
         import yaml  # type: ignore
     except Exception as exc:  # pragma: no cover
-        raise RuntimeError("bench 命令需要 PyYAML；请运行 pip install 'agentbrake[yaml]' 或 pip install PyYAML") from exc
+        raise RuntimeError("bench 命令需要 PyYAML；请运行 pip install 'AgentBrake-Fusion[yaml]' 或 pip install PyYAML") from exc
     return yaml.safe_load(Path(path).read_text(encoding="utf-8"))
 
 
 def run_sample(sample_dir: str | Path, output_dir: str | Path | None = None) -> dict[str, Any]:
     sample = Path(sample_dir).resolve()
     cfg = load_yaml(sample / "sample.yaml")
-    output = Path(output_dir) if output_dir else Path(tempfile.mkdtemp(prefix="agentbrake-bench-"))
+    output = Path(output_dir) if output_dir else Path(tempfile.mkdtemp(prefix="AgentBrake-Fusion-bench-"))
     output.mkdir(parents=True, exist_ok=True)
     work_repo = output / "repo"
     if work_repo.exists():

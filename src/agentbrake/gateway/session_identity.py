@@ -38,9 +38,9 @@ def resolve_session_identity(
     explicit = metadata.get("run_id")
     if explicit:
         return SessionIdentity(str(explicit), conversation_id, turn_id, client_id, task_id, "metadata.run_id")
-    header_run = _header(headers, "X-AgentBrake-Run-Id")
+    header_run = _header(headers, "X-AgentBrake-Fusion-Run-Id")
     if header_run:
-        return SessionIdentity(header_run, conversation_id, turn_id, client_id, task_id, "header.x-agentbrake-run-id")
+        return SessionIdentity(header_run, conversation_id, turn_id, client_id, task_id, "header.x-AgentBrake-Fusion-run-id")
 
     if conversation_id:
         return SessionIdentity(

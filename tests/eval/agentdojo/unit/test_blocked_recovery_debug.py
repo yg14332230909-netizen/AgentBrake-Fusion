@@ -17,7 +17,7 @@ def test_parse_blocked_tool_result_from_trace_tool_message():
     content = [
         {
             "type": "text",
-            "content": "{'status': 'blocked', 'blocked_tool': 'send_email', 'allowed_next_steps': ['Use trusted data.'], 'disallowed_next_steps': ['Do not retry.'], 'message': 'AgentBrake blocked this tool call.'}",
+            "content": "{'status': 'blocked', 'blocked_tool': 'send_email', 'allowed_next_steps': ['Use trusted data.'], 'disallowed_next_steps': ['Do not retry.'], 'message': 'AgentBrake-Fusion blocked this tool call.'}",
         }
     ]
     parsed = debugger.parse_blocked_tool_result(content)

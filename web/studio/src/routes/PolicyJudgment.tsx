@@ -8,7 +8,7 @@ export function PolicyJudgment({ judgment, events, onInspectAction }: { judgment
     return (
       <div className="judgment-empty">
         <h3>请选择一个动作查看综合判断过程</h3>
-        <p>Studio 会展示 R-MPF 链路：Evidence → Facts → Invariants → RuleIndex → Predicates → Decision Lattice → Why。</p>
+        <p>Studio 会展示 MSJ Engine 链路：Evidence → Facts → Invariants → RuleIndex → Predicates → Decision Lattice → Why。</p>
         <div className="judgment-action-list">
           {actionEvents.map((event) => (
             <button key={event.event_id} onClick={() => onInspectAction(String(event.payload.action_id || event.span_id))}>

@@ -1,4 +1,4 @@
-"""Tiny local approval HTTP API for AgentBrake demos."""
+"""Tiny local approval HTTP API for AgentBrake-Fusion demos."""
 
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ def serve_approval_api(
     api_key: str | None = None,
 ) -> None:
     store = ApprovalStore(store_path)
-    required_key = api_key if api_key is not None else os.getenv("AGENTBRAKE_APPROVAL_API_KEY", "agentbrake-local")
+    required_key = api_key if api_key is not None else os.getenv("AGENTBRAKE_APPROVAL_API_KEY", "agentbrake-fusion-local")
 
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self) -> None:  # noqa: N802

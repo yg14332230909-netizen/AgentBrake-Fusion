@@ -8,4 +8,4 @@ config_files:
 config_apply: snippet
 restore: manifest
 notes:
-  - Set the agent model provider base URL to AgentBrake Gateway.
+  - Set the agent model provider base URL to AgentBrake-Fusion Gateway.

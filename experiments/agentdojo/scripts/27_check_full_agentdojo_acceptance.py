@@ -13,7 +13,7 @@ METHODS = ("no_defense", "tool_filter", "agentbrake_strict", "agentbrake_gateway
 AGENTBRAKE_METHODS = ("agentbrake_strict", "agentbrake_gateway_eval", "agentbrake_oracle_user_eval")
 SECRET_RE = re.compile(r"\bsk-[A-Za-z0-9]{16,}\b")
 LOCAL_PATH_RE = re.compile(
-    r"[A-Za-z]:\\\\(?:Users|Windows|Program Files|ProgramData|project|agentbrake|Anaconda|Miniconda|Python|Temp|tmp)\\b|/home/|/Users/|file://",
+    r"[A-Za-z]:\\\\(?:Users|Windows|Program Files|ProgramData|project|AgentBrake-Fusion|Anaconda|Miniconda|Python|Temp|tmp)\\b|/home/|/Users/|file://",
     re.IGNORECASE,
 )
 
@@ -76,7 +76,7 @@ def build_report(reports_dir: Path) -> dict[str, Any]:
     add(checks, "failure_clusters_exist", (reports_dir / "failure_clusters.json").exists() and (reports_dir / "failure_clusters.md").exists(), "failure_clusters json/md")
     add(checks, "confirmation_summary_exists", (reports_dir / "confirmation_summary.json").exists() and (reports_dir / "confirmation_summary.md").exists(), "confirmation_summary json/md")
     add(checks, "blocked_recovery_summary_exists", (reports_dir / "blocked_recovery_summary.json").exists() and (reports_dir / "blocked_recovery_summary.md").exists(), "blocked_recovery_summary json/md")
-    add(checks, "effectiveness_thresholds", effectiveness_thresholds(methods), "AgentBrake full E2E thresholds", category="effectiveness")
+    add(checks, "effectiveness_thresholds", effectiveness_thresholds(methods), "AgentBrake-Fusion full E2E thresholds", category="effectiveness")
     add(checks, "attack_active_thresholds", attack_active_thresholds(attack_active), "attack-active subset thresholds", category="effectiveness")
 
     overall = status_for(checks)

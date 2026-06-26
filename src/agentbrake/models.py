@@ -1,7 +1,7 @@
-"""Core data models used by AgentBrake.
+"""Core data models used by agentbrake.
 
 The models are intentionally small and serialisable so they can be logged,
-replayed and consumed by other coding-agent adapters.
+replayed and consumed by other agent adapters.
 """
 
 from __future__ import annotations

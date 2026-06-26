@@ -19,7 +19,7 @@ def make_repo(tmp_path: Path) -> Path:
 
 def test_init_agent_generates_config_and_shims(tmp_path: Path):
     repo = make_repo(tmp_path)
-    result = init_agent(repo, tmp_path / "agentbrake", agent="cline", task="fix login", force=True)
+    result = init_agent(repo, tmp_path / "AgentBrake-Fusion", agent="cline", task="fix login", force=True)
     assert Path(result["config"]).exists()
     assert (repo / ".agentbrake" / "shims" / "npm").exists()
     assert (repo / ".agentbrake" / "agent-instructions.md").exists()
@@ -27,7 +27,7 @@ def test_init_agent_generates_config_and_shims(tmp_path: Path):
 
 def test_init_agent_accepts_openclaw_profile(tmp_path: Path):
     repo = make_repo(tmp_path)
-    result = init_agent(repo, tmp_path / "agentbrake", agent="openclaw", task="fix login", force=True)
+    result = init_agent(repo, tmp_path / "AgentBrake-Fusion", agent="openclaw", task="fix login", force=True)
     assert result["agent"] == "openclaw"
     config = (repo / ".agentbrake" / "config.json").read_text(encoding="utf-8")
     assert '"agent": "openclaw"' in config
@@ -74,5 +74,5 @@ def test_dashboard_html(tmp_path: Path):
     out = render_dashboard(tmp_path / "audit.jsonl", tmp_path / "dashboard.html")
     assert out.exists()
     html = out.read_text(encoding="utf-8")
-    assert "AgentBrake Dashboard" in html
+    assert "AgentBrake-Fusion Dashboard" in html
     assert "Evidence Chains" in html

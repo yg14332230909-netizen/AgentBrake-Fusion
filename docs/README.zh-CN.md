@@ -1,86 +1,34 @@
-# AgentBrake 文档目录
+# AgentBrake-Fusion 文档入口
 
-AgentBrake 是面向 coding agent 的执行前安全治理网关。它可以作为 OpenAI-compatible Gateway 接入模型请求，也可以通过 `exec-guard`、file guard、PATH shim、Studio 和 Approval API 治理真实工具执行路径。
+本目录只保留新的介绍文档，旧的阶段性说明和旧命名口径已经移除。当前统一表述如下：
 
-## 推荐阅读顺序
-
-1. [顶层中文 README](../README.zh-CN.md)  
-   项目定位、核心能力、快速开始和整体架构。
-2. [正式智能体接入简化指南](FORMAL_AGENT_INTEGRATION.zh-CN.md)  
-   `connect / start / status / stop / doctor / smoke-test / coverage` 的完整流程。
-3. [智能体接入 Profile 架构](AGENT_PROFILE_ARCHITECTURE.zh-CN.md)  
-   说明为什么新增智能体应优先新增 YAML profile，而不是修改 Gateway 核心代码。
-4. [小白接入教程](BEGINNER_AGENT_ONBOARDING.zh-CN.md)  
-   从安装、接入、启动、体检到 Studio 保护矩阵的一步步教程。
-5. [真实 Agent 接入指南](REAL_AGENT_INTEGRATION.zh-CN.md)  
-   Gateway、exec-guard、tool call 解析，以及 OpenClaw / OpenHands / Aider 等接入方式。
-6. [Gateway 指南](GATEWAY_GUIDE.zh-CN.md)  
-   OpenAI-compatible Gateway、认证、上游转发、streaming 和 release mode。
-7. [Studio 指南](STUDIO_GUIDE.zh-CN.md)  
-   如何启动实时前端，以及如何查看证据图谱、策略判断、审批和沙箱证据。
-8. [Policy Pack / PolicyGraph 规则指南](POLICY_PACK_GUIDE.zh-CN.md)  
-   决策语义、runtime 模式、YAML 规则、`index_hints` 和验证方式。
-9. [项目状态与商用化评估](PROJECT_STATUS.zh-CN.md)  
-   当前成熟度、已完成能力、剩余差距和路线图。
-
-## 智能体接入
-
-- [正式智能体接入简化指南](FORMAL_AGENT_INTEGRATION.zh-CN.md)
-- [智能体接入 Profile 架构](AGENT_PROFILE_ARCHITECTURE.zh-CN.md)
-- [Adapter 指南](ADAPTER_GUIDE.zh-CN.md)
-- [Tool Parser Plugin 指南](TOOL_PARSER_PLUGIN_GUIDE.zh-CN.md)
-- [Agent exec-guard recipes](AGENT_EXEC_GUARD_RECIPES.zh-CN.md)
-
-Agent 专用模板：
-
-- [custom-openai-compatible](integrations/custom-openai-compatible.md)
-- [openclaw](integrations/openclaw.md)
-- [cline](integrations/cline.md)
-- [openhands](integrations/openhands.md)
-- [aider](integrations/aider.md)
-- [codex-cli](integrations/codex-cli.md)
-- [claude-code](integrations/claude-code.md)
-
-## 常用命令
-
-```bash
-agentbrake connect --repo . --agent codex --mode standard
-agentbrake start --repo .
-agentbrake status --repo .
-agentbrake doctor --repo . --agent codex
-agentbrake smoke-test --repo . --agent codex
-agentbrake profiles --agent codex
-agentbrake integration-matrix
-agentbrake stop --repo .
+```text
+AgentBrake-Fusion = 面向通用智能体工具调用的执行前安全裁决框架
 ```
 
-## Bench / Replay / Studio
+## 阅读顺序
 
-- [Gateway Bench 指南](BENCH_GATEWAY_GUIDE.zh-CN.md)
-- [Bench Report 指南](BENCH_REPORT_GUIDE.zh-CN.md)
-- [Studio 指南](STUDIO_GUIDE.zh-CN.md)
-- [测试用例说明](TEST_CASES.zh-CN.md)
+1. `../README.zh-CN.md`
+   项目总览、统一命名、原型底层和实验入口。
+2. `ARCHITECTURE.zh-CN.md`
+   说明 ActionGraph、MSJ Engine、Constraint Product Lattice 和 BrakeTrace 的关系。
+3. `AGENTDOJO_EXPERIMENT.zh-CN.md`
+   说明如何基于 `experiments/agentdojo` 运行轻量实验、配对对比和消融分析。
+4. `../src/agentbrake/eval/agentdojo/README.md`
+   说明 `src/agentbrake/eval` 原型底层如何映射到 AgentBrake-Fusion 模块。
+5. `../experiments/agentdojo/README.md`
+   说明 AgentDojo 实验目录的具体脚本和输出路径。
 
-## 当前能力摘要
+## 模块口径
 
-AgentBrake 当前已经具备：
+| 模块 | 名称 | 说明 |
+| --- | --- | --- |
+| 系统整体 | AgentBrake-Fusion | 通用智能体工具调用的安全刹车系统。 |
+| 动作图 | ActionGraph | 智能体动作证据图。 |
+| 多源判断引擎 | MSJ Engine | Multi-Source Judgment Engine。 |
+| 证据裁决结构 | Constraint Product Lattice | 约束乘积格。 |
+| 审计输出 | BrakeTrace | 刹车轨迹与工具调用审计记录。 |
 
-- OpenAI-compatible Gateway：`/v1/chat/completions` 与 `/v1/responses`
-- agent profile 化接入：`src/agentbrake/integration/profiles/*.yaml`
-- 多轮稳定身份：`run_id` / `conversation_id`
-- 多源证据综合判断算法（R-MPF）
-- PolicyGraph / RuleIndex
-- PersistentSessionState / ActionGraph
-- SecretSentry / PackageGuard
-- exec-guard / file-guard / PATH shim
-- ApprovalCenter / ApprovalStore / Approval API
-- AuditLog hash-chain
-- Studio Pro 实时前端
-- Stage2 / Stage3 bench 与报告
+## 当前边界
 
-当前仍可继续产品化的方向：
-
-- 更多智能体的原生配置写入器
-- 生产级强隔离 sandbox
-- 团队权限、长期存储、审计查询和多租户管理
-- 更大规模真实 agent trace 兼容性矩阵
+本仓库以 `src/agentbrake/eval` 中的 AgentDojo 工具边界原型为底层说明对象，重点展示多源证据融合裁决，而不是绑定某一种智能体形态。`AgentBrake-Fusion` 仍作为包名和命令名存在，这是为了保持代码与测试兼容。

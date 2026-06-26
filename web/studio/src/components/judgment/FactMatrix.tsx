@@ -106,7 +106,7 @@ function toFactView(fact: Record<string, unknown>): FactView {
 function explainFact(namespace: string, key: string, value: string): string {
   const factKey = `${namespace}.${key}`;
   if (factKey === "source.has_untrusted") return value === "是" ? "动作受到低可信文本影响，需要更严格的授权判断。" : "未发现低可信来源影响。";
-  if (factKey === "action.semantic_action") return "AgentBrake 先把原始命令归类成标准动作，再进入策略判断。";
+  if (factKey === "action.semantic_action") return "AgentBrake-Fusion 先把原始命令归类成标准动作，再进入策略判断。";
   if (factKey === "asset.touched_type") return value.includes("密钥") ? "触碰密钥类资产会触发强安全约束。" : "资产类型决定按普通文件、CI、依赖或敏感资产处理。";
   if (factKey === "contract.match") return value.includes("越过") ? "动作超出用户授权任务，不能直接执行。" : "任务边界用于区分正常工作和被外部诱导的危险动作。";
   if (factKey === "secret.event") return "密钥事件会直接参与不可降级安全不变量判断。";

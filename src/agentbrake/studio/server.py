@@ -40,7 +40,7 @@ def serve_studio_pro(
     env_key = os.getenv("AGENTBRAKE_STUDIO_API_KEY")
     if host not in {"127.0.0.1", "localhost", "::1"} and api_key is None and not env_key:
         raise RuntimeError("Studio Pro refuses non-loopback exposure without a bearer token.")
-    required_key = api_key if api_key is not None else env_key or "agentbrake-local"
+    required_key = api_key if api_key is not None else env_key or "agentbrake-fusion-local"
     index = StudioEventIndex(audit_path)
     approvals = ApprovalStore(approvals_path)
     repo = Path(repo_root).resolve()
@@ -263,7 +263,7 @@ def serve_studio_pro(
             return
 
     if host not in {"127.0.0.1", "localhost", "::1"}:
-        print("AgentBrake Studio warning: non-loopback host requires bearer auth and local-origin CORS.", flush=True)
+        print("AgentBrake-Fusion Studio warning: non-loopback host requires bearer auth and local-origin CORS.", flush=True)
     ThreadingHTTPServer((host, port), Handler).serve_forever()
 
 
@@ -327,7 +327,7 @@ def _index_html() -> str:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AgentBrake Studio Pro</title>
+  <title>AgentBrake-Fusion Studio Pro</title>
   <style>
     :root { color-scheme: light; --bg:#f7f8fa; --panel:#fff; --line:#d8dee8; --text:#17202a; --muted:#667085; --green:#0f7b45; --red:#b42318; --amber:#b54708; --blue:#175cd3; }
     * { box-sizing: border-box; }
@@ -366,7 +366,7 @@ def _index_html() -> str:
 </head>
 <body>
   <header>
-    <h1>AgentBrake Studio Pro</h1>
+    <h1>AgentBrake-Fusion Studio Pro</h1>
     <div><button id="refresh">Refresh</button> <span class="muted" id="health"></span></div>
   </header>
   <main>
@@ -406,7 +406,7 @@ let source = null;
 
 const $ = (id) => document.getElementById(id);
 async function api(path, opts) {
-  const headers = {'Content-Type':'application/json', 'Authorization':'Bearer agentbrake-local'};
+  const headers = {'Content-Type':'application/json', 'Authorization':'Bearer agentbrake-fusion-local'};
   const r = await fetch(path, {...opts, headers:{...headers, ...(opts && opts.headers || {})}});
   return r.json();
 }
@@ -435,7 +435,7 @@ async function selectRun(runId) {
   events = data.events || []; renderTimeline();
   renderGraph(await api('/api/runs/' + encodeURIComponent(runId) + '/graph'));
   if (source) source.close();
-  const token = localStorage.getItem('agentbrakeToken') || 'agentbrake-local';
+  const token = localStorage.getItem('agentbrakeFusionToken') || 'agentbrake-fusion-local';
   source = new EventSource('/api/events/stream?run_id=' + encodeURIComponent(runId) + '&token=' + encodeURIComponent(token));
   source.addEventListener('studio_event', (msg) => { const e = JSON.parse(msg.data); if (!events.find(x => x.event_id === e.event_id)) { events.push(e); renderTimeline(); } });
   await loadAllRunsOnly();

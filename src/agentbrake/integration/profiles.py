@@ -24,7 +24,7 @@ SHIM_COMMANDS = ("bash", "sh", "python", "python3", "pip", "pip3", "npm", "npx",
 DEFAULT_STABLE_IDENTITY_CHANNELS = (
     "metadata.agentbrake_run_id",
     "metadata.conversation_id",
-    "X-AgentBrake-Run-Id",
+    "X-AgentBrake-Fusion-Run-Id",
 )
 
 
@@ -34,9 +34,9 @@ class AgentProfile:
     display_name: str
     protocol: str
     wire_api: str
-    model: str = "agentbrake/local-heuristic"
+    model: str = "AgentBrake-Fusion/local-heuristic"
     api_key_env: str = "AGENTBRAKE_GATEWAY_API_KEY"
-    api_key_value: str = "agentbrake-local"
+    api_key_value: str = "agentbrake-fusion-local"
     requires_authorization: bool = True
     supports_base_url: bool = True
     supports_headers: bool = True
@@ -203,9 +203,9 @@ def _profile_from_mapping(data: dict[str, Any]) -> AgentProfile:
         display_name=str(data.get("display_name") or data["agent"]),
         protocol=str(data.get("protocol") or "openai-compatible"),
         wire_api=str(data.get("wire_api") or "chat"),
-        model=str(data.get("model") or "agentbrake/local-heuristic"),
+        model=str(data.get("model") or "AgentBrake-Fusion/local-heuristic"),
         api_key_env=str(data.get("api_key_env") or "AGENTBRAKE_GATEWAY_API_KEY"),
-        api_key_value=str(data.get("api_key_value") or "agentbrake-local"),
+        api_key_value=str(data.get("api_key_value") or "agentbrake-fusion-local"),
         requires_authorization=bool(data.get("requires_authorization", True)),
         supports_base_url=bool(data.get("supports_base_url", True)),
         supports_headers=bool(data.get("supports_headers", True)),
@@ -235,7 +235,7 @@ def _fallback_profiles() -> dict[str, AgentProfile]:
             protocol="openai-compatible",
             wire_api="chat",
             config_files=(".agentbrake/agent.env", ".agentbrake/agent-instructions.md"),
-            notes=("Set the agent model provider base URL to AgentBrake Gateway.",),
+            notes=("Set the agent model provider base URL to AgentBrake-Fusion Gateway.",),
         ),
         "codex": AgentProfile(
             agent="codex",

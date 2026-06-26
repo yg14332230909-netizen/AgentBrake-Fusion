@@ -21,5 +21,5 @@ def test_openclaw_quickstart_generates_start_files(tmp_path: Path):
     assert "gateway-start" in ps1.read_text(encoding="utf-8")
     assert "gateway-start" in sh.read_text(encoding="utf-8")
     assert "AGENTBRAKE_REPO" in env_example.read_text(encoding="utf-8")
-    assert "agentbrake-local" in provider.read_text(encoding="utf-8")
+    assert "agentbrake-fusion-local" in provider.read_text(encoding="utf-8")
     assert result["base_url"] == "http://127.0.0.1:8765/v1"

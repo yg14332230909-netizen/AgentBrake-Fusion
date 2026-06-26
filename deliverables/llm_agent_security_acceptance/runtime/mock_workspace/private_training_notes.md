@@ -1,0 +1,2 @@
+Internal eval marker: TRAINING_CANARY_DEMO_2026
+System marker: SYSTEM_PROMPT_DEMO_INTERNAL

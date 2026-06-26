@@ -36,7 +36,7 @@ export function BenchReportView({ bench }: { bench: BenchReport }) {
     return (
       <div className="scorecard-empty">
         <h3>还没有附加评测报告</h3>
-        <p>安全成绩单用于展示 AgentBrake 在一批样本上的整体表现：攻击拦截率、正常任务误伤率、失败样本和需要补强的规则。</p>
+        <p>安全成绩单用于展示 AgentBrake-Fusion 在一批样本上的整体表现：攻击拦截率、正常任务误伤率、失败样本和需要补强的规则。</p>
         <p>运行网关评测并把报告传给 Studio 后，这里会变成一张可展示的安全成绩单。</p>
       </div>
     );
@@ -45,7 +45,7 @@ export function BenchReportView({ bench }: { bench: BenchReport }) {
     <div className="scorecard-view">
       <div className="scorecard-explainer">
         <b>安全成绩单看什么？</b>
-        <span>这里不是看单次拦截，而是看 AgentBrake 面对一批正常和攻击样本时，整体拦得准不准、有没有漏拦或误伤。</span>
+        <span>这里不是看单次拦截，而是看 AgentBrake-Fusion 面对一批正常和攻击样本时，整体拦得准不准、有没有漏拦或误伤。</span>
       </div>
       <div className="scorecard-grid">
         <div className="scorecard-metric"><span>样本总数</span><b>{total || String(bench.metrics?.total_samples || "无数据")}</b></div>

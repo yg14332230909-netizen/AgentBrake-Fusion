@@ -1,149 +1,96 @@
-# AgentBrake / AgentBrake v0.3
+# AgentBrake-Fusion
 
-AgentBrake 是面向 coding agent 的执行前安全治理网关。它拦在模型 API、tool call、shell、文件操作、MCP 工具和包管理器动作之前，把即将执行的行为转换成结构化 `ActionIR`，再结合任务边界、来源可信度、资产类型、密钥事件、供应链信号、沙箱预检和策略图谱，决定动作是放行、仅沙箱执行、需要审批，还是直接阻断。
+AgentBrake-Fusion 是面向通用智能体的执行前安全裁决框架。系统拦截智能体即将发起的工具调用、外部动作、状态变更或信息外发，将动作候选转换为结构化证据，再通过多源证据融合裁决判断该动作应当放行、隔离执行、请求确认、隔离归档或阻断。
 
-```text
-AgentBrake = coding agent 的 pre-execution safety gate
-```
+本仓库保留 `agentbrake` 作为 Python 包名和 CLI 命令名，以兼容现有测试、脚本和实验流程；对外项目名称统一为 `AgentBrake-Fusion`。
 
-## 统一状态口径
+## 命名口径
 
-当前定位：**研究级强化原型 / 早期工程 MVP**。
+| 模块 | 统一名称 | 中文解释 | 功能定位 |
+| --- | --- | --- | --- |
+| 系统整体 | AgentBrake-Fusion | 基于多源证据融合裁决的智能体安全刹车系统 | 面向通用智能体工具调用的执行前安全裁决框架。 |
+| 动作图 | ActionGraph | 智能体动作证据图 | 结构化用户任务、工具调用、参数来源、工具结果和历史审计。 |
+| 多源判断引擎 | MSJ Engine | Multi-Source Judgment Engine，多源综合判断引擎 | 融合多源证据并形成执行前安全裁决事实空间。 |
+| 证据裁决结构 | Constraint Product Lattice | 约束乘积格 | 显式处理证据冲突，生成稳定不过度粗暴的裁决。 |
+| 审计输出 | BrakeTrace | 刹车轨迹 / 工具调用审计记录 | 记录证据链、reason codes、裁决路径和恢复建议。 |
 
-适合：论文演示、课程项目、内部实验、网关拦截研究、有限本地试用。  
-不适合直接宣称：生产级商用安全产品、企业级多租户平台、完整供应链情报系统。
-
-成熟度统一表述：
-
-| 场景 | 当前成熟度 |
-| --- | --- |
-| 论文 demo / 项目展示 | 成熟 |
-| 内部实验平台 | 可用 |
-| 小团队本地试用 | 可试用，需要人工配置和边界说明 |
-| 商业安全产品 | 未完成，仍需生产级 sandbox、真实情报、多租户与长期审计 |
-
-Studio 完成度统一表述：
-
-| 形态 | 当前状态 |
-| --- | --- |
-| Studio Lite 静态报告 | 可用，适合离线归档和演示材料 |
-| Studio Pro 本地实时仪表盘 | 本地 demo / 实验可用，支持实时事件、攻击演示、证据图、策略调试、审批中心、沙箱证据和保护矩阵 |
-| 生产级 Studio | 未完成，仍需团队权限、长期存储、跨项目搜索、多租户视图和运维能力 |
-
-当前可复现验证基线：
+## 总体链路
 
 ```text
-pytest --collect-only -q                    -> 202 collected
-python -m pytest -q --basetemp=.pytest_tmp_final_all -> passed
-python -m ruff check src tests              -> passed
-python -m ruff format --check src tests web/studio/src -> passed
-cd web/studio && npm run build              -> passed
+智能体工具调用候选
+  -> ActionGraph
+  -> MSJ Engine
+  -> Constraint Product Lattice
+  -> 执行前裁决
+  -> BrakeTrace
 ```
 
-Bench 样本数口径：
+裁决结果以工具边界为中心表达：
 
-| 套件 | 默认生成数量 |
+| 裁决 | 含义 |
 | --- | --- |
-| Stage2 bench | 40 |
-| Stage3 Gateway bench | 80 |
+| `allow` | 证据支持当前动作在目标环境中执行。 |
+| `allow_in_sandbox` | 仅允许在隔离或受限环境中执行。 |
+| `require_confirmation` / `sandbox_then_approval` | 需要用户或上层策略确认后才可继续。 |
+| `quarantine` | 动作和证据进入隔离记录，不直接执行。 |
+| `block` | 证据显示该动作不应执行。 |
 
-## 正式智能体接入
+## 原型底层
+
+当前说明以 `src/agentbrake/eval` 为原型底层，其中 AgentDojo 适配实现位于：
+
+```text
+src/agentbrake/eval/agentdojo/
+```
+
+关键模块对应关系：
+
+| AgentBrake-Fusion 概念 | 原型代码位置 | 说明 |
+| --- | --- | --- |
+| 工具边界拦截 | `gate/tool_firewall.py` | 在工具调用前构造证据、执行裁决并返回安全结果。 |
+| ActionGraph | `evidence/action_graph.py` | 生成智能体工具关系图，表达不可信输出、私有数据、攻击目标和后续动作之间的关系。 |
+| 证据事实空间 | `evidence/evidence.py` | 汇总任务授权、参数来源、历史状态、工具分类和图谱事实。 |
+| MSJ Engine | `evidence/fusion.py` | 将规则、套件策略和证据约束融合为最终裁决。 |
+| Constraint Product Lattice | `compat/types.py` 中的约束裁决结构 | 以执行环境、网络范围、数据范围、人类确认和审计范围组合裁决。 |
+| BrakeTrace | `ToolExecutionDecision.to_audit_event()` | 输出 reason codes、rule hits、模块开关、图谱事实和恢复提示。 |
+
+## 实验流程
+
+AgentDojo 实验步骤位于：
+
+```text
+experiments/agentdojo/
+```
+
+建议从轻量流程开始：
 
 ```bash
-agentbrake connect --repo . --agent codex --mode quick
-agentbrake connect --repo . --agent codex --mode standard
-agentbrake connect --repo . --agent openclaw --mode full
-agentbrake start --repo .
-agentbrake doctor --repo . --agent codex
-agentbrake smoke-test --repo . --agent codex
-agentbrake coverage --repo .
-agentbrake status --repo .
-agentbrake stop --repo .
+python -m pip install -e ".[test,agentdojo]"
+pytest -q tests/eval/agentdojo/unit
+python experiments/agentdojo/scripts/smoke_agentdojo_firewall.py
+python experiments/agentdojo/scripts/07_run_mini_benchmark.py --suites travel banking --limit 2
 ```
 
-- **Quick**：Gateway + `.agentbrake/config.yaml`、`agent.env`、agent instructions。
-- **Standard**：Quick + shell、包管理器、Python、Git 等 guarded tool shim。
-- **Full**：Standard + Studio、Approval API、demo request。
-
-多轮 agent 每一轮都必须传入稳定 `metadata.agentbrake_run_id` 和 `metadata.conversation_id`。Gateway 也会返回 `X-AgentBrake-Run-Id`，便于客户端确认本轮解析到的 run id。
-
-AgentBrake 现在使用 YAML agent profile 管理智能体差异：
+配对对比实验可使用：
 
 ```bash
-agentbrake profiles
-agentbrake profiles --agent codex
-agentbrake integration-matrix
+python experiments/agentdojo/scripts/12_run_paired_mini.py --dry-run
+python experiments/agentdojo/scripts/12_run_paired_mini.py
 ```
 
-新增智能体优先新增 `src/agentbrake/integration/profiles/<agent>.yaml`，不应为单个智能体修改 Gateway 核心代码。
-
-## 核心算法：多源证据综合判断算法（R-MPF）
-
-R-MPF 全称 **Repository-aware Multi-Evidence Policy Fusion**，即“仓库感知的多源证据策略融合算法”。它不是只看工具名或黑名单，而是把多个证据源统一成事实，再通过 PolicyGraph 和 RuleIndex 形成可解释决策。
+实验输出默认写入：
 
 ```text
-ActionIR + Evidence
-  -> Fact Extraction
-  -> Invariants
-  -> EvidenceIndex / RuleIndex
-  -> PredicateEval
-  -> DecisionLattice
-  -> EvidenceGraph
-  -> PolicyDecision
+experiments/agentdojo/reports/
+experiments/agentdojo/logs/
 ```
-
-关键性质：
-
-- **Invariant non-downgrade**：不可降级安全门命中后，普通策略不能把结果降级为直接放行。
-- **Indexed retrieval soundness**：RuleIndex 可以多召回，但不能漏召回；测试验证索引候选与全量扫描命中等价。
-- **Decision monotonicity**：更强证据或更高风险规则只会让决策保持或升级到更严格决策。
-
-## 已完成能力
-
-- OpenAI-compatible Gateway：`/v1/chat/completions` 与 `/v1/responses`
-- Gateway bearer token 认证
-- 每个请求隔离 `TaskContract`、`ContextGraph`、`SecretSentry`
-- 统一决策语义：`allow`、`allow_in_sandbox`、`sandbox_then_approval`、`block`
-- OpenAI、Anthropic、Cline、OpenClaw、OpenHands、Aider parser mapping
-- ToolIntrospector / ToolMappingRegistry
-- transcript provenance 与 strict transcript mode
-- compound command lowering
-- 文件路径 canonicalize、repo escape、symlink escape、hidden secret 检查
-- SecretSentry、PackageGuard、MCPProxy、MemoryStore gate
-- SandboxRunner dry-run / overlay / preflight
-- PolicyGraph / RuleIndex 多源证据检索、候选规则缩小和可解释 trace
-- ApprovalCenter / ApprovalStore
-- AuditLog hash-chain、schema version、replay evidence validation
-- Studio Lite 静态报告与 Studio Pro 本地实时仪表盘
-- Stage2 / Stage3 bench、gateway bench、baseline / ablation 报告框架
-- agent profile 化接入、doctor 修复建议、smoke-test、integration-matrix
-
-## 仍需加强
-
-- 生产级 sandbox：container、Linux namespace、seccomp/eBPF、网络监控等
-- 真实供应链情报：npm/PyPI metadata、tarball inspection、Sigstore、typosquatting、maintainer reputation
-- 更大规模真实 agent trace 兼容测试
-- 策略签名、租户策略、团队权限、API key rotation
-- 生产级 Studio：长期存储、跨项目搜索、多租户视图、团队协作、运维部署
-- 更多真实样本上的误报、漏报和 ablation 指标
 
 ## 文档入口
 
-1. [文档目录](docs/README.zh-CN.md)
-2. [正式智能体接入指南](docs/FORMAL_AGENT_INTEGRATION.zh-CN.md)
-3. [智能体接入 Profile 架构](docs/AGENT_PROFILE_ARCHITECTURE.zh-CN.md)
-4. [PolicyGraph / RuleIndex 多源证据引擎](docs/POLICYGRAPH_RULEINDEX.zh-CN.md)
-5. [Studio 指南](docs/STUDIO_GUIDE.zh-CN.md)
-6. [项目状态与商用化评估](docs/PROJECT_STATUS.zh-CN.md)
+新的介绍文档集中在：
 
-## AgentDojo / Eval Fast Mode
-
-本版本新增了面向 AgentDojo 评测的轻量模式与工具门禁：
-
-- `AGENTBRAKE_EVAL_FAST_MODE=1`
-- `AGENTBRAKE_DISABLE_PREFLIGHT=1`
-- `AGENTBRAKE_POLICY_TRACE_MODE=summary`
-- `AGENTBRAKE_EVIDENCE_GRAPH_MODE=summary`
-- `AgentBrakeToolGate` 会在工具调用前把 AgentDojo 工具映射成 `agentdojo.*` facts，并写入 `agentdojo_tool_gate_decision`
-
-该模式只压缩审计与证据细节，不改变最终 allow / block 语义。
+- `docs/README.zh-CN.md`
+- `docs/ARCHITECTURE.zh-CN.md`
+- `docs/AGENTDOJO_EXPERIMENT.zh-CN.md`
+- `src/agentbrake/eval/agentdojo/README.md`
+- `experiments/agentdojo/README.md`

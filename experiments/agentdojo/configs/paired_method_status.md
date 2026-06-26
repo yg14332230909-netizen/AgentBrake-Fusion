@@ -11,6 +11,6 @@ Deferred methods:
 
 - `gateway_only`: historical baseline; not enabled in paired mini until the
   runner implements a distinct `agentbrake_gateway_only` defense.
-- `agentbrake_full`: reserved for future full-stack AgentBrake; not enabled
+- `agentbrake_full`: reserved for future full-stack AgentBrake-Fusion; not enabled
   until `agentdojo_firewall_full` has a separate code path.
 - `simple_denylist`: reserved until implemented as a separate runner path.

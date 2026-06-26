@@ -1,4 +1,4 @@
-"""Summarize AgentBrake audit events for AgentDojo experiment reports."""
+"""Summarize AgentBrake-Fusion audit events for AgentDojo experiment reports."""
 
 from __future__ import annotations
 

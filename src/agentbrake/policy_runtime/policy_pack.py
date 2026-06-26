@@ -97,7 +97,7 @@ def validate_policy_pack(data: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     if not isinstance(data, dict):
         return ["policy pack must be an object"]
-    if str(data.get("version", "")).startswith("agentbrake-policygraph"):
+    if str(data.get("version", "")).startswith("AgentBrake-Fusion-policygraph"):
         return _validate_policygraph_pack(data)
     if not data.get("name") or not isinstance(data.get("name"), str):
         errors.append("name is required and must be a string")

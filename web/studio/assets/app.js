@@ -1,4 +1,4 @@
-const API_TOKEN = localStorage.getItem("agentbrakeToken") || "agentbrake-local";
+const API_TOKEN = localStorage.getItem("agentbrakeFusionToken") || "agentbrake-fusion-local";
 
 const state = {
   runs: [],

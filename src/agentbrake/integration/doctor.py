@@ -145,9 +145,9 @@ def _repair_hint(name: str, ok: bool, detail: str) -> str:
         "shims_on_path": 'Put shims first: export PATH="$(pwd)/.agentbrake/shims:$PATH"',
         "gateway_configured": "Regenerate config: agentbrake connect --repo . --mode quick --force",
         "gateway_port_listening": "Start Gateway: agentbrake start --repo . --gateway-only",
-        "gateway_chat_completions": "Check logs in .agentbrake/logs/gateway.err.log and verify Authorization uses Bearer agentbrake-local.",
-        "gateway_chat_smoke": "Start Gateway and verify /v1/chat/completions accepts Authorization: Bearer agentbrake-local.",
-        "gateway_responses_smoke": "Start Gateway and verify /v1/responses accepts Authorization: Bearer agentbrake-local.",
+        "gateway_chat_completions": "Check logs in .agentbrake/logs/gateway.err.log and verify Authorization uses Bearer agentbrake-fusion-local.",
+        "gateway_chat_smoke": "Start Gateway and verify /v1/chat/completions accepts Authorization: Bearer agentbrake-fusion-local.",
+        "gateway_responses_smoke": "Start Gateway and verify /v1/responses accepts Authorization: Bearer agentbrake-fusion-local.",
         "policy_pack_exists": f"Fix --policy-pack path or remove it from config: {detail}",
         "studio_port_listening": "Start Studio: agentbrake start --repo .",
         "studio_health": "Check logs in .agentbrake/logs/studio.err.log and verify Studio bearer token.",
@@ -207,8 +207,8 @@ def run_smoke_test(config: dict[str, Any], agent_profile: AgentProfile | None = 
             method="POST",
         )
         with urlopen(request, timeout=2) as response:
-            ok = response.status == 200 and bool(response.headers.get("X-AgentBrake-Run-Id"))
-            return {"ok": ok, "endpoint": endpoint, "status": response.status, "run_id_header": response.headers.get("X-AgentBrake-Run-Id")}
+            ok = response.status == 200 and bool(response.headers.get("X-AgentBrake-Fusion-Run-Id"))
+            return {"ok": ok, "endpoint": endpoint, "status": response.status, "run_id_header": response.headers.get("X-AgentBrake-Fusion-Run-Id")}
     except HTTPError as exc:
         return {"ok": False, "endpoint": endpoint, "status": exc.code, "error": str(exc)}
     except (URLError, OSError) as exc:
@@ -234,7 +234,7 @@ def run_real_agent_smoke_test(
             "ok": False,
             "agent": profile.agent,
             "available": False,
-            "detail": f"AgentBrake Gateway is not listening at {host}:{port}; run agentbrake start --repo . --gateway-only first.",
+            "detail": f"AgentBrake-Fusion Gateway is not listening at {host}:{port}; run agentbrake start --repo . --gateway-only first.",
         }
     configured = _real_agent_configured_for_gateway(config, profile)
     if not configured["ok"]:
@@ -292,8 +292,8 @@ def _real_agent_configured_for_gateway(config: dict[str, Any], profile: AgentPro
     text = config_path.read_text(encoding="utf-8", errors="replace")
     gateway_url = str(config.get("gateway", {}).get("base_url") or "")
     markers = [
-        "# BEGIN AgentBrake managed block",
-        'model_provider = "agentbrake"',
+        "# BEGIN AgentBrake-Fusion managed block",
+        'model_provider = "AgentBrake-Fusion"',
         "[model_providers.agentbrake]",
         gateway_url,
     ]
@@ -301,7 +301,7 @@ def _real_agent_configured_for_gateway(config: dict[str, Any], profile: AgentPro
         return {"ok": True}
     return {
         "ok": False,
-        "detail": "Codex is not configured to use this AgentBrake Gateway; run agentbrake connect --repo . --agent codex --apply-agent-config first.",
+        "detail": "Codex is not configured to use this AgentBrake-Fusion Gateway; run agentbrake connect --repo . --agent codex --apply-agent-config first.",
     }
 
 
@@ -309,7 +309,7 @@ def _smoke_payload(profile: AgentProfile, session: dict[str, Any]) -> dict[str, 
     metadata = {
         "agentbrake_run_id": session.get("run_id"),
         "conversation_id": session.get("conversation_id"),
-        "client_id": f"agentbrake-doctor-{profile.agent}",
+        "client_id": f"AgentBrake-Fusion-doctor-{profile.agent}",
     }
     if profile.wire_api == "responses":
         return {
@@ -328,7 +328,7 @@ def _probe_studio(host: str, port: int) -> bool:
     try:
         request = Request(
             f"http://{host}:{port}/api/health",
-            headers={"Authorization": "Bearer agentbrake-local"},
+            headers={"Authorization": "Bearer agentbrake-fusion-local"},
             method="GET",
         )
         with urlopen(request, timeout=2) as response:
@@ -349,5 +349,5 @@ def _next_commands(config: dict[str, Any], profile: AgentProfile, checks: list[d
     if "shims_on_path" in names:
         commands.append('export PATH="$(pwd)/.agentbrake/shims:$PATH"')
     if any(name.endswith("_smoke") for name in names):
-        commands.append(f"agentbrake smoke-test --repo . --agent {profile.agent}")
+        commands.append(f"AgentBrake-Fusion smoke-test --repo . --agent {profile.agent}")
     return list(dict.fromkeys(commands))

@@ -1,4 +1,4 @@
-"""Command-line interface for AgentBrake/AgentBrake."""
+"""Command-line interface for agentbrake."""
 
 from __future__ import annotations
 
@@ -81,7 +81,7 @@ def cmd_parse(args: argparse.Namespace) -> int:
 
 
 def cmd_demo(args: argparse.Namespace) -> int:
-    workdir = Path(args.workdir) if args.workdir else Path(tempfile.mkdtemp(prefix="agentbrake-demo-"))
+    workdir = Path(args.workdir) if args.workdir else Path(tempfile.mkdtemp(prefix="AgentBrake-Fusion-demo-"))
     workdir.mkdir(parents=True, exist_ok=True)
     result = run_demo(workdir)
     _print_json(result)
@@ -488,10 +488,10 @@ def _make_gateway_demo_repo(workdir: Path) -> Path:
 
 
 def cmd_gateway_demo(args: argparse.Namespace) -> int:
-    workdir = Path(args.workdir) if args.workdir else Path(tempfile.mkdtemp(prefix="agentbrake-gateway-demo-"))
+    workdir = Path(args.workdir) if args.workdir else Path(tempfile.mkdtemp(prefix="AgentBrake-Fusion-gateway-demo-"))
     repo = _make_gateway_demo_repo(workdir)
     request = {
-        "model": "agentbrake/local-heuristic",
+        "model": "AgentBrake-Fusion/local-heuristic",
         "task": "修复登录按钮点击无响应的问题，并运行测试。",
         "messages": [{"role": "user", "content": "修复登录按钮点击无响应的问题，并运行测试。"}],
         "metadata": {
@@ -582,7 +582,10 @@ def cmd_replay_verify(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="agentbrake", description="AgentBrake/AgentBrake coding-agent security control-plane plugin")
+    p = argparse.ArgumentParser(
+        prog="agentbrake",
+        description="AgentBrake-Fusion multi-source safety judgment framework for general agent tool calls",
+    )
     sub = p.add_subparsers(dest="cmd", required=True)
     register_eval_agentdojo(sub)
 
@@ -613,7 +616,7 @@ def build_parser() -> argparse.ArgumentParser:
     demo.add_argument("--workdir")
     demo.set_defaults(func=cmd_demo)
 
-    run_agent = sub.add_parser("run-agent", help="通过 adapter 运行外部/模拟 coding agent")
+    run_agent = sub.add_parser("run-agent", help="通过 adapter 运行外部/模拟智能体")
     run_agent.add_argument("--adapter", choices=["generic", "aider"], default="generic")
     run_agent.add_argument("--repo", required=True)
     run_agent.add_argument("--task", required=True)
@@ -632,7 +635,7 @@ def build_parser() -> argparse.ArgumentParser:
     tm.add_argument("--min-pass-rate", type=float, default=1.0)
     tm.set_defaults(func=cmd_trace_matrix)
 
-    tool_introspect = sub.add_parser("tool-introspect", help="Infer AgentBrake canonical tool mappings from tool schemas")
+    tool_introspect = sub.add_parser("tool-introspect", help="Infer AgentBrake-Fusion canonical tool mappings from tool schemas")
     tool_introspect.add_argument("--input", required=True)
     tool_introspect.add_argument("--format", choices=["openai", "mcp", "agent-config", "json-schema"], default="openai")
     tool_introspect.add_argument("--name", help="Tool name for --format json-schema")
@@ -661,15 +664,15 @@ def build_parser() -> argparse.ArgumentParser:
     file_guard.add_argument("--policy-config")
     file_guard.set_defaults(func=cmd_file_guard)
 
-    init = sub.add_parser("init-agent", help="Generate AgentBrake agent integration config, shims, and instructions")
+    init = sub.add_parser("init-agent", help="Generate AgentBrake-Fusion agent integration config, shims, and instructions")
     init.add_argument("--repo", required=True)
     init.add_argument("--agent", choices=["generic", "cline", "codex", "openclaw", "openhands"], default="generic")
-    init.add_argument("--task", default="general coding task")
+    init.add_argument("--task", default="general agent task")
     init.add_argument("--agentbrake-home")
     init.add_argument("--force", action="store_true")
     init.set_defaults(func=cmd_init_agent)
 
-    openclaw = sub.add_parser("openclaw-quickstart", help="Generate one-click OpenClaw -> AgentBrake startup files")
+    openclaw = sub.add_parser("openclaw-quickstart", help="Generate one-click OpenClaw -> agentbrake startup files")
     openclaw.add_argument("--repo", required=True)
     openclaw.add_argument("--agentbrake-home")
     openclaw.add_argument("--model", default="gpt-4.1")
@@ -679,7 +682,7 @@ def build_parser() -> argparse.ArgumentParser:
     openclaw.add_argument("--force", action="store_true")
     openclaw.set_defaults(func=cmd_openclaw_quickstart)
 
-    connect = sub.add_parser("connect", help="Generate formal AgentBrake agent integration files")
+    connect = sub.add_parser("connect", help="Generate formal AgentBrake-Fusion agent integration files")
     connect.add_argument("--repo", default=".")
     connect.add_argument(
         "--agent",
@@ -699,13 +702,13 @@ def build_parser() -> argparse.ArgumentParser:
     connect.add_argument(
         "--smoke-test", action="store_true", help="Probe the generated agent protocol after connect if Gateway is running."
     )
-    connect.add_argument("--apply-agent-config", action="store_true", help="Apply a supported host-agent config with a AgentBrake backup.")
+    connect.add_argument("--apply-agent-config", action="store_true", help="Apply a supported host-agent config with an AgentBrake-Fusion backup.")
     connect.add_argument(
-        "--restore-agent-config", action="store_true", help="Restore the host-agent config from the AgentBrake backup manifest."
+        "--restore-agent-config", action="store_true", help="Restore the host-agent config from the AgentBrake-Fusion backup manifest."
     )
     connect.set_defaults(func=cmd_connect)
 
-    start = sub.add_parser("start", help="Start AgentBrake services generated by agentbrake connect")
+    start = sub.add_parser("start", help="Start AgentBrake-Fusion services generated by agentbrake connect")
     start.add_argument("--repo", default=".")
     start.add_argument("--config")
     start.add_argument("--gateway-only", action="store_true")
@@ -714,12 +717,12 @@ def build_parser() -> argparse.ArgumentParser:
     start.add_argument("--print-only", action="store_true", help="Only print the resolved service plan; do not launch background services.")
     start.set_defaults(func=cmd_start)
 
-    status = sub.add_parser("status", help="Show AgentBrake background service status for this repo")
+    status = sub.add_parser("status", help="Show AgentBrake-Fusion background service status for this repo")
     status.add_argument("--repo", default=".")
     status.add_argument("--config")
     status.set_defaults(func=cmd_status)
 
-    stop = sub.add_parser("stop", help="Stop AgentBrake background services started for this repo")
+    stop = sub.add_parser("stop", help="Stop AgentBrake-Fusion background services started for this repo")
     stop.add_argument("--repo", default=".")
     stop.add_argument("--config")
     stop.add_argument("--gateway-only", action="store_true")
@@ -727,7 +730,7 @@ def build_parser() -> argparse.ArgumentParser:
     stop.add_argument("--approval-only", action="store_true")
     stop.set_defaults(func=cmd_stop)
 
-    doctor = sub.add_parser("doctor", help="Validate AgentBrake formal agent integration readiness")
+    doctor = sub.add_parser("doctor", help="Validate AgentBrake-Fusion formal agent integration readiness")
     doctor.add_argument("--repo", default=".")
     doctor.add_argument("--config")
     doctor.add_argument("--agent", choices=agent_choices(), help="Validate against a specific agent profile instead of config.agent.")
@@ -774,11 +777,11 @@ def build_parser() -> argparse.ArgumentParser:
     approval_api.add_argument("--host", default="127.0.0.1")
     approval_api.add_argument("--port", type=int, default=8776)
     approval_api.add_argument(
-        "--api-key", help="Require Authorization: Bearer <key>. Defaults to AGENTBRAKE_APPROVAL_API_KEY or agentbrake-local."
+        "--api-key", help="Require Authorization: Bearer <key>. Defaults to AGENTBRAKE_APPROVAL_API_KEY or agentbrake-fusion-local."
     )
     approval_api.set_defaults(func=cmd_approval_api_start)
 
-    policy_validate = sub.add_parser("policy-validate", help="Validate a AgentBrake policy pack schema")
+    policy_validate = sub.add_parser("policy-validate", help="Validate an AgentBrake-Fusion policy pack schema")
     policy_validate.add_argument("--policy-pack", required=True)
     policy_validate.set_defaults(func=cmd_policy_validate)
 
@@ -819,12 +822,12 @@ def build_parser() -> argparse.ArgumentParser:
     gw_start.add_argument("--unsafe-allow-disabled-policy", action="store_true")
     gw_start.set_defaults(func=cmd_gateway_start)
 
-    bench = sub.add_parser("bench", help="运行 CodeAgent-SecBench 单个样本")
+    bench = sub.add_parser("bench", help="运行 AgentTool-SecBench 单个样本")
     bench.add_argument("--sample", required=True)
     bench.add_argument("--output")
     bench.set_defaults(func=cmd_bench)
 
-    suite = sub.add_parser("bench-suite", help="运行样本目录下全部 CodeAgent-SecBench 样本")
+    suite = sub.add_parser("bench-suite", help="运行样本目录下全部 AgentTool-SecBench 样本")
     suite.add_argument("--samples", required=True)
     suite.add_argument("--output", required=True)
     suite.add_argument("--no-html", action="store_true")
@@ -859,16 +862,16 @@ def build_parser() -> argparse.ArgumentParser:
     ir.add_argument("--output", required=True)
     ir.set_defaults(func=cmd_incident_report)
 
-    studio = sub.add_parser("studio", help="生成 AgentBrake Studio HTML 控制台")
+    studio = sub.add_parser("studio", help="生成 AgentBrake-Fusion Studio HTML 控制台")
     studio.add_argument("--audit", required=True)
     studio.add_argument("--output", required=True)
     studio.add_argument("--bench-report")
     studio.add_argument("--trace-matrix-report")
     studio.add_argument("--approvals")
-    studio.add_argument("--title", default="AgentBrake Studio")
+    studio.add_argument("--title", default="AgentBrake-Fusion Studio Pro")
     studio.set_defaults(func=cmd_studio)
 
-    studio_server = sub.add_parser("studio-server", help="Start AgentBrake Studio Pro realtime local dashboard")
+    studio_server = sub.add_parser("studio-server", help="Start AgentBrake-Fusion Studio realtime local dashboard")
     studio_server.add_argument("--audit", default=".agentbrake/gateway_audit.jsonl")
     studio_server.add_argument("--approvals", default=".agentbrake/gateway_approvals.jsonl")
     studio_server.add_argument("--bench-report")
@@ -876,7 +879,7 @@ def build_parser() -> argparse.ArgumentParser:
     studio_server.add_argument("--host", default="127.0.0.1")
     studio_server.add_argument("--port", type=int, default=8780)
     studio_server.add_argument(
-        "--api-key", help="Require Authorization: Bearer <key>. Defaults to AGENTBRAKE_STUDIO_API_KEY or agentbrake-local."
+        "--api-key", help="Require Authorization: Bearer <key>. Defaults to AGENTBRAKE_STUDIO_API_KEY or agentbrake-fusion-local."
     )
     studio_server.add_argument("--demo-mode", action="store_true")
     studio_server.set_defaults(func=cmd_studio_server)
@@ -897,7 +900,7 @@ def build_parser() -> argparse.ArgumentParser:
     studio_export.add_argument("--output", required=True)
     studio_export.set_defaults(func=cmd_studio_export)
 
-    dashboard = sub.add_parser("dashboard", help="Render a minimal local AgentBrake dashboard HTML")
+    dashboard = sub.add_parser("dashboard", help="Render a minimal local AgentBrake-Fusion dashboard HTML")
     dashboard.add_argument("--audit", required=True)
     dashboard.add_argument("--output", required=True)
     dashboard.add_argument("--approvals")
@@ -921,7 +924,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         return args.func(args)
     except Exception as exc:
-        print(f"agentbrake error: {exc}", file=sys.stderr)
+        print(f"AgentBrake-Fusion error: {exc}", file=sys.stderr)
         return 1
 
 

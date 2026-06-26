@@ -596,7 +596,7 @@ def write_bucket_breakdown_csv(path: Path, summary: dict[str, Any]) -> None:
 
 def render_legacy_summary_md(summary: dict[str, Any]) -> str:
     labels = {
-        "full": "Full AgentBrake",
+        "full": "Full AgentBrake-Fusion",
         "rule_only": "Rule-only",
         "no_binding": "No Binding",
         "legacy_no_context_graph": "Legacy No ContextGraph",

@@ -1,6 +1,6 @@
 import type { ActionDetail, ApprovalEvent, BenchReport, CoverageReport, GraphEdge, GraphNode, JudgmentTraceViewModel, RunSummary, ScenarioSpec, StudioEvent } from "../types";
 
-const token = localStorage.getItem("agentbrakeToken") || "agentbrake-local";
+const token = localStorage.getItem("agentbrakeFusionToken") || "agentbrake-fusion-local";
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(path, {
